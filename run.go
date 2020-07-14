@@ -25,6 +25,7 @@ func main() {
 	trueUwp = profile.Compose("UWP", &world1)
 	fmt.Println(trueUwp)
 	fmt.Println("-----------------")
+	fmt.Println("-----------------")
 	world1.SecondSurvey()
 	fmt.Println(world1)
 	// //system.AllNames("Sol")
