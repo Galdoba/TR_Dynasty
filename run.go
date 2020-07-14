@@ -13,7 +13,7 @@ import (
 func main() {
 	utils.RandomSeed()
 
-	world1 := world.NewWorld("Arnor")
+	world1 := world.NewWorld("Arnora")
 	world1.SetValue(constant.PrAtmo, "5")
 	trueUwp := profile.Compose("UWP", &world1)
 	fmt.Println(trueUwp)
