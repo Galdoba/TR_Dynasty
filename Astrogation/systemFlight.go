@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/Galdoba/TR_Dynasty/worldBuilder"
+	"github.com/Galdoba/TR_Dynasty/world"
 	"github.com/Galdoba/utils"
 )
 
