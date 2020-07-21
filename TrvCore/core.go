@@ -16,6 +16,15 @@ func Roll1D(mods ...int) int {
 	return r
 }
 
+//Roll1D -
+func Roll1Drandom(mods ...int) int {
+	r := utils.RollDiceRandom("d6")
+	for i := range mods {
+		r = r + mods[i]
+	}
+	return r
+}
+
 //Roll2D -
 func Roll2D(mods ...int) int {
 	r := utils.RollDice("2d6")
