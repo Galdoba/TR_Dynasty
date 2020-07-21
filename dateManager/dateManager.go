@@ -1,6 +1,8 @@
 package DateManager
 
 import (
+	"strconv"
+
 	"github.com/Galdoba/convert"
 )
 
@@ -201,4 +203,19 @@ func TimeToString(timeVal int64) string {
 	date := NewImperialDate(timeVal)
 	time := date.TimeStamp()
 	return "DEBUG: " + time
+}
+
+func TimeToHuman(hr float64) string {
+	hours := int(hr)
+	minutes := int((hr - float64(hours)) * 60)
+	days := hours / 24
+	rep := ""
+	if days == 1 {
+		rep = "1 day "
+	}
+	if days > 1 {
+		rep = strconv.Itoa(days) + " days "
+	}
+	rep = rep + strconv.Itoa(hours) + " hours " + strconv.Itoa(minutes) + " minutes"
+	return rep
 }

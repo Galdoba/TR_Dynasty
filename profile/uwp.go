@@ -5,6 +5,7 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/constant"
+	"github.com/Galdoba/TR_Dynasty/world"
 	"github.com/Galdoba/utils"
 )
 
@@ -123,8 +124,6 @@ func specialCase(val string) (bool, string) {
 // 		container.SetValue(k, v)
 // 	}
 // }
-
-
 
 func RandomUWP(planetType ...string) string {
 	var result string
@@ -404,4 +403,19 @@ func orderByType(profileType string) (order []string) {
 		}
 	}
 	return order
+}
+
+func From(pu Puller) Profile {
+	p := Profile{}
+	switch pu.(type) {
+	case world.World:
+		data := pu.PullData()
+		p.pType = "UWP"
+		p.data = data[constant.PrStarport] +
+			data[constant.PrSize] + data[constant.PrAtmo] + data[constant.PrHydr] +
+			data[constant.PrPops] + data[constant.PrGovr] + data[constant.PrLaws] +
+			"-" + data[constant.PrTL]
+		return p
+	}
+	return p
 }
