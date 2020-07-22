@@ -1,7 +1,7 @@
 package Trade
 
 import (
-	"github.com/Galdoba/TR_Dynasty/worldBuilder"
+	"github.com/Galdoba/TR_Dynasty/world"
 	"github.com/Galdoba/convert"
 	"github.com/Galdoba/utils"
 )

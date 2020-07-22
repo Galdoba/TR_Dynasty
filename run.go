@@ -3,16 +3,24 @@ package main
 import (
 	"fmt"
 
-	"github.com/Galdoba/TR_Dynasty/npc"
-	"github.com/Galdoba/utils"
+	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/profile"
+	"github.com/Galdoba/TR_Dynasty/world"
 )
 
 func main() {
-	utils.RandomSeed()
-	npc := npc.RandomNPC()
-	fmt.Println(npc)
-	//sd
-	//SER
+	pr := dice.Probe("3d6", 15)
+	fmt.Println(pr)
+	worl := world.NewWorld("Drinax").SetUWP(profile.RandomUWP()).SecondSurvey()
+	fmt.Println(worl)
+	r := dice.Roll("3d6")
+	if ok := r.ResultTN(15); ok {
+		fmt.Println("Result positive")
+
+	}
+	fmt.Println(r.Result())
+	fmt.Println("End")
+
 }
 
 //OB Ia Ia Ia II II II II

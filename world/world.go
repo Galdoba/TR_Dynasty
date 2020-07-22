@@ -118,7 +118,7 @@ type World struct {
 }
 
 //NewWorld -
-func NewWorld(name string) World {
+func NewWorld(name string) *World {
 	world := World{}
 	world.name = name
 	world.stat = make(map[string]int)
@@ -129,7 +129,7 @@ func NewWorld(name string) World {
 	// world.SetUWP(uwp)
 
 	//world.SecondSurvey()
-	return world
+	return &world
 }
 
 //SetHex -
@@ -149,7 +149,7 @@ func (w *World) UWP() string {
 }
 
 //SetUWP -
-func (w *World) SetUWP(uwp string) {
+func (w *World) SetUWP(uwp string) *World {
 	if uwp == "RANDOM" {
 		rand.Seed(utils.SeedFromString(w.name))
 		//rWorld := BuildPlanet() //вот тут должен быть рандомный сборщик
@@ -166,7 +166,7 @@ func (w *World) SetUWP(uwp string) {
 		w.buildUWP()
 	}
 	if !uwpValid(uwp) {
-		return
+		return w
 	}
 	code := strings.Split(uwp, "")
 	w.data[constant.PrStarport] = code[0]
@@ -177,7 +177,7 @@ func (w *World) SetUWP(uwp string) {
 	w.data[constant.PrGovr] = code[5]
 	w.data[constant.PrLaws] = code[6]
 	w.data[constant.PrTL] = code[8]
-	//w.uwp = uwp
+	return w
 }
 
 //TotalWorlds -
