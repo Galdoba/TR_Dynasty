@@ -1,7 +1,7 @@
 package dice
 
 import (
-	"fmt"
+	"math"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -17,6 +17,8 @@ type Dicepool struct {
 	seed       int64
 	result     []int
 	trueRandom bool
+	boon       bool
+	bane       bool
 }
 
 // func main() {
@@ -41,7 +43,7 @@ func Roll(code string) *Dicepool {
 	dp.dice, dp.edges = decodeDiceCode(code)
 	rand.Seed(dp.seed)
 	for d := 0; d < dp.dice; d++ {
-		dp.result = append(dp.result, rand.Intn(dp.edges-1)+1)
+		dp.result = append(dp.result, rand.Intn(dp.edges)+1)
 	}
 	return &dp
 }
@@ -72,8 +74,9 @@ func (dp *Dicepool) Result() []int {
 func (dp *Dicepool) ResultSum() int {
 	sum := 0
 	for i := 0; i < len(dp.result); i++ {
-		sum = sum + dp.result[i]
+		sum = sum + (dp.result[i] + dp.modPerDie)
 	}
+	sum = sum + dp.modTotal
 	return sum
 }
 
@@ -96,6 +99,54 @@ func (dp *Dicepool) ResultTN(tn int) bool {
 
 //////////////////////////////////////////////////////////
 //Actions:
+
+//Boon - фиксирует результат броска
+func (dp *Dicepool) Boon() *Dicepool {
+	lowest := 0
+	targetVal := dp.edges
+	for i, val := range dp.result {
+		if val < targetVal {
+			targetVal = val
+			lowest = i
+		}
+
+	}
+	d1 := rand.Intn(dp.edges) + 1
+	if d1 > targetVal {
+		dp.result[lowest] = d1
+	}
+	return dp
+}
+
+//Bane - фиксирует результат броска
+func (dp *Dicepool) Bane() *Dicepool {
+	highest := 0
+	targetVal := 0
+	for i, val := range dp.result {
+		if val > targetVal {
+			targetVal = val
+			highest = i
+		}
+
+	}
+	d1 := rand.Intn(dp.edges) + 1
+	if d1 < targetVal {
+		dp.result[highest] = d1
+	}
+	return dp
+}
+
+//DM - фиксирует результат броска
+func (dp *Dicepool) DM(s int) *Dicepool {
+	dp.modTotal = s
+	return dp
+}
+
+//ModPerDie - фиксирует результат броска
+func (dp *Dicepool) ModPerDie(s int) *Dicepool {
+	dp.modPerDie = s
+	return dp
+}
 
 //SetSeed - фиксирует результат броска
 func (dp *Dicepool) SetSeed(s int64) *Dicepool {
@@ -144,33 +195,61 @@ func (dp *Dicepool) ReplaceOne(die, newVal int) *Dicepool {
 //////////////////////////////////////////////////////////
 //Probe:
 
-//Probe - оценивает вероятность достичь tn
-func Probe(code string, tn int) float64 {
+//Probe - перечисляет возможные варианты
+func Probe(code string, tn int) map[int][]int {
+	dice, edges := decodeDiceCode(code)
+	resMap := rollCombinations(edges, dice)
+	return resMap
+}
+
+//ProbeTN - оценивает вероятность достичь tn
+func ProbeTN(code string, tn int) float64 {
 	dp := new(Dicepool)
 	dice, edges := decodeDiceCode(code)
 	dp.dice = dice
 	dp.edges = edges
-	var d int
 	var positiveOutcome int
-	fmt.Println(dp)
 	for i := 0; i < dice; i++ {
 		dp.result = append(dp.result, 1)
 	}
-	totalRange := dp.dice * dp.edges
-	fmt.Println(dp, 1, totalRange)
-	for i := 0; i < totalRange; i++ {
-		dp.result[d]++
-		if dp.result[d] > edges {
-			dp.result[d]--
-			d++
-		}
-		fmt.Println(dp, 2)
-		if dp.ResultTN(tn) {
+	totalRange := int(math.Pow(float64(dp.edges), float64(dp.dice)))
+	resMap := rollCombinations(dp.edges, dp.dice)
+	for _, v := range resMap {
+		tdp := Dicepool{}
+		tdp.result = v
+		if tdp.ResultTN(tn) {
 			positiveOutcome++
 		}
-		fmt.Println(dp, 3)
 	}
-	fmt.Println(positiveOutcome, totalRange)
 	res := float64(positiveOutcome) / float64(totalRange)
 	return res
+}
+
+func rollCombinations(max, len int) map[int][]int {
+	resMap := make(map[int][]int)
+	var sl []int
+	for i := 0; i < len; i++ {
+		sl = append(sl, 1)
+	}
+	totalRange := int(math.Pow(float64(max), float64(len)))
+	resMap[0] = sl
+	for i := 0; i < totalRange; i++ {
+		activeDie := 0
+		for activeDie < len {
+			if sl[activeDie] < max {
+				sl[activeDie]++
+				for j := range sl {
+					resMap[i+1] = append(resMap[i+1], sl[j])
+				}
+				break
+			} else {
+				sl[activeDie] = 1
+				activeDie++
+			}
+			if activeDie > len {
+				break
+			}
+		}
+	}
+	return resMap
 }

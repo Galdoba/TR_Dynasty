@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/profile"
@@ -9,9 +10,17 @@ import (
 )
 
 func main() {
-	pr := dice.Probe("3d6", 15)
-	fmt.Println(pr)
-	worl := world.NewWorld("Drinax").SetUWP(profile.RandomUWP()).SecondSurvey()
+
+	for i := 0; i < 20; i++ {
+		dp := dice.Roll("2d6")
+		fmt.Println("before Boon:", dp.Result())
+		dp.Boon()
+		fmt.Println(" after Boon:", dp.Result())
+		time.Sleep(40 * time.Millisecond)
+		fmt.Println(" ------------------------ ")
+	}
+
+	worl := world.NewWorld("Drinax").SetUWP(profile.RandomUWP())
 	fmt.Println(worl)
 	r := dice.Roll("3d6")
 	if ok := r.ResultTN(15); ok {
