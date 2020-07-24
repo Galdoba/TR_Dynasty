@@ -51,9 +51,10 @@ func Roll(code string) *Dicepool {
 func decodeDiceCode(code string) (int, int) {
 	code = strings.ToUpper(code)
 	data := strings.Split(code, "D")
-	dice, err := strconv.Atoi(data[0])
-	if err != nil {
-		return 0, 0
+	var dice int
+	dice, _ = strconv.Atoi(data[0])
+	if data[0] == "" {
+		dice = 1
 	}
 	edges, err := strconv.Atoi(data[1])
 	if err != nil {
@@ -71,13 +72,18 @@ func (dp *Dicepool) Result() []int {
 }
 
 //ResultSum - возвращает сумму очков броска
-func (dp *Dicepool) ResultSum() int {
+func (dp *Dicepool) Sum() int {
 	sum := 0
 	for i := 0; i < len(dp.result); i++ {
 		sum = sum + (dp.result[i] + dp.modPerDie)
 	}
 	sum = sum + dp.modTotal
 	return sum
+}
+
+//ResultSum - возвращает сумму очков броска в виде стринга
+func (dp *Dicepool) SumStr() string {
+	return strconv.Itoa(dp.Sum())
 }
 
 //ResultString - возвращает результата в виде стринга
@@ -91,7 +97,7 @@ func (dp *Dicepool) ResultString() string {
 
 //ResultTN - возвращает true если сумма броска больше/равна tn
 func (dp *Dicepool) ResultTN(tn int) bool {
-	if dp.ResultSum() < tn {
+	if dp.Sum() < tn {
 		return false
 	}
 	return true
@@ -252,4 +258,12 @@ func rollCombinations(max, len int) map[int][]int {
 		}
 	}
 	return resMap
+}
+
+//////////////////////////////////////////////////////////
+//QuickRolls:
+
+func RollD66() string {
+	return Roll("2d6").ResultString()
+
 }

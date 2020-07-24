@@ -3,26 +3,17 @@ package TrvCore
 import (
 	"fmt"
 
-	"github.com/Galdoba/convert"
+	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/utils"
 )
 
 //Roll1D -
-func Roll1D(mods ...int) int {
-	r := utils.RollDice("d6")
-	for i := range mods {
-		r = r + mods[i]
+func Roll1D(dm ...int) int {
+	r := dice.Roll("d6")
+	if len(dm) > 0 {
+		r.DM(dm[0])
 	}
-	return r
-}
-
-//Roll1D -
-func Roll1Drandom(mods ...int) int {
-	r := utils.RollDiceRandom("d6")
-	for i := range mods {
-		r = r + mods[i]
-	}
-	return r
+	return r.Sum()
 }
 
 //Roll2D -
@@ -44,30 +35,28 @@ func Roll3D(mods ...int) int {
 }
 
 func RollD66() string {
-	d1 := Roll1D()
-	d2 := Roll1D()
-	return convert.ItoS(d1) + convert.ItoS(d2)
+	return dice.Roll("2d6").ResultString()
 }
 
-func RerollIf(roll func(...int) int, notWant ...int) int {
-	i := 0
-	for {
-		suggest := roll()
-		met := false
-		for i := range notWant {
-			if suggest == notWant[i] {
-				met = true
-			}
-		}
-		if !met {
-			return suggest
-		}
-		i++
-		if i > 100000 {
-			return suggest
-		}
-	}
-}
+// func RerollIf(roll func(...int) int, notWant ...int) int {
+// 	i := 0
+// 	for {
+// 		suggest := roll()
+// 		met := false
+// 		for i := range notWant {
+// 			if suggest == notWant[i] {
+// 				met = true
+// 			}
+// 		}
+// 		if !met {
+// 			return suggest
+// 		}
+// 		i++
+// 		if i > 100000 {
+// 			return suggest
+// 		}
+// 	}
+// }
 
 //Flux -
 func Flux() int {
