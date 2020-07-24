@@ -3,7 +3,6 @@ package npc
 import (
 	"fmt"
 	"math/rand"
-	"strconv"
 	"time"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
@@ -69,6 +68,7 @@ func RandomNPC() NPCensembleCast {
 		npc.quirk2 = TrvCore.RollD66()
 	}
 	npc.occupation = occupationChart()
+	npc.occupation = occClergy
 	npc.skillList = utils.RollDiceRandom("2d6")
 	npc.age = 18 + utils.RollDiceRandom("6d6")
 	fmt.Println(npc)
@@ -139,8 +139,7 @@ func tabConstructor(st []string) [][]string {
 
 func fromCode(s string) []string {
 	var res []string
-	fmt.Println("Code", s)
-	i, _ := strconv.Atoi(s)
+	i := TrvCore.EhexToDigit(s)
 	val := i / 10
 	it := i - (val * 10)
 	for l := 0; l < 11; l++ {
@@ -161,8 +160,8 @@ func (npc *NPCensembleCast) rollStats() {
 		r := dice.Roll("2d6").Sum() - 2
 		c := dice.Roll("d6").Sum()
 		time.Sleep(time.Millisecond * 1)
-		fmt.Println(npc.occupation, r, c, tab.occ[npc.occupation][r][c])
-		upp = upp + tab.occ[npc.occupation][r][c]
+		fmt.Println(npc.occupation, r, c, tab.occ[npc.occupation][c][r])
+		upp = upp + tab.occ[npc.occupation][c][r]
 	}
 	npc.upp = upp
 }
