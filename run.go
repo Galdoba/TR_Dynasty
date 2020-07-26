@@ -8,8 +8,12 @@ import (
 
 func main() {
 
-	npc := npc.RandomNPC()
-	fmt.Println(npc)
+	for i := 0; i < 4; i++ {
+		npc := npc.RandomNPC()
+		fmt.Println(npc.String())
+		fmt.Println("")
+
+	}
 
 }
 
