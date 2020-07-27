@@ -7,13 +7,9 @@ import (
 )
 
 func main() {
-
-	for i := 0; i < 4; i++ {
-		npc := npc.RandomNPC()
-		fmt.Println(npc.String())
-		fmt.Println("")
-
-	}
+	npc0 := npc.RandomNPC()
+	fmt.Println(npc0.String())
+	npc.ReadOSArgs()
 
 }
 

@@ -3,7 +3,9 @@ package npc
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
@@ -46,6 +48,43 @@ const (
 	occVagabond          = "Vagabond"
 )
 
+// type NPCbuilder interface {
+// 	SetRace(string)
+// 	SetOccupation(string)
+// 	GetNPC() *NPCensembleCast
+// }
+
+func ReadOSArgs() map[string][]string {
+	args := os.Args
+	testMap := make(map[string][]string)
+	var mapKey string
+	var mapSlice []string
+	for i, val := range args {
+		fmt.Println(i, "'"+val+"'")
+		val = strings.ToLower(val)
+		if string(val[0]) == "-" {
+			testMap[mapKey] = mapSlice
+			mapKey = args[i]
+			mapSlice = nil
+			continue
+		}
+		if args[i] != "" {
+			mapSlice = append(mapSlice, args[i])
+		}
+	}
+	testMap[mapKey] = mapSlice
+	delete(testMap, "")
+	for k, v := range testMap {
+		fmt.Println("Key:", k, "Val:", v)
+	}
+	return testMap
+}
+
+/*
+-Race Human -Occupation Spy
+
+*/
+
 type NPCensembleCast struct {
 	name           string
 	race           string
@@ -62,7 +101,7 @@ type NPCensembleCast struct {
 
 func (npc *NPCensembleCast) String() string {
 	str := ""
-	str += "\n      Name: " + npc.name
+	str += "      Name: " + npc.name
 	str += "\n       UPP: " + npc.upp
 	str += "\n      Race: " + npc.race
 	str += "\noccupation: " + npc.occupation
@@ -72,26 +111,38 @@ func (npc *NPCensembleCast) String() string {
 	}
 	str += "\n    Skills: " + npc.skills
 	str += "\n Rel Bonus: " + strconv.Itoa(npc.relationsBonus)
+	relation := dice.Roll("2d6").DM(npc.relationsBonus / 5).SumStr()
+	str += "\n  Reaction: " + relation
 	return str
 }
 
 func RandomNPC() NPCensembleCast {
 	npc := NPCensembleCast{}
+	npcArgs := ReadOSArgs()
 	npc.name = firstName() + " " + familyName()
-	npc.occupation = occupationChart()
+	occ := ""
+	if val, ok := npcArgs["-Occ"]; ok {
+		if len(val) > 0 {
+			occ = val[0]
+		}
+	}
+	if _, ok := npcArgs["-help"]; ok {
+		fmt.Println("HELP MESSAGE")
+		os.Exit(5)
+	}
+	npc.occupation = pickOccupation(occ)
 	npc.rollStats()
 
 	npc.rollRace()
+	//npc.skillList = dice.Roll("2d6").Sum()
+	npc.skillTable()
 	npc.quirk1 = TrvCore.RollD66()
-	npc.quirk1 = npc.quirkTable()
+	npc.quirk1 = npc.quirk(dice.RollD66())
 	npc.quirk2 = ""
 	if utils.RollDiceRandom("d2") > 1 {
-		npc.quirk2 = npc.quirkTable()
+		npc.quirk2 = npc.quirk(dice.RollD66())
 	}
-
-	npc.skillList = dice.Roll("2d6").Sum()
 	npc.age = 18 + utils.RollDiceRandom("6d6")
-	npc.skillTable()
 
 	return npc
 }
@@ -111,7 +162,7 @@ func (npc *NPCensembleCast) rollRace() {
 		}
 		totalWeight = totalWeight + v
 	}
-	r := dice.Roll("1d" + strconv.Itoa(totalWeight)).Sum()
+	r := dice.Roll("1d" + strconv.Itoa(totalWeight)).DM(-1).Sum()
 	switch raceList[r] {
 	case "Human":
 		npc.race = "Human"
@@ -408,7 +459,7 @@ func (npc *NPCensembleCast) rollStats() {
 
 }
 
-func occupationChart() string {
+func pickOccupation(occ string) string {
 	occupation := []string{
 		occAverageCitizen,
 		occAdventurer,
@@ -443,36 +494,44 @@ func occupationChart() string {
 		occThief,
 		occVagabond,
 	}
+	for i := range occupation {
+		if occ != occupation[i] {
+			continue
+		}
+		return occupation[i]
+	}
 	return occupation[rand.Intn(len(occupation))]
 }
 
-func (npc *NPCensembleCast) quirkTable() string {
-	r := dice.RollD66()
+func (npc *NPCensembleCast) quirk(code string) string {
+	//r := dice.RollD66()
 	quirk := ""
-	switch r {
+	switch code {
+	default:
+		quirk = "No Quirk"
 	case "11":
-		quirk = "Abrasive. The NPC is annoying and tends to cause ill will among those around them. The sort of person who nitpicks holovids and trolls people in worldnet forums. Decrease this NPC’s Relationship Rating by -10 during relationship shifts."
+		quirk = "Abrasive. The NPC is annoying and tends to cause ill will among those around them. The sort of person who nitpicks holovids and trolls people in worldnet forums."
 		npc.relationsBonus += -10
 	case "12":
-		quirk = "Egotistical. The NPC is vain and boasts about themselves a great deal. They are constantly speaking about themselves and their accomplishments. Decrease this NPC’s Relationship Rating by -10 during relationship shifts."
+		quirk = "Egotistical. The NPC is vain and boasts about themselves a great deal. They are constantly speaking about themselves and their accomplishments."
 		npc.relationsBonus += -10
 	case "13":
-		quirk = "Violent. The NPC is prone to violence. They will lash out physically against any perceived problem. Decrease this NPC’s Relationship Rating by -10 during relationship shifts."
+		quirk = "Violent. The NPC is prone to violence. They will lash out physically against any perceived problem."
 		npc.relationsBonus += -10
 	case "14":
-		quirk = "Cruel. The NPC willingly and knowingly causes pain and distress in others. They will often detect a weakness in a person’s psyche and exploit it for their own amusement. Decrease this NPC’s Relationship Rating by -10 during relationship shifts."
+		quirk = "Cruel. The NPC willingly and knowingly causes pain and distress in others. They will often detect a weakness in a person’s psyche and exploit it for their own amusement."
 		npc.relationsBonus += -10
 	case "15":
-		quirk = "Greedy. The NPC has a strong desire for wealth or profit. While all of us require money to survive and prosper, this NPC has placed the acquisition of wealth above all else. Decrease this NPC’s Relationship Rating by -5 during relationship shifts."
+		quirk = "Greedy. The NPC has a strong desire for wealth or profit. While all of us require money to survive and prosper, this NPC has placed the acquisition of wealth above all else."
 		npc.relationsBonus += -5
 	case "16":
-		quirk = "Envious. The NPC has a constant discontent with themselves and their situation and an obsession with the advantages, success, or possessions of other people. Decrease this NPC’s Relationship Rating by -5 during relationship shifts."
+		quirk = "Envious. The NPC has a constant discontent with themselves and their situation and an obsession with the advantages, success, or possessions of other people."
 		npc.relationsBonus += -5
 	case "21":
-		quirk = "Lustful. The NPC is motivated by lust and will have strong sexual desires that will override other aspects of life. Decrease this NPC’s Relationship Rating by -5 during relationship shifts."
+		quirk = "Lustful. The NPC is motivated by lust and will have strong sexual desires that will override other aspects of life."
 		npc.relationsBonus += -5
 	case "22":
-		quirk = "Liar. The NPC tells a great many falsehoods. They will often make intentionally inaccurate statements about themselves or others. Decrease this NPC’s Relationship Rating by -5 during relationship shifts."
+		quirk = "Liar. The NPC tells a great many falsehoods. They will often make intentionally inaccurate statements about themselves or others."
 		npc.relationsBonus += -5
 	case "23":
 		quirk = "Skeptical. The NPC approaches all subjects of interest with an attitude of doubt. They will find it difficult to believe anything without proof."
@@ -485,65 +544,66 @@ func (npc *NPCensembleCast) quirkTable() string {
 	case "31":
 		quirk = "Ambitious. The NPC is obsessed with achieving or obtaining success, power, or a specific goal often to the detriment of those around them."
 	case "32":
-		quirk = "Blunt. The NPC is abrupt in the manner and often shuns normal societal expectations of decorum. Decrease this NPC’s Relationship Rating by -5 during relationship shifts."
+		quirk = "Blunt. The NPC is abrupt in the manner and often shuns normal societal expectations of decorum."
 		npc.relationsBonus += -5
 	case "33":
 		quirk = "Cautious. The NPC is concerned about the danger of many situations or activities which would normally not be considered a problem. They will often hesitate in situations which they feel are dangerous no matter if the situation is dangerous or not."
 	case "34":
-		quirk = "Ignorant. The NPC is lacking in knowledge in their field of endeavor or study. They are often uniformed or unaware of the situation which faces them. Decrease the NPC’s Education score by 2."
+		quirk = "Ignorant. The NPC is lacking in knowledge in their field of endeavor or study. They are often uniformed or unaware of the situation which faces them."
 		npc.changeStat(5, -2)
 	case "35":
-		quirk = "Naïve. The NPC has a lack of sophistication and judgement. They often do not understand the complexities of reality and do not understand that some may have ulterior motives. Decrease the NPC’s Social score by 2."
+		quirk = "Naïve. The NPC has a lack of sophistication and judgement. They often do not understand the complexities of reality and do not understand that some may have ulterior motives."
 		npc.changeStat(6, -2)
 	case "36":
-		quirk = "Introverted. The NPC is shy and often finds happiness in solitude or small groups. They are often concerned only with their own thoughts and feelings which can lead to a lack of interest in the thoughts and feelings of others. Decrease the NPC’s Social score by 2."
+		quirk = "Introverted. The NPC is shy and often finds happiness in solitude or small groups. They are often concerned only with their own thoughts and feelings which can lead to a lack of interest in the thoughts and feelings of others."
 		npc.changeStat(6, -2)
 	case "41":
 		quirk = "Energetic. The NPC has an abundance of energy. This can cause the NPC to not note dangers which might await them."
 	case "42":
-		quirk = "Intelligent. The NPC has a good understanding of ideas and situations and is quick to comprehend new ones which they might encounter. They are often fast witted and able to easily grasp solutions to problems. Increase the NPC’s Intelligence score by 2."
+		quirk = "Intelligent. The NPC has a good understanding of ideas and situations and is quick to comprehend new ones which they might encounter. They are often fast witted and able to easily grasp solutions to problems."
 		npc.changeStat(4, 2)
 	case "43":
-		quirk = "Extraverted. The NPC is outgoing and gregarious. They are often concerned mainly with the social environment and the dynamic of groups in which they belong or desire to belong. Increase the NPC’s Social score by 2."
+		quirk = "Extraverted. The NPC is outgoing and gregarious. They are often concerned mainly with the social environment and the dynamic of groups in which they belong or desire to belong."
 		npc.changeStat(6, 2)
 	case "44":
 		quirk = "Conservative. The NPC desires to preserve existing conditions and institutions or wishes to restore older or traditional ones. They will dislike change."
 	case "45":
 		quirk = "Liberal. The NPC wishes to reform existing conditions and institutions and often wishes to create new ones. They will often be dissatisfied with the status quo."
 	case "46":
-		quirk = "Handy. The NPC is skillful with their hands. They will often be knowledgeable or experienced with physical labor or repair of devices. Add a level of Mechanics to the NPC."
+		quirk = "Handy. The NPC is skillful with their hands. They will often be knowledgeable or experienced with physical labor or repair of devices."
+		npc.skills = npc.skills + ", Mechanics 0"
 	case "51":
-		quirk = "Considerate. The NPC shows kindness and has a deep regard for the feelings or circumstances of others. Increase this NPC’s Relationship Rating by 5 during relationship shifts."
+		quirk = "Considerate. The NPC shows kindness and has a deep regard for the feelings or circumstances of others."
 		npc.relationsBonus += 5
 	case "52":
-		quirk = "Peaceful. The NPC is not violent. They will often shun argumentative or hostile situations. Increase this NPC’s Relationship Rating by 5 during relationship shifts."
+		quirk = "Peaceful. The NPC is not violent. They will often shun argumentative or hostile situations."
 		npc.relationsBonus += 5
 	case "53":
 		quirk = "Imaginative. The NPC has an exceptional imagination. They will be capable of forming mental images of things which they have created or originated."
 	case "54":
-		quirk = "Dependable. The NPC is trustworthy and reliable. They are often loyal to their friends, family, and colleagues. Increase this NPC’s Relationship Rating by 5 during relationship shifts."
+		quirk = "Dependable. The NPC is trustworthy and reliable. They are often loyal to their friends, family, and colleagues."
 		npc.relationsBonus += 5
 	case "55":
 		quirk = "Diligent. The NPC has the will and stamina to accomplish a given task. They will often not be deterred by minor difficulties or monotony."
 	case "56":
 		quirk = "Austere. The NPC is self-disciplined and serious. They will shun luxury and excess."
 	case "61":
-		quirk = "Forgiving. The NPC is capable of easily forgiving. They will attempt to rid themselves of resentment and ill will concerning past transgressions. Increase this NPC’s Relationship Rating by 10 during relationship shifts."
+		quirk = "Forgiving. The NPC is capable of easily forgiving. They will attempt to rid themselves of resentment and ill will concerning past transgressions."
 		npc.relationsBonus += 10
 	case "62":
-		quirk = "Generous. The NPC is unselfish and often gives of their wealth, time, or abilities. They will often be willing to help those in need. Increase this NPC’s Relationship Rating by 10 during relationship shifts."
+		quirk = "Generous. The NPC is unselfish and often gives of their wealth, time, or abilities. They will often be willing to help those in need."
 		npc.relationsBonus += 10
 	case "63":
-		quirk = "Honest. The NPC will avoid untruths and will be honorable in their principles and intentions. They will attempt to be fair to those around them. Increase this NPC’s Relationship Rating by 10 during relationship shifts."
+		quirk = "Honest. The NPC will avoid untruths and will be honorable in their principles and intentions. They will attempt to be fair to those around them."
 		npc.relationsBonus += 10
 	case "64":
-		quirk = "Humble. The NPC is neither proud nor boastful. They are often courteous and respectful. Increase this NPC’s Relationship Rating by 10 during relationship shifts."
+		quirk = "Humble. The NPC is neither proud nor boastful. They are often courteous and respectful."
 		npc.relationsBonus += 10
 	case "65":
-		quirk = "Courageous. The NPC is brave. They will often be able to face difficulties and dangers that others would seek to avoid. Increase this NPC’s Relationship Rating by 10 during relationship shifts."
+		quirk = "Courageous. The NPC is brave. They will often be able to face difficulties and dangers that others would seek to avoid."
 		npc.relationsBonus += 10
 	case "66":
-		quirk = "Friendly. The NPC will be amicable and kind. They will often be willing to enter a positive relationship with those with which they are unfamiliar. Increase this NPC’s Relationship Rating by 10 during relationship shifts."
+		quirk = "Friendly. The NPC will be amicable and kind. They will often be willing to enter a positive relationship with those with which they are unfamiliar."
 		npc.relationsBonus += 10
 	}
 	return quirk
@@ -2132,7 +2192,8 @@ func firstName() string {
 		"Valencia",
 		"Zenaida",
 	}
-	return names[rand.Intn(len(names)-1)]
+	die := strconv.Itoa(len(names))
+	return names[dice.Roll("1d"+die).Sum()-1]
 }
 
 func familyName() string {
@@ -2538,5 +2599,10 @@ func familyName() string {
 		"Zaitsev",
 		"Zhukov",
 	}
-	return names[rand.Intn(len(names)-1)]
+	die := strconv.Itoa(len(names))
+	return names[dice.Roll("1d"+die).Sum()-1]
+}
+
+func randomName() string {
+	return firstName() + " " + familyName()
 }
