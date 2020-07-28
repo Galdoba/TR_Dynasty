@@ -9,7 +9,6 @@ import (
 func main() {
 	npc0 := npc.RandomNPC()
 	fmt.Println(npc0.String())
-	npc.ReadOSArgs()
 
 }
 

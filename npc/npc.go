@@ -5,10 +5,10 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
+	"github.com/Galdoba/TR_Dynasty/cli"
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/utils"
 )
@@ -54,32 +54,6 @@ const (
 // 	GetNPC() *NPCensembleCast
 // }
 
-func ReadOSArgs() map[string][]string {
-	args := os.Args
-	testMap := make(map[string][]string)
-	var mapKey string
-	var mapSlice []string
-	for i, val := range args {
-		fmt.Println(i, "'"+val+"'")
-		val = strings.ToLower(val)
-		if string(val[0]) == "-" {
-			testMap[mapKey] = mapSlice
-			mapKey = args[i]
-			mapSlice = nil
-			continue
-		}
-		if args[i] != "" {
-			mapSlice = append(mapSlice, args[i])
-		}
-	}
-	testMap[mapKey] = mapSlice
-	delete(testMap, "")
-	for k, v := range testMap {
-		fmt.Println("Key:", k, "Val:", v)
-	}
-	return testMap
-}
-
 /*
 -Race Human -Occupation Spy
 
@@ -116,25 +90,98 @@ func (npc *NPCensembleCast) String() string {
 	return str
 }
 
+func greetMsg() {
+	fmt.Println("Valid Args:")
+	fmt.Println("  '-help'      	Prints implemented keys of the program")
+	fmt.Println("  '-help race' 	Prints implemented races for generator")
+	fmt.Println("  '-help occ'  	Prints implemented occupations for generator")
+	fmt.Println("  '-race [arg]'	Force NPC to have that specific race")
+	fmt.Println("  '-occ [arg]' 	Force NPC to have that specific occupation")
+	fmt.Println("***************************************************************")
+	fmt.Println("")
+
+}
+
+func racesMsg() {
+	fmt.Println("Valid Races:")
+	fmt.Println("  'Human'          	No stat changes. Most Common")
+	fmt.Println("  'Aslan'          	+2 STR; -2 DEX")
+	fmt.Println("  'Vargr'          	-1 STR; +1 DEX; -1 END")
+	fmt.Println("  'Floriani(Feskal)' 	+2 STR; +2 END; -2 INT; -2 EDU; -2 SOC")
+	fmt.Println("  'Floriani(Barnai)'  	-2 STR; -2 END; +2 INT; +2 EDU")
+	fmt.Println("***************************************************************")
+	fmt.Println("")
+	fmt.Println("")
+}
+
+func occMsg() {
+	fmt.Println("Valid Occupations:")
+	fmt.Println("   Average Citizen")
+	fmt.Println("   Adventurer")
+	fmt.Println("   Arts")
+	fmt.Println("   Belter")
+	fmt.Println("   Bounty Hunter")
+	fmt.Println("   Celebrity")
+	fmt.Println("   Clergy")
+	fmt.Println("   Colonist")
+	fmt.Println("   Corporate Shipper")
+	fmt.Println("   Craftperson")
+	fmt.Println("   Diplomatic Service")
+	fmt.Println("   Explorer")
+	fmt.Println("   Free Trader")
+	fmt.Println("   Fringe Marketer")
+	fmt.Println("   Gambler")
+	fmt.Println("   Ground Forces")
+	fmt.Println("   Instructor")
+	fmt.Println("   Investigator")
+	fmt.Println("   Journalist")
+	fmt.Println("   Medic")
+	fmt.Println("   Navy")
+	fmt.Println("   Organized Crime")
+	fmt.Println("   Pirate")
+	fmt.Println("   Police")
+	fmt.Println("   Politican")
+	fmt.Println("   Port Authority")
+	fmt.Println("   Prostitute")
+	fmt.Println("   Scavenger")
+	fmt.Println("   Sports")
+	fmt.Println("   Spy")
+	fmt.Println("   Thief")
+	fmt.Println("   Vagabond")
+	fmt.Println("***************************************************************")
+}
+
 func RandomNPC() NPCensembleCast {
 	npc := NPCensembleCast{}
-	npcArgs := ReadOSArgs()
+	npcArgs := cli.ArgsMap()
 	npc.name = firstName() + " " + familyName()
 	occ := ""
-	if val, ok := npcArgs["-Occ"]; ok {
+	if val, ok := npcArgs["-occ"]; ok {
 		if len(val) > 0 {
 			occ = val[0]
 		}
 	}
-	if _, ok := npcArgs["-help"]; ok {
-		fmt.Println("HELP MESSAGE")
-		os.Exit(5)
+	if keys, ok := npcArgs["-help"]; ok {
+		fmt.Println("***************************************************************")
+		fmt.Println("Ensemble Cast: NPC maker v1.0")
+		if len(keys) < 1 {
+			greetMsg()
+		}
+		for i := range keys {
+			if keys[i] == "race" {
+				racesMsg()
+			}
+			if keys[i] == "occ" {
+				occMsg()
+			}
+		}
+		os.Exit(0)
 	}
 	npc.occupation = pickOccupation(occ)
 	npc.rollStats()
 
 	npc.rollRace()
-	//npc.skillList = dice.Roll("2d6").Sum()
+
 	npc.skillTable()
 	npc.quirk1 = TrvCore.RollD66()
 	npc.quirk1 = npc.quirk(dice.RollD66())
@@ -148,12 +195,13 @@ func RandomNPC() NPCensembleCast {
 }
 
 func (npc *NPCensembleCast) rollRace() {
+	////////////////////////////////////Define races
 	raceWeight := make(map[string]int)
 	raceWeight["Human"] = 200
 	raceWeight["Aslan"] = 80
 	raceWeight["Vargr"] = 50
-	raceWeight["Floriani (Feskal)"] = 30
-	raceWeight["Floriani (Barnai)"] = 30
+	raceWeight["Floriani(Feskal)"] = 30
+	raceWeight["Floriani(Barnai)"] = 30
 	totalWeight := 0
 	var raceList []string
 	for k, v := range raceWeight {
@@ -163,7 +211,24 @@ func (npc *NPCensembleCast) rollRace() {
 		totalWeight = totalWeight + v
 	}
 	r := dice.Roll("1d" + strconv.Itoa(totalWeight)).DM(-1).Sum()
-	switch raceList[r] {
+	race := raceList[r]
+	/////////////////////////////Check os.args
+	if cli.ArgExist("-race") {
+		argmap := cli.ArgsMap()
+		if vals, ok := argmap["-race"]; ok {
+			check := ""
+			if len(vals) > 0 {
+				check = vals[0]
+			}
+			if _, ok := raceWeight[check]; ok {
+				race = check
+				fmt.Println("RADE DEBUG", check)
+			}
+		}
+	}
+	/////////////////////////////////Set values
+	fmt.Println("RADE DEBUG 2", race)
+	switch race {
 	case "Human":
 		npc.race = "Human"
 	case "Aslan":
@@ -173,19 +238,19 @@ func (npc *NPCensembleCast) rollRace() {
 		npc.changeStat(1, -1)
 		npc.changeStat(2, 1)
 		npc.changeStat(3, -1)
-	case "Floriani (Feskal)":
+	case "Floriani(Feskal)":
 		npc.changeStat(1, 2)
 		npc.changeStat(3, 2)
 		npc.changeStat(4, -2)
 		npc.changeStat(5, -2)
 		npc.changeStat(6, -2)
-	case "Floriani (Barnai)":
+	case "Floriani(Barnai)":
 		npc.changeStat(1, -2)
 		npc.changeStat(3, -2)
 		npc.changeStat(4, 2)
 		npc.changeStat(5, 2)
 	}
-	npc.race = raceList[r]
+	npc.race = race
 }
 
 func FromTable(table table, keys ...string) string {
@@ -626,6 +691,7 @@ func (npc *NPCensembleCast) changeStat(pos, val int) {
 }
 
 func (npc *NPCensembleCast) skillTable() {
+	npc.skillList = dice.Roll("2d6").Sum()
 	switch npc.occupation {
 	case occAverageCitizen:
 		switch npc.skillList {
