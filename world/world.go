@@ -98,9 +98,9 @@ const (
 
 //World - объект отвечающий за описание планеты и ее непосредственного окружения
 type World struct {
-	stat         map[string]int    //Избавиться
-	data         map[string]string //
-	temperature  string            // увести в карту
+	stat map[string]int    //Избавиться
+	data map[string]string //
+	//temperature  string            // увести в карту
 	hex          string            // увести в карту
 	name         string            //
 	uwp          string            // увести в карту или вообще избавиться
@@ -230,13 +230,16 @@ func uwpValid(uwp string) bool {
 		return false
 	}
 	if len(uwp) != 9 {
-		fmt.Println("Format Invalid Len:", uwp)
 		return false
 	}
 	data := strings.Split(uwp, "")
-	if data[7] != "-" {
-		fmt.Println("Format Invalid:", uwp)
-		return false
+	for i := range data {
+		if data[i] == "-" || data[i] == "_" {
+			continue
+		}
+		if TrvCore.EhexToDigit(data[i]) == -999 {
+			return false
+		}
 	}
 	return true
 }
@@ -245,7 +248,7 @@ func uwpValid(uwp string) bool {
 func (w *World) DebugInfo() {
 	fmt.Println("stat        =", w.stat)
 	fmt.Println("data        =", w.data)
-	fmt.Println("temperature =", w.temperature)
+	fmt.Println("temperature =", w.data["Temperature"])
 	//fmt.Println("port        =", w.port)
 	fmt.Println("hex         =", w.hex)
 	fmt.Println("name        =", w.name)
@@ -1140,10 +1143,10 @@ func (w *World) rollHydr(dm ...int) {
 	if atm < 2 || atm > 9 {
 		mod = mod - 4
 	}
-	if w.temperature == tempHot && w.Stat(constant.PrAtmo) != 13 {
+	if w.data["Temperature"] == tempHot && w.Stat(constant.PrAtmo) != 13 {
 		mod = mod - 2
 	}
-	if w.temperature == tempBoiling && w.Stat(constant.PrAtmo) != 13 {
+	if w.data["Temperature"] == tempBoiling && w.Stat(constant.PrAtmo) != 13 {
 		mod = mod - 6
 	}
 	hyd := flux + atm + mod
@@ -1340,17 +1343,17 @@ func (w *World) rollTemperature() {
 	temp := utils.RollDice("2d6", dm)
 	switch temp {
 	case 3, 4:
-		w.temperature = tempCold
+		w.data["Temperature"] = tempCold
 	case 5, 6, 7, 8, 9:
-		w.temperature = tempTemperate
+		w.data["Temperature"] = tempTemperate
 	case 10, 11:
-		w.temperature = tempHot
+		w.data["Temperature"] = tempHot
 	default:
 		if temp < 3 {
-			w.temperature = tempFrozen
+			w.data["Temperature"] = tempFrozen
 		}
 		if temp > 11 {
-			w.temperature = tempBoiling
+			w.data["Temperature"] = tempBoiling
 		}
 	}
 
@@ -1446,6 +1449,16 @@ func (w *World) UpdateTradeClassifications() {
 			w.EnsureTradeCode(tradeCodesFullList[i])
 		}
 	}
+}
+
+func (w World) UpdateTC() World {
+	tradeCodesFullList := TradeClassificationsFULLLIST()
+	for i := range tradeCodesFullList {
+		if TradeCodeViable(&w, tradeCodesFullList[i]) {
+			w.EnsureTradeCode(tradeCodesFullList[i])
+		}
+	}
+	return w
 }
 
 func eHex(s string) int {
@@ -1584,52 +1597,63 @@ func TradeCodeViable(w *World, tc string) bool {
 		}
 	case tradeClassificationFrozen:
 		if matchTradeClassificationRequirements(w, "23456789 -- 123456789A -- -- --") {
-			if w.WorldOrbitHZ() > 1 {
-				w.temperature = tempFrozen
+			//if w.WorldOrbitHZ() > 1 {
+			if w.data["Temperature"] == tempFrozen {
 				return true
 			}
+			//}
 			//return false
 		}
 	case tradeClassificationHot:
 		if matchTradeClassificationRequirements(w, "-- -- -- -- -- --") {
-			if w.WorldOrbitHZ() == -1 {
-				w.temperature = tempHot
+			//if w.WorldOrbitHZ() == -1 {
+			if w.data["Temperature"] == tempHot {
 				return true
 			}
+			//}
 			//return false
 		}
 	case tradeClassificationCold:
 		if matchTradeClassificationRequirements(w, "-- -- -- -- -- --") {
-			if w.WorldOrbitHZ() == 1 {
-				w.temperature = tempCold
+			//if w.WorldOrbitHZ() == 1 {
+			if w.data["Temperature"] == tempCold {
 				return true
 			}
-			return false
+			//}
+			//return false
 		}
 	case tradeClassificationLocked:
 		if matchTradeClassificationRequirements(w, "-- -- -- -- -- --") {
-			if w.PlanetType() == "Close Satellite" {
+			if w.data["PlanetType"] == "Close Satellite" {
 				return true
 			}
-			if w.Orbit() == 0 || w.Orbit() == 1 {
+			if w.data["Orbit"] == "0" {
 				return true
 			}
+			// if w.PlanetType() == "Close Satellite" {
+			// 	return true
+			// }
+			// if w.Orbit() == 0 || w.Orbit() == 1 {
+			// 	return true
+			// }
 
 		}
 	case tradeClassificationTropic:
 		if matchTradeClassificationRequirements(w, "6789 456789 34567 -- -- --") {
-			if w.WorldOrbitHZ() == -1 {
-				w.temperature = "Tropical"
+			//if w.WorldOrbitHZ() == -1 {
+			if w.data["Temperature"] == "Tropical" {
 				return true
 			}
+			//}
 			//return true
 		}
 	case tradeClassificationTundra:
 		if matchTradeClassificationRequirements(w, "6789 456789 34567 -- -- --") {
-			if w.WorldOrbitHZ() == 1 {
-				w.temperature = "Tundra"
+			//if w.WorldOrbitHZ() == 1 {
+			if w.data["Temperature"] == "Tundra" {
 				return true
 			}
+			//}
 		}
 	case tradeClassificationTwilightZone:
 		if matchTradeClassificationRequirements(w, "-- -- -- -- -- --") {
@@ -1872,7 +1896,7 @@ func (w *World) WorldOrbitHZ() int {
 	w.data["HZVariance"] = table2bWorldOrbit()
 
 	if w.data["HZVariance"] == "0" {
-		w.temperature = tempTemperate
+		w.data["Temperature"] = tempTemperate
 	}
 	w.data["Orbit"] = dEHex(calculateHZ(w.HomeStar()) + convert.StoI(w.data["HZVariance"]))
 	if w.Stat("Orbit") < 0 {
@@ -2333,4 +2357,20 @@ func (w *World) MergeUWP(uwp string) {
 	w.SetValue(constant.PrGovr, data[5])
 	w.SetValue(constant.PrLaws, data[6])
 	w.SetValue(constant.PrTL, data[8])
+}
+
+func FromUWP(uwp string) World {
+	if !uwpValid(uwp) {
+		fmt.Println("UWP invalid")
+		return World{}
+	}
+	w := World{}
+	w.data = make(map[string]string)
+	w.MergeUWP(uwp)
+	return w
+}
+
+func (w World) SetName(newName string) World {
+	w.name = newName
+	return w
 }

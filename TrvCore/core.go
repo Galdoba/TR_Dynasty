@@ -96,7 +96,7 @@ func DigitToEhex(num int) string {
 	ehex := ""
 	switch num {
 	default:
-		return "?"
+		return "_"
 	case 0:
 		ehex = "0"
 	case 1:
@@ -171,9 +171,9 @@ func DigitToEhex(num int) string {
 
 //EhexToDigit -
 func EhexToDigit(lit string) int {
-	num := -9
+	num := -999
 	if len(lit) != 1 {
-		return -8
+		return -999
 	}
 	switch lit {
 	case "0":
@@ -244,6 +244,8 @@ func EhexToDigit(lit string) int {
 		num = 32
 	case "Z":
 		num = 33
+	case "_":
+		num = 100
 	}
 	return num
 }
@@ -257,7 +259,7 @@ func EhexIsMore(ehex1, ehex2 string) bool {
 
 func ValidEhexs() []string {
 	return []string{
-		"?",
+		"_",
 		"0",
 		"1",
 		"2",

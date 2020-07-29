@@ -3,13 +3,13 @@ package main
 import (
 	"fmt"
 
-	"github.com/Galdoba/TR_Dynasty/npc"
+	"github.com/Galdoba/TR_Dynasty/world"
 )
 
 func main() {
-	npc0 := npc.RandomNPC()
-	fmt.Println(npc0.String())
-
+	//Trade
+	sourceWorld := world.FromUWP("A667A3A-D").SetName("Test").UpdateTC()
+	fmt.Println(sourceWorld)
 }
 
 //OB Ia Ia Ia II II II II
