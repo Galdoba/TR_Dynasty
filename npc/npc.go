@@ -77,16 +77,17 @@ func (npc *NPCensembleCast) String() string {
 	str := ""
 	str += "      Name: " + npc.name
 	str += "\n       UPP: " + npc.upp
+	str += "\n       Age: " + strconv.Itoa(18+4*(npc.skillList))
 	str += "\n      Race: " + npc.race
-	str += "\noccupation: " + npc.occupation
-	str += "\n    quirk1: " + npc.quirk1
+	str += "\nOccupation: " + npc.occupation
+	str += "\n    Quirk1: " + npc.quirk1
 	if npc.quirk2 != "" {
-		str += "\n    quirk2: " + npc.quirk2
+		str += "\n    Quirk2: " + npc.quirk2
 	}
 	str += "\n    Skills: " + npc.skills
-	str += "\n Rel Bonus: " + strconv.Itoa(npc.relationsBonus)
-	relation := dice.Roll("2d6").DM(npc.relationsBonus / 5).SumStr()
-	str += "\n  Reaction: " + relation
+	//str += "\n Rel Bonus: " + strconv.Itoa(npc.relationsBonus)
+	relation := dice.Roll("2d6").DM(npc.relationsBonus / 5).Sum()
+	str += "\n  Reaction: " + describeReaction(relation)
 	return str
 }
 
@@ -163,7 +164,7 @@ func RandomNPC() NPCensembleCast {
 	}
 	if keys, ok := npcArgs["-help"]; ok {
 		fmt.Println("***************************************************************")
-		fmt.Println("Ensemble Cast: NPC maker v1.0")
+		fmt.Println("Ensemble Cast: rollnpc v1.0.1")
 		if len(keys) < 1 {
 			greetMsg()
 		}
@@ -198,10 +199,10 @@ func (npc *NPCensembleCast) rollRace() {
 	////////////////////////////////////Define races
 	raceWeight := make(map[string]int)
 	raceWeight["Human"] = 200
-	raceWeight["Aslan"] = 80
-	raceWeight["Vargr"] = 50
-	raceWeight["Floriani(Feskal)"] = 30
-	raceWeight["Floriani(Barnai)"] = 30
+	raceWeight["Aslan"] = 40
+	raceWeight["Vargr"] = 25
+	raceWeight["Floriani(Feskal)"] = 15
+	raceWeight["Floriani(Barnai)"] = 15
 	totalWeight := 0
 	var raceList []string
 	for k, v := range raceWeight {
@@ -222,12 +223,10 @@ func (npc *NPCensembleCast) rollRace() {
 			}
 			if _, ok := raceWeight[check]; ok {
 				race = check
-				fmt.Println("RADE DEBUG", check)
 			}
 		}
 	}
 	/////////////////////////////////Set values
-	fmt.Println("RADE DEBUG 2", race)
 	switch race {
 	case "Human":
 		npc.race = "Human"
@@ -975,7 +974,7 @@ func (npc *NPCensembleCast) skillTable() {
 		case 3:
 			npc.skills = "Electronics (Sensors) 1, Navigation 1, Survival (Any) 1, Gun Combat 0, Science 0, Vacc Suit 0"
 		case 4:
-			npc.skills = "Animals (Riding), Navigation 1, Science (Any) 1, Survival (Any) 1, Flyer 0, Vacc Suit 0"
+			npc.skills = "Animals (Riding) 1, Navigation 1, Science (Any) 1, Survival (Any) 1, Flyer 0, Vacc Suit 0"
 		case 5:
 			npc.skills = "Astrogation 2, Pilot (Spacecraft) 1, Gunner (Turrets) 1, Gun Combat (Slug) 1, Science (Any) 1, Survival (Any) 1, Vacc Suit 0"
 		case 6:
@@ -1025,7 +1024,7 @@ func (npc *NPCensembleCast) skillTable() {
 		case 3:
 			npc.skills = "Admin 1, Broker 1, Deception (Forgery) 1, Gun Combat (Slug) 1, Streetwise 1, Recon 0"
 		case 4:
-			npc.skills = "Broker 1, Carouse 1, Deception (Lie), Streetwise 1, Recon 1, Stealth 0"
+			npc.skills = "Broker 1, Carouse 1, Deception (Lie) 1, Streetwise 1, Recon 1, Stealth 0"
 		case 5:
 			npc.skills = "Admin 1, Broker 1, Streetwise 1, Advocate 0, Gun Combat 0, Recon 0,"
 		case 6:
@@ -1083,7 +1082,7 @@ func (npc *NPCensembleCast) skillTable() {
 		case 7:
 			npc.skills = "Carouse 2, Gun Combat (Slug) 2, Gun Combat (Energy) 2, Navigation 2, Survival (Any) 2, Battle Armor 1, Discipline 1, Melee (Blade) 1, Recon 1, Stealth 1, Medic 0"
 		case 8:
-			npc.skills = "Navigation 2, Recon 2, Stealth 2, Carouse 1, Discipline 1, Forward Observer 1, Medic (First Aid), Persuade 1"
+			npc.skills = "Navigation 2, Recon 2, Stealth 2, Carouse 1, Discipline 1, Forward Observer 1, Medic (First Aid) 1, Persuade 1"
 		case 9:
 			npc.skills = "Battle Armor 2, Carouse 2, Gun Combat (Energy) 2, Heavy Weapons (Launchers) 2, Recon 2, Discipline 1, Electronics (Sensors) 1, Heavy Weapons (Field Artillery) 1, Melee 0, Medic 0"
 		case 10:
@@ -1227,7 +1226,7 @@ func (npc *NPCensembleCast) skillTable() {
 		case 4:
 			npc.skills = "Broker 1, Gun Combat (Slug) 1, Melee (Unarmed Combat) 1, Persuade 1, Recon 1, Streetwise 1"
 		case 5:
-			npc.skills = "Admin 1, Broker 1, Gun Combat (Shotgun) 1, Melee (Unarmed Combat) 1, Persuade 1, Streetwise 1"
+			npc.skills = "Admin 1, Broker 1, Gun Combat (Slug) 1, Melee (Unarmed Combat) 1, Persuade 1, Streetwise 1"
 		case 6:
 			npc.skills = "Deception (Intrusion) 2, Gun Combat (Slug) 2, Melee (Unarmed Combat) 2, Persuade 2, Streetwise 2, Flyer (Grav) 1, Diplomat 1"
 		case 7:
@@ -1235,38 +1234,38 @@ func (npc *NPCensembleCast) skillTable() {
 		case 8:
 			npc.skills = "Broker 2, Gun Combat (Slug) 2, Melee (Unarmed Combat) 2, Persuade 2, Recon 2, Streetwise 2, Admin 1, Diplomat 1"
 		case 9:
-			npc.skills = "Admin 2, Broker 2, Gun Combat (Shotgun) 2, Melee (Unarmed Combat) 2, Persuade 2, Streetwise 2, Recon 1, Diplomat 1"
+			npc.skills = "Admin 2, Broker 2, Gun Combat (Slug) 2, Melee (Unarmed Combat) 2, Persuade 2, Streetwise 2, Recon 1, Diplomat 1"
 		case 10:
 			npc.skills = "Gun Combat (Slug) 3, Streetwise 3, Melee (Unarmed Combat) 2, Interrogation (Torture) 2, Streetwise 2, Stealth 2, Tactics (Military) 2, Deception (Intrusion) 1, Persuade 1, Investigate 1"
 		case 11:
 			npc.skills = "Broker 3, Persuade 3, Gun Combat (Slug) 2, Melee (Unarmed Combat) 2, Recon 2, Streetwise 2, Interrogation (Torture) 2, Admin 1, Diplomat 1, Science (Forensics) 1"
 		case 12:
-			npc.skills = "Admin 3, Broker 3, Gun Combat (Shotgun) 2, Melee (Unarmed Combat) 2, Persuade 2, Streetwise 2, Recon 2, Diplomat 1"
+			npc.skills = "Admin 3, Broker 3, Gun Combat (Slug) 2, Melee (Unarmed Combat) 2, Persuade 2, Streetwise 2, Recon 2, Diplomat 1"
 		}
 	case occPirate:
 		switch npc.skillList {
 		case 2:
-			npc.skills = "Deception (Intrusion) 1, Electronics (Sensors) 1, Gun Combat (Energy) 1, Gun Combat (Shotgun) 1, Streetwise 1, Survival 0, Vacc Suit 0, Zero-G 0"
+			npc.skills = "Deception (Intrusion) 1, Electronics (Sensors) 1, Gun Combat (Energy) 1, Gun Combat (Slug) 1, Streetwise 1, Survival 0, Vacc Suit 0, Zero-G 0"
 		case 3:
 			npc.skills = "Admin 1, Astrogation 1, Broker 1, Electronics (Comms) 1, Electronics (Sensors) 1, Mechanic 1, Pilot (Spacecraft) 1, Vacc Suit 0, Zero-G 0"
 		case 4:
-			npc.skills = "Explosives 1, Flyer (Grav) 1, Gun Combat (Shotgun) 1, Melee (Blade) 1, Recon 1, Tactics (Military) 1, Vacc Suit 0, Zero-G 0"
+			npc.skills = "Explosives 1, Flyer (Grav) 1, Gun Combat (Slug) 1, Melee (Blade) 1, Recon 1, Tactics (Military) 1, Vacc Suit 0, Zero-G 0"
 		case 5:
 			npc.skills = "Electronics (Computers) 1, Engineer (M Drive) 1, Engineer (Z Drive) 1, Mechanic 1, Science 0, Vacc Suit 0, Zero-G 0"
 		case 6:
 			npc.skills = "Electronics (Sensors) 1, Gunner (Turrets) 1, Gun Combat (Energy) 1, Tactics (Naval) 1, Vacc Suit 0, Zero-G 0"
 		case 7:
-			npc.skills = "Deception (Intrusion) 2, Electronics (Sensors) 2, Gun Combat (Shotgun) 2, Broker 1, Carouse 1, Explosives 1, Streetwise 1, Vacc Suit 0, Zero-G 0"
+			npc.skills = "Deception (Intrusion) 2, Electronics (Sensors) 2, Gun Combat (Slug) 2, Broker 1, Carouse 1, Explosives 1, Streetwise 1, Vacc Suit 0, Zero-G 0"
 		case 8:
 			npc.skills = "Admin 2, Broker 2, Astrogation 1, Electronics (Sensors) 1, Mechanic 1, Pilot (Spacecraft) 1, Vacc Suit 0, Zero-G 0"
 		case 9:
-			npc.skills = "Explosives 2, Gun Combat (Shotgun) 2, Melee (Blade) 2, Recon 2, Tactics (Military) 2, Carouse 1, Persuade 1, Pilot (Small Craft) 1, Zero-G 1, Medic 0, Vacc Suit 0"
+			npc.skills = "Explosives 2, Gun Combat (Slug) 2, Melee (Blade) 2, Recon 2, Tactics (Military) 2, Carouse 1, Persuade 1, Pilot (Small Craft) 1, Zero-G 1, Medic 0, Vacc Suit 0"
 		case 10:
 			npc.skills = "Electronics (Sensors) 2, Gunner (Turrets) 2, Tactics (Naval) 2, Carouse 1, Gun Combat (Energy) 1, Mechanic 1, Vacc Suit 0, Zero-G 0"
 		case 11:
 			npc.skills = "Engineer (M Drive) 2, Engineer (Z Drive) 2, Mechanic 2, Broker 1, Carouse 1, Electronics (Computers) 1, Vacc Suit 0, Zero-G 0"
 		case 12:
-			npc.skills = "Deception (Intrusion) 3, Broker 2, Carouse 2, Electronics (Sensors) 2, Explosives 2, Gun Combat (Shotgun) 2, Melee (Blade) 2, Tactics (Military) 2, Persuade 2, Zero-G 2, Mechanic 1, Vacc Suit 0"
+			npc.skills = "Deception (Intrusion) 3, Broker 2, Carouse 2, Electronics (Sensors) 2, Explosives 2, Gun Combat (Slug) 2, Melee (Blade) 2, Tactics (Military) 2, Persuade 2, Zero-G 2, Mechanic 1, Vacc Suit 0"
 		}
 	case occPolice:
 		switch npc.skillList {
@@ -2671,4 +2670,55 @@ func familyName() string {
 
 func randomName() string {
 	return firstName() + " " + familyName()
+}
+
+func describeReaction(r int) string {
+	ds := ""
+	switch r {
+	default:
+		if r < 3 {
+			ds = "Hostile. "
+			if dice.Roll("2d6").Sum() >= 8 {
+				ds += "Attacks first if situation allows. "
+			} else {
+				ds += "Attacks if not Persuaded. "
+			}
+			ds += "Interaction DM: " + strconv.Itoa(r-6)
+		}
+		if r > 11 {
+			ds = "Enthusiastic. Interaction DM: +" + strconv.Itoa(r-9)
+		}
+	case 3:
+		ds = "Hostile. "
+		if dice.Roll("2d6").Sum() >= 5 {
+			ds += "Provoking fight if situation allows. "
+		}
+		ds += "Interaction DM: -3"
+	case 4:
+		ds = "Hostile. "
+		if dice.Roll("2d6").Sum() >= 8 {
+			ds += "Provoking fight if situation allows. "
+		}
+		ds += "Interaction DM: -2"
+	case 5:
+		ds = "Hostile. "
+		if dice.Roll("2d6").Sum() >= 11 {
+			ds += "Provoking fight if situation allows. "
+		}
+		ds += "Interaction DM: -1"
+	case 6:
+		ds = "Unreseptive. (Impolite)"
+	case 7:
+		ds = "Uninterested"
+	case 8:
+		ds = "Noncommitial (Curt)"
+	case 9:
+		ds = "Noncommitial (Polite)"
+	case 10:
+		ds = "Interested. Interactions DM: +1"
+	case 11:
+		ds = "Responsive. Interactions DM: +2"
+	}
+
+	return ds
 }

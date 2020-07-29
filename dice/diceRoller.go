@@ -267,3 +267,11 @@ func RollD66() string {
 	return Roll("2d6").ResultString()
 
 }
+
+func Roll2D(dm ...int) int {
+	mod := 0
+	if len(dm) > 0 {
+		mod = dm[0]
+	}
+	return Roll("2d6").DM(mod).Sum()
+}
