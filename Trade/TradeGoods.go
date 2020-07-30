@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
-	"github.com/Galdoba/TR_Dynasty/world"
 	"github.com/Galdoba/convert"
 
 	"github.com/Galdoba/utils"
@@ -97,75 +96,13 @@ func startMENU() {
 	utils.TakeOptions("Select Action Menu:", "Trade", "Freight")
 }
 
-var TradeGoodsDataMap map[string][]string
+//var TradeGoodsDataMap map[string][]string
 var CharacterBrokerSkill int
 var CharacterInvestigateSkill int
 var CharacterStreetwiseSkill int
 var CharacterSocialDM int
 var RefereeDM int
 var sourceWorldUPP string
-
-func main() {
-	utils.ClearScreen()
-	//startMENU()
-	CharacterBrokerSkill = 0
-	CharacterInvestigateSkill = 0
-	CharacterStreetwiseSkill = 0
-	CharacterSocialDM = 0
-	utils.RandomSeed()
-	TradeGoodsDataMap = TradeGoodRData()
-
-	//utils.ClearScreen()
-	buyCargo()
-
-	// for i := -2; i < 27; i++ {
-	// 	fmt.Println(i)
-	// 	fmt.Println("Sale price %", modifyPriceSale(10000, i), "  --  ", "Purchase price %", modifyPricePurchase(10000, i))
-	// }
-	// tradeDice := 10
-	// for i := 0; i < 40; i++ {
-
-	// 	baseTradePrice := 10000
-	// 	flux := TrvCore.Flux()
-	// 	tradeDice = tradeDice + flux - (flux / 2)
-	// 	// if flux == 0 {
-	// 	if tradeDice < 7 {
-	// 		tradeDice++
-	// 	}
-	// 	if tradeDice > 14 {
-	// 		tradeDice--
-	// 	}
-	// 	// }
-	// 	fmt.Println("i", i, "Buy:", modifyPricePurchase(baseTradePrice, tradeDice), " || ", "Sell:", modifyPriceSale(baseTradePrice, tradeDice), flux, tradeDice)
-	// }
-
-	//checkDangerousGoods()
-}
-
-func buyCargo() {
-	// exporterWorld := worldBuilder.BuildPlanetUPP("A540A98-E")
-	// _, supplierType := utils.TakeOptions("Select Supplier: ", supplierTypeCommon, supplierTypeTrade, supplierTypeNeutral, supplierTypeIlligal)
-	//sup := NewSupplier(supplierType, exporterWorld) //common,
-	//sup.determineGoodsAvailable()
-
-	//cargoInfo := sup.CargoInfo()
-	// for i := range cargoInfo {
-	// 	if i == 0 {
-	// 		for l := 0; l < len(cargoInfo[i])+3; l++ {
-	// 			fmt.Print("-")
-
-	// 		}
-	// 		fmt.Print("\n")
-	// 	}
-	// 	fmt.Println(cargoInfo[i])
-	// 	if i == len(cargoInfo)-1 {
-	// 		for l := 0; l < len(cargoInfo[i])+3; l++ {
-	// 			fmt.Print("-")
-	// 		}
-	// 		fmt.Print("\n")
-	// 	}
-	// }
-}
 
 type tradeLot struct {
 	lotTradeGoodR *TradeGoodR
@@ -196,16 +133,16 @@ func ExcludeFromSliceStr(slice []string, elem string) []string {
 	return slice
 }
 
-func NewTradeLot(tgCode string, planet *world.World) *tradeLot {
-	tLot := &tradeLot{}
-	tLot.lotTradeGoodR = NewTradeGoodR(tgCode)
-	tLot.cargoVolume = tLot.cargoVolume + tLot.lotTradeGoodR.IncreaseRandom()
-	purchaseDM := actualPriceDM(planet.TradeCodes(), tLot.lotTradeGoodR, "P")
-	saleDM := actualPriceDM(planet.TradeCodes(), tLot.lotTradeGoodR, "S")
-	tLot.purchseDice = utils.RollDice("3d6") + purchaseDM - saleDM + CharacterBrokerSkill + CharacterSocialDM + RefereeDM
-	tLot.cost = modifyPricePurchase(tLot.lotTradeGoodR.basePrice, tLot.purchseDice)
-	return tLot
-}
+// func NewTradeLot(tgCode string, planet *world.World) *tradeLot {
+// 	tLot := &tradeLot{}
+// 	tLot.lotTradeGoodR = NewTradeGoodR(tgCode)
+// 	tLot.cargoVolume = tLot.cargoVolume + tLot.lotTradeGoodR.IncreaseRandom()
+// 	purchaseDM := actualPriceDM(planet.TradeCodes(), tLot.lotTradeGoodR, "P")
+// 	saleDM := actualPriceDM(planet.TradeCodes(), tLot.lotTradeGoodR, "S")
+// 	tLot.purchseDice = utils.RollDice("3d6") + purchaseDM - saleDM + CharacterBrokerSkill + CharacterSocialDM + RefereeDM
+// 	tLot.cost = modifyPricePurchase(tLot.lotTradeGoodR.basePrice, tLot.purchseDice)
+// 	return tLot
+// }
 
 func rollTons(data string) int {
 	unsplitted := strings.Split(data, " + ")
@@ -219,22 +156,44 @@ func rollTons(data string) int {
 	return increment
 }
 
-func availableCategories(planet *world.World) (availableCategories []string) {
-	planetCodes := planet.TradeCodes()
-	categories := categoryCodesLIST()
-	for i := range planetCodes {
-		for j := range categories {
-			categ := categories[j]
-			testTgr := NewTradeGoodR(categ + "7")
-			for k := range testTgr.availabilityTags {
-				if testTgr.availabilityTags[k] == tradeCodeFullName(planetCodes[i]) {
-					availableCategories = utils.AppendUniqueStr(availableCategories, categ)
-				}
-			}
-		}
+// func availableCategories(planet *world.World) (availableCategories []string) {
+// 	planetCodes := planet.TradeCodes()
+// 	categories := categoryCodesLIST()
+// 	for i := range planetCodes {
+// 		for j := range categories {
+// 			categ := categories[j]
+// 			testTgr := NewTradeGoodR(categ + "7")
+// 			for k := range testTgr.availabilityTags {
+// 				if testTgr.availabilityTags[k] == tradeCodeFullName(planetCodes[i]) {
+// 					availableCategories = utils.AppendUniqueStr(availableCategories, categ)
+// 				}
+// 			}
+// 		}
 
+// 	}
+// 	return availableCategories
+// }
+
+func availableFromTCodes(planetCodes []string) (availableCategories []string) {
+	categories := categoryCodesLIST()
+	for j := range categories {
+		categ := categories[j]
+		if ok, _ := matchTradeCodes(planetCodes, getAvailabilityTags(categ+"7")); ok {
+			availableCategories = utils.AppendUniqueStr(availableCategories, categ)
+		}
 	}
 	return availableCategories
+}
+
+func matchTradeCodes(sl1, sl2 []string) (bool, string) {
+	for i := range sl1 {
+		for j := range sl2 {
+			if sl1[i] == sl2[j] {
+				return true, sl1[i]
+			}
+		}
+	}
+	return false, ""
 }
 
 func categoryCodesLIST() []string {

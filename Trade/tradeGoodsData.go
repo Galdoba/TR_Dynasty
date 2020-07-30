@@ -22,9 +22,9 @@ type TradeGoodR struct {
 	description             string
 }
 
-func TradeGood() *TradeGoodR {
-	return &TradeGoodR{}
-}
+// func TradeGood() *TradeGoodR {
+// 	return &TradeGoodR{}
+// }
 
 // func (tgR *TradeGoodR) Info() string {
 // 	fmt.Println("DEBUG: func (tgR *TradeGoodR) Info() string ")
@@ -69,39 +69,36 @@ func (tgr *TradeGoodR) Info() {
 	fmt.Println(tgr.description)
 }
 
-func actualPriceDM(actualTags []string, tgr *TradeGoodR, operationType string) int {
-	maxVal := -999
-	transactionDMmap := make(map[string]int)
-	switch operationType {
-	case "P":
-		transactionDMmap = tgr.purchaseDM
-	case "S":
-		transactionDMmap = tgr.saleDM
-	}
-	for i := range actualTags {
-		testTag := tradeCodeFullName(actualTags[i])
-		if maxVal < transactionDMmap[testTag] {
-			maxVal = transactionDMmap[testTag]
-		}
-	}
-	return maxVal
-}
+// func actualPriceDM(actualTags []string, tgr *TradeGoodR, operationType string) int {
+// 	maxVal := -999
+// 	transactionDMmap := make(map[string]int)
+// 	switch operationType {
+// 	case "P":
+// 		transactionDMmap = tgr.purchaseDM
+// 	case "S":
+// 		transactionDMmap = tgr.saleDM
+// 	}
+// 	for i := range actualTags {
+// 		testTag := tradeCodeFullName(actualTags[i])
+// 		if maxVal < transactionDMmap[testTag] {
+// 			maxVal = transactionDMmap[testTag]
+// 		}
+// 	}
+// 	return maxVal
+// }
 
 func getCategory(code string) string {
-	TradeGoodsDataMap := TradeGoodRData()
-	return TradeGoodsDataMap[code][0]
+	return tgDB[code][0]
 }
 
 func getDescription(code string) string {
-	TradeGoodsDataMap := TradeGoodRData()
-	descrMerged := TradeGoodsDataMap[code][1]
+	descrMerged := tgDB[code][1]
 	descriptionAll := strings.Split(descrMerged, "/")
 	return utils.RandomFromList(descriptionAll)
 }
 
 func getAvailabilityTags(code string) []string {
-	TradeGoodsDataMap := TradeGoodRData()
-	tagsMerged := TradeGoodsDataMap[code][2]
+	tagsMerged := tgDB[code][2]
 	tagsAll := strings.Split(tagsMerged, ", ")
 	if tagsAll[0] == "All" {
 		return tradeTagLIST()
@@ -110,19 +107,16 @@ func getAvailabilityTags(code string) []string {
 }
 
 func getStockIncrementFormula(code string) string {
-	TradeGoodsDataMap := TradeGoodRData()
-	return TradeGoodsDataMap[code][3]
+	return tgDB[code][3]
 }
 
 func getBasePrice(code string) int {
-	TradeGoodsDataMap := TradeGoodRData()
-	return convert.StoI(TradeGoodsDataMap[code][4])
+	return convert.StoI(tgDB[code][4])
 }
 
 func getPurchaseDMmap(code string) map[string]int {
-	TradeGoodsDataMap := TradeGoodRData()
 	pMap := make(map[string]int)
-	rawData := TradeGoodsDataMap[code][5]
+	rawData := tgDB[code][5]
 	tagsMerged := strings.Split(rawData, ", ")
 	for i := range tagsMerged {
 		key := tagsMerged[i][0 : len(tagsMerged[i])-3]
@@ -146,8 +140,7 @@ func getSaleDMmap(code string) map[string]int {
 }
 
 func getMaximumRiskAssessment(code string) int {
-	TradeGoodsDataMap := TradeGoodRData()
-	res, err := strconv.Atoi(TradeGoodsDataMap[code][7])
+	res, err := strconv.Atoi(tgDB[code][7])
 	if err != nil {
 		panic(err)
 	}
@@ -155,8 +148,7 @@ func getMaximumRiskAssessment(code string) int {
 }
 
 func getDangerousGoodsDM(code string) int {
-	TradeGoodsDataMap := TradeGoodRData()
-	res, err := strconv.Atoi(TradeGoodsDataMap[code][8])
+	res, err := strconv.Atoi(tgDB[code][8])
 	if err != nil {
 		panic(err)
 	}

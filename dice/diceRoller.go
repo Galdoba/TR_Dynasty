@@ -39,6 +39,7 @@ type Dicepool struct {
 //манипулировать.
 func Roll(code string) *Dicepool {
 	dp := Dicepool{}
+	time.Sleep(time.Millisecond)
 	dp.seed = time.Now().UTC().UnixNano()
 	dp.dice, dp.edges = decodeDiceCode(code)
 	rand.Seed(dp.seed)
@@ -266,6 +267,14 @@ func rollCombinations(max, len int) map[int][]int {
 func RollD66() string {
 	return Roll("2d6").ResultString()
 
+}
+
+func Roll1D(dm ...int) int {
+	mod := 0
+	if len(dm) > 0 {
+		mod = dm[0]
+	}
+	return Roll("1d6").DM(mod).Sum()
 }
 
 func Roll2D(dm ...int) int {
