@@ -22,6 +22,10 @@ type TradeGoodR struct {
 	description             string
 }
 
+func Initiate() {
+	tgDB = TradeGoodRData()
+}
+
 // func TradeGood() *TradeGoodR {
 // 	return &TradeGoodR{}
 // }

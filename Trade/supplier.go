@@ -6,7 +6,6 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/dice"
-	"github.com/Galdoba/TR_Dynasty/format"
 	"github.com/Galdoba/TR_Dynasty/world"
 	"github.com/Galdoba/utils"
 )
@@ -36,9 +35,29 @@ type Merchant struct {
 func NewMerchantOn(localTradeCodes []string) Merchant {
 	m := Merchant{}
 	m.mType = supplierTypeTrade
-	m.tradeDice = dice.Roll("3d6").Sum()
+	m.tradeDice = 0
 	m.localTC = localTradeCodes
 	m.availableTGcodes = availableFromTCodes(localTradeCodes)
+	return m
+}
+
+func (m Merchant) SetMType(mType string) Merchant {
+	mTypeErr := true
+	for _, val := range []string{supplierTypeCommon, supplierTypeTrade, supplierTypeNeutral, supplierTypeCommon} {
+		if mType == val {
+			mTypeErr = false
+			break
+		}
+	}
+	if mTypeErr {
+		return m
+	}
+	m.mType = mType
+	return m
+}
+
+func (m Merchant) SetTraderDice(tDice int) Merchant {
+	m.tradeDice = tDice
 	return m
 }
 
@@ -116,6 +135,41 @@ func (m Merchant) DetermineGoodsAvailable() []string {
 	return avGoodsCodes
 }
 
+type Seller interface {
+	ProposeSell(string) Contract
+}
+
+//ProposeSell - Информация о передаче товара от игрока к купцу
+func (m Merchant) ProposeSell(code string) Contract {
+	dealDice := dice.Roll3D()
+	dealDice += m.tradeDice
+	saleDMmap := getSaleDMmap(code)
+	for i := range m.localTC {
+		if val, ok := saleDMmap[m.localTC[i]]; ok {
+			dealDice = dealDice + val
+		}
+	}
+	fmt.Println(encodeContractCode(code, dealDice, m.localTC), "--------------------------------")
+	return NewContract(1, code, dealDice)
+}
+
+type Buyer interface {
+	ProposeBuy(string) Contract
+}
+
+//ProposeBuy - Информация о передаче товара от купца к игроку
+func (m Merchant) ProposeBuy(code string) Contract {
+	dealDice := dice.Roll3D()
+	dealDice += m.tradeDice
+	purchaseDMmap := getPurchaseDMmap(code)
+	for i := range m.localTC {
+		if val, ok := purchaseDMmap[m.localTC[i]]; ok {
+			dealDice = dealDice + val
+		}
+	}
+	return NewContract(2, code, dealDice)
+}
+
 func (m Merchant) ListForSale() {
 	//TODO: нужно переписать метод так чтобы по запросу [Merchant.ProposeSale(code)] он выдавал строку с информацией о типе и стоймости товара
 	//
@@ -137,16 +191,13 @@ func (m Merchant) ListForSale() {
 		//fmt.Println(code, "	", description, "for", actualPrice, "per ton", basePrice)
 		rows = append(rows, []string{code, description, strconv.Itoa(actualPrice)})
 	}
-	fmt.Println(format.TableView(rows))
 }
 
 func Test() {
-	//fmt.Println(tgDB)
-	//fmt.Println("--------", tgDB["3312"])
+
 }
 
 func NewSupplier(stype string, planet *world.World) *supplier {
-
 	sup := &supplier{}
 	// seed := utils.CurrentSeed()
 	sup.sType = stype

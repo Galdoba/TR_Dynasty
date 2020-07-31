@@ -284,3 +284,27 @@ func Roll2D(dm ...int) int {
 	}
 	return Roll("2d6").DM(mod).Sum()
 }
+
+func Roll3D(dm ...int) int {
+	mod := 0
+	if len(dm) > 0 {
+		mod = dm[0]
+	}
+	return Roll("3d6").DM(mod).Sum()
+}
+
+func Roll4D(dm ...int) int {
+	mod := 0
+	if len(dm) > 0 {
+		mod = dm[0]
+	}
+	return Roll("4d6").DM(mod).Sum()
+}
+
+func Roll5D(dm ...int) int {
+	mod := 0
+	if len(dm) > 0 {
+		mod = dm[0]
+	}
+	return Roll("5d6").DM(mod).Sum()
+}

@@ -289,9 +289,9 @@ func TradeGoodRData() map[string][]string {
 	tgrMap["253"] = []string{"Advanced Vehicles", "Seafaring or Mole Vehicle Components or Packages", "In, Ht", "1d6 x 5", "140000", "In +0, Ht +2", "As +2, Ri +2", "+3", "+0"}
 	tgrMap["254"] = []string{"Advanced Vehicles", "Seafaring or Mole Vehicle Components or Packages", "In, Ht", "1d6 x 5", "140000", "In +0, Ht +2", "As +2, Ri +2", "+3", "+0"}
 	tgrMap["255"] = []string{"Advanced Vehicles", "Seafaring or Mole Vehicle Components or Packages", "In, Ht", "1d6 x 5", "140000", "In +0, Ht +2", "As +2, Ri +2", "+3", "+0"}
-	tgrMap["256"] = []string{"Advanced Vehicles", "Air/Raft Components or Packages", "In, Ht", "1d6 x 5", "180000", "In +0, Ht +2", "As +2, Ri +2", "+3", "+0"}
-	tgrMap["257"] = []string{"Advanced Vehicles", "Air/Raft Components or Packages", "In, Ht", "1d6 x 5", "180000", "In +0, Ht +2", "As +2, Ri +2", "+3", "+0"}
-	tgrMap["258"] = []string{"Advanced Vehicles", "Air/Raft Components or Packages", "In, Ht", "1d6 x 5", "180000", "In +0, Ht +2", "As +2, Ri +2", "+3", "+0"}
+	tgrMap["256"] = []string{"Advanced Vehicles", "Air Raft Components or Packages", "In, Ht", "1d6 x 5", "180000", "In +0, Ht +2", "As +2, Ri +2", "+3", "+0"}
+	tgrMap["257"] = []string{"Advanced Vehicles", "Air Raft Components or Packages", "In, Ht", "1d6 x 5", "180000", "In +0, Ht +2", "As +2, Ri +2", "+3", "+0"}
+	tgrMap["258"] = []string{"Advanced Vehicles", "Air Raft Components or Packages", "In, Ht", "1d6 x 5", "180000", "In +0, Ht +2", "As +2, Ri +2", "+3", "+0"}
 	tgrMap["259"] = []string{"Advanced Vehicles", "Grav-Vehicle Components", "In, Ht", "1d6 x 2", "200000", "In +0, Ht +2", "As +2, Ri +2", "+3", "+0"}
 	tgrMap["2510"] = []string{"Advanced Vehicles", "Grav-Vehicle Components", "In, Ht", "1d6 x 2", "200000", "In +0, Ht +2", "As +2, Ri +2", "+3", "+0"}
 	tgrMap["2511"] = []string{"Advanced Vehicles", "Grav-Vehicle Components", "In, Ht", "1d6 x 2", "200000", "In +0, Ht +2", "As +2, Ri +2", "+3", "+0"}
@@ -585,6 +585,17 @@ func TradeGoodRData() map[string][]string {
 	tgrMap["6511"] = []string{"Weapons, Illegal", "Arclight Weaponry/Biological or Chemical Weaponry/Naval Starship Weaponry", "In, Ht", "1d6 x 2", "300000", "In +0, Ht +2", "Po +6, AZ +8, RZ +10", "+5", "+6"}
 	tgrMap["6512"] = []string{"Weapons, Illegal", "Disintegrators/Psi-Weaponry/Weapons of Mass Destruction", "In, Ht", "1d6 x 1", "450000", "In +0, Ht +2", "Po +6, AZ +8, RZ +10", "+5", "+6"}
 	//return 6ata
+	tgrMap["662"] = []string{"Exotic, Illegal", "Chain-drive Weaponry/Armour-Piercing Ammunition", "In, Ht", "1d6 x 6", "50000", "In +0, Ht +2", "Po +6, AZ +8, RZ +10", "+5", "+6"}
+	tgrMap["663"] = []string{"Exotic, Illegal", "Protected Technologies/Explosive or Incendiary Ammunition", "In, Ht", "1d6 x 5", "100000", "In +0, Ht +2", "Po +6, AZ +8, RZ +10", "+5", "+6"}
+	tgrMap["664"] = []string{"Exotic, Illegal", "Protected Technologies/Explosive or Incendiary Ammunition", "In, Ht", "1d6 x 5", "100000", "In +0, Ht +2", "Po +6, AZ +8, RZ +10", "+5", "+6"}
+	tgrMap["665"] = []string{"Exotic, Illegal", "Protected Technologies/Explosive or Incendiary Ammunition", "In, Ht", "1d6 x 5", "100000", "In +0, Ht +2", "Po +6, AZ +8, RZ +10", "+5", "+6"}
+	tgrMap["666"] = []string{"Exotic, Illegal", "Synthetic Poisons/Personal-scale Mass Trauma Explosives", "In, Ht", "1d6 x 5", "150000", "In +0, Ht +2", "Po +6, AZ +8, RZ +10", "+5", "+6"}
+	tgrMap["667"] = []string{"Exotic, Illegal", "Synthetic Poisons/Personal-scale Mass Trauma Explosives", "In, Ht", "1d6 x 5", "150000", "In +0, Ht +2", "Po +6, AZ +8, RZ +10", "+5", "+6"}
+	tgrMap["668"] = []string{"Exotic, Illegal", "Synthetic Poisons/Personal-scale Mass Trauma Explosives", "In, Ht", "1d6 x 5", "150000", "In +0, Ht +2", "Po +6, AZ +8, RZ +10", "+5", "+6"}
+	tgrMap["669"] = []string{"Exotic, Illegal", "Arclight Weaponry/Biological or Chemical Weaponry/Naval Starship Weaponry", "In, Ht", "1d6 x 2", "300000", "In +0, Ht +2", "Po +6, AZ +8, RZ +10", "+5", "+6"}
+	tgrMap["6610"] = []string{"Exotic, Illegal", "Arclight Weaponry/Biological or Chemical Weaponry/Naval Starship Weaponry", "In, Ht", "1d6 x 2", "300000", "In +0, Ht +2", "Po +6, AZ +8, RZ +10", "+5", "+6"}
+	tgrMap["6611"] = []string{"Exotic, Illegal", "Arclight Weaponry/Biological or Chemical Weaponry/Naval Starship Weaponry", "In, Ht", "1d6 x 2", "300000", "In +0, Ht +2", "Po +6, AZ +8, RZ +10", "+5", "+6"}
+	tgrMap["6612"] = []string{"Exotic, Illegal", "Disintegrators/Psi-Weaponry/Weapons of Mass Destruction", "In, Ht", "1d6 x 1", "450000", "In +0, Ht +2", "Po +6, AZ +8, RZ +10", "+5", "+6"}
 	return tgrMap
 }
 
