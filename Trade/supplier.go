@@ -2,7 +2,6 @@ package Trade
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/dice"
@@ -29,15 +28,23 @@ type Merchant struct {
 	mType            string
 	availableTGcodes []string
 	localTC          []string
+	localUWP         string
 	tradeDice        int
 }
 
-func NewMerchantOn(localTradeCodes []string) Merchant {
+func NewMerchant() Merchant {
 	m := Merchant{}
-	m.mType = supplierTypeTrade
 	m.tradeDice = 0
-	m.localTC = localTradeCodes
-	m.availableTGcodes = availableFromTCodes(localTradeCodes)
+	return m
+}
+
+func (m Merchant) SetLocalUWP(uwp string) Merchant {
+	m.localUWP = uwp
+	return m
+}
+
+func (m Merchant) SetLocalTC(tc []string) Merchant {
+	m.localTC = tc
 	return m
 }
 
@@ -61,12 +68,15 @@ func (m Merchant) SetTraderDice(tDice int) Merchant {
 	return m
 }
 
-func (m Merchant) DetermineGoodsAvailable() []string {
+func (m Merchant) DetermineGoodsAvailable() Merchant {
 	var avGoodsCodes []string
 	availableCategories := m.availableTGcodes
 	switch m.mType {
 	default:
-		return avGoodsCodes
+		for i := 0; i < dice.Roll1D(); i++ {
+			roll := dice.RollD66()
+			availableCategories = append(availableCategories, roll)
+		}
 	case supplierTypeCommon:
 		availableCategories = []string{"11", "12", "13", "14", "15", "16"}
 		add := utils.RollDiceRandom("d6")
@@ -132,7 +142,12 @@ func (m Merchant) DetermineGoodsAvailable() []string {
 		//sup.cargoNew.Add(tgr, tgr.IncreaseRandom())
 		//fmt.Println(tgDB[key])
 	}
-	return avGoodsCodes
+	m.availableTGcodes = avGoodsCodes
+	return m
+}
+
+func (m Merchant) AvailableTradeGoods() []string {
+	return m.availableTGcodes
 }
 
 type Seller interface {
@@ -141,15 +156,14 @@ type Seller interface {
 
 //ProposeSell - Информация о передаче товара от игрока к купцу
 func (m Merchant) ProposeSell(code string) Contract {
-	dealDice := dice.Roll3D()
-	dealDice += m.tradeDice
+	//dealDice := 10 //dice.Roll3D()
+	dealDice := m.tradeDice
 	saleDMmap := getSaleDMmap(code)
 	for i := range m.localTC {
 		if val, ok := saleDMmap[m.localTC[i]]; ok {
 			dealDice = dealDice + val
 		}
 	}
-	fmt.Println(encodeContractCode(code, dealDice, m.localTC), "--------------------------------")
 	return NewContract(1, code, dealDice)
 }
 
@@ -170,26 +184,32 @@ func (m Merchant) ProposeBuy(code string) Contract {
 	return NewContract(2, code, dealDice)
 }
 
-func (m Merchant) ListForSale() {
-	//TODO: нужно переписать метод так чтобы по запросу [Merchant.ProposeSale(code)] он выдавал строку с информацией о типе и стоймости товара
-	//
-	var rows [][]string
-	rows = append(rows, []string{"CODE", "description", "price per ton"})
-	for _, category := range m.availableTGcodes {
-		code := category + dice.Roll("2d6").SumStr()
-		basePrice := getBasePrice(code)
-		description := getDescription(code)
-		priceDie := dice.Roll("3d6").Sum()
-		saleDMmap := getSaleDMmap(code)
-		for i := range m.localTC {
-			if val, ok := saleDMmap[m.localTC[i]]; ok {
-				priceDie = priceDie + val
-			}
-		}
-		actualPrice := modifyPriceSale(basePrice, priceDie)
-		//fmt.Println(description, basePrice, priceDie, actualPrice, stock)
-		//fmt.Println(code, "	", description, "for", actualPrice, "per ton", basePrice)
-		rows = append(rows, []string{code, description, strconv.Itoa(actualPrice)})
+func (m Merchant) EncodeContract(code string, cType int) string {
+	//#[tgCode]-[die][cType][ta][te][TC]#
+	cCode := "#"
+	ta := string([]byte(m.localUWP)[5])
+	te := string([]byte(m.localUWP)[6])
+	tl := string([]byte(m.localUWP)[8])
+	cCode += code + "-" + TrvCore.DigitToEhex(m.tradeDice) + TrvCore.DigitToEhex(cType) + ta + te + tl
+	for i := range m.localTC {
+		cCode += m.localTC[i]
+	}
+	return cCode
+}
+
+func (m Merchant) ListAvailable() {
+	fmt.Println(m.availableTGcodes, "----")
+	for i := range m.availableTGcodes {
+		c := m.ProposeBuy(m.availableTGcodes[i])
+		fmt.Println(c.ShowShort())
+	}
+}
+
+func (m Merchant) ListPrices() {
+	allCodes := allTradeGoodsRCodes()
+	for i := range allCodes {
+		c := m.ProposeSell(allCodes[i])
+		fmt.Println(c.ShowShort())
 	}
 }
 

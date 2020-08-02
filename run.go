@@ -3,9 +3,10 @@ package main
 import (
 	"fmt"
 
+	"github.com/Galdoba/TR_Dynasty/dice"
+
 	"github.com/Galdoba/TR_Dynasty/Trade"
 	"github.com/Galdoba/TR_Dynasty/constant"
-	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/profile"
 	"github.com/Galdoba/TR_Dynasty/world"
 )
@@ -13,24 +14,13 @@ import (
 func main() {
 	Trade.Initiate()
 
-	for i := 0; i < 5; i++ {
-		sourceWorld := world.FromUWP(profile.RandomUWP(constant.WTpHospitable)).SetName("Mars").UpdateTC()
-		//fmt.Println(sourceWorld)
-		fmt.Println(sourceWorld.UWP(), sourceWorld.TradeCodes())
-		merch := Trade.NewMerchantOn(sourceWorld.TradeCodes())
-		fmt.Println("--------------------------", i)
-		fmt.Println(merch)
-		code := dice.RollD66() + dice.Roll("2d6").SumStr()
-		fmt.Println(code)
-		if len(merch.DetermineGoodsAvailable()) < 9 {
-			break
-		}
-		contract := merch.ProposeSell(code).SetVolume(3)
-		fmt.Println(contract.String())
-		contract = contract.Negotiate(2)
-		fmt.Println(fmt.Println(contract.String()))
+	sourceWorld := world.FromUWP(profile.RandomUWP(constant.WTpHospitable)).UpdateTC()
+	fmt.Println(sourceWorld)
+	merch := Trade.NewMerchant().SetTraderDice(dice.Roll3D()).SetLocalUWP(sourceWorld.UWP()).SetLocalTC(sourceWorld.TradeCodes()).SetMType(constant.MerchantTypeTrade).DetermineGoodsAvailable()
 
-	}
+	fmt.Println(merch)
+
+	merch.ListPrices()
 	//merch.DetermineGoodsAvailable()
 }
 

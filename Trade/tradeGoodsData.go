@@ -96,9 +96,9 @@ func getCategory(code string) string {
 }
 
 func getDescription(code string) string {
-	descrMerged := tgDB[code][1]
-	descriptionAll := strings.Split(descrMerged, "/")
-	return utils.RandomFromList(descriptionAll)
+	//descrMerged := tgDB[code][1]
+	//descriptionAll := strings.Split(descrMerged, "/")
+	return tgDB[code][1]
 }
 
 func getAvailabilityTags(code string) []string {
@@ -157,6 +157,24 @@ func getDangerousGoodsDM(code string) int {
 		panic(err)
 	}
 	return res
+}
+
+func IncreseTG(code string) int {
+	qty := ""
+	add := "0"
+	formula := getStockIncrementFormula(code)
+	rawAdd := strings.Split(formula, " + ")
+	if len(rawAdd) > 1 {
+		add = rawAdd[1]
+	}
+	rawQty := strings.Split(rawAdd[0], " x ")
+	if len(rawQty) < 2 {
+		fmt.Println(rawQty[1])
+		panic(code + " formula Error")
+	}
+	qty = rawQty[1]
+	up := utils.RollDiceRandom(qty+"d6", convert.StoI(add))
+	return up
 }
 
 func (tgr *TradeGoodR) IncreaseRandom() int {

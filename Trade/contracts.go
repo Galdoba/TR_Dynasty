@@ -9,14 +9,20 @@ import (
 
 //Contract - описываемые свойства структуры с информацией о договоре с участием денег
 type Contract struct {
-	cType          int
-	lotCode        string
-	lotDescription string
-	contractDice   int
-	volume         int
-	taxingAgent    string
-	timeLimit      string
+	cType            int
+	lotCode          string
+	lotDescription   string
+	contractDice     int
+	volume           int
+	taxingAgent      string
+	taxingEnviroment string
+	timeLimit        string
 }
+
+/*
+Contract Code
+#[tgCode]-[volume]-[die][cType][ta][te][TC]#
+*/
 
 //NewContract - создает контракт (структура с информацией о договоре с участием денег)
 func NewContract(cType int, lotCode string, cntrctDie int) Contract {
@@ -58,6 +64,26 @@ func (c Contract) Negotiate(effect int) Contract {
 
 func (c Contract) SetTaxingAgent(ta string) Contract {
 	return c
+}
+
+func (c Contract) ShowShort() string {
+	short := c.lotCode + "	"
+	price := 0
+	//vol := c.volume
+	switch c.cType {
+	default:
+		short += "TODO: cType " + strconv.Itoa(c.cType)
+	case 1:
+		short += "SELL	"
+		price = modifyPriceSale(getBasePrice(c.lotCode), c.contractDice)
+	case 2:
+		short += "BUY	"
+		price = modifyPricePurchase(getBasePrice(c.lotCode), c.contractDice)
+	}
+	//short += strconv.Itoa(vol) + " tons 	"
+	short += strconv.Itoa(price) + "	"
+	short += getDescription(c.lotCode)
+	return short
 }
 
 func (c Contract) String() string {
@@ -117,6 +143,11 @@ func taxingAmount(profit int, ta string) int {
 			taxinGrade++
 		}
 	}
+	taxingMap := mapTaxRate()
+	taxShare := taxingMap[ta][taxinGrade]
+	if taxShare == -1 {
+		taxShare = 0
+	}
 	return taxedFrom(profit, mapTaxRate()[ta][taxinGrade])
 }
 
@@ -140,8 +171,9 @@ func mapTaxRate() map[string][]int {
 	trMap["B"] = []int{10, 10, 10, 20, 20, 20, 20, 30, 30, 30}
 	trMap["C"] = []int{3, 5, 5, 8, 8, 8, 10, 10, 10, 12}
 	trMap["D"] = []int{10, 10, 12, 12, 14, 14, 15, 15, 15, 18}
-	trMap["E"] = []int{10, 10, 10, 10, 10, 10, 10, 10, 10, 10} //Not in book (Merchant Prince)
-	trMap["F"] = []int{13, 15, 17, 19, 21, 23, 25, 27, 29, 35} //Not in book (Merchant Prince)
+	trMap["E"] = []int{10, 10, 10, 10, 10, 10, 10, 10, 10, 10}  //Not in book (Merchant Prince)
+	trMap["F"] = []int{13, 15, 17, 19, 21, 23, 25, 27, 29, 35}  //Not in book (Merchant Prince)
+	trMap["CM"] = []int{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1} //Ключ для вызова функции CrimeTax()
 
 	return trMap
 }
