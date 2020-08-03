@@ -64,6 +64,10 @@ func decodeDiceCode(code string) (int, int) {
 	return dice, edges
 }
 
+func encodeDiceCode(dice, edges int) string {
+	return strconv.Itoa(dice) + "D" + strconv.Itoa(edges)
+}
+
 //////////////////////////////////////////////////////////
 //Results:
 
@@ -197,6 +201,13 @@ func (dp *Dicepool) ReplaceOne(die, newVal int) *Dicepool {
 	}
 	dp.result[die] = newVal
 	return dp
+}
+
+//ReRoll - меняет значение броска
+func (dp *Dicepool) ReRoll() *Dicepool {
+	code := encodeDiceCode(dp.dice, dp.edges)
+	dpNew := Roll(code)
+	return dpNew
 }
 
 //////////////////////////////////////////////////////////
