@@ -2,6 +2,7 @@ package Trade
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/dice"
@@ -30,11 +31,15 @@ type Merchant struct {
 	localTC          []string
 	localUWP         string
 	tradeDice        int
+	prices           map[string]int
+	volume           map[string]int
 }
 
 func NewMerchant() Merchant {
 	m := Merchant{}
 	m.tradeDice = 0
+	m.prices = make(map[string]int)
+	m.volume = make(map[string]int)
 	return m
 }
 
@@ -127,23 +132,26 @@ func (m Merchant) DetermineGoodsAvailable() Merchant {
 			availableCategories = append(availableCategories, roll)
 		}
 	}
-
+	sort.Strings(availableCategories)
+	fmt.Println(availableCategories)
 	for c := range availableCategories {
-		definition := dice.Roll("2d6").SumStr()
-		key := availableCategories[c] + definition
+
+		key := availableCategories[c]
+		m.prices[key] = dice.Roll3D()
+		key = key + dice.Roll("2d6").SumStr()
+		m.volume[categoryOf(key)] = m.volume[categoryOf(key)] + RollMaximumForCategory(key)
 		avGoodsCodes = append(avGoodsCodes, key)
-		// if _, ok := sup.cargo[key]; ok {
-		// 	//do something here
-		// 	sup.cargo[key].cargoVolume = sup.cargo[key].cargoVolume + sup.cargo[key].lotTradeGoodR.IncreaseRandom()
-		// } else {
-		// 	newLot := NewTradeLot(availableCategories[c]+definition, sup.planet)
-		// 	sup.cargo[availableCategories[c]+definition] = newLot
-		// }
-		//sup.cargoNew.Add(tgr, tgr.IncreaseRandom())
-		//fmt.Println(tgDB[key])
+
 	}
+	sort.Strings(avGoodsCodes)
+
 	m.availableTGcodes = avGoodsCodes
+	fmt.Println(m.availableTGcodes)
 	return m
+}
+
+func categoryOf(code string) string {
+	return string([]byte(code)[0]) + string([]byte(code)[1])
 }
 
 func (m Merchant) AvailableTradeGoods() []string {
@@ -164,7 +172,7 @@ func (m Merchant) ProposeSell(code string) Contract {
 			dealDice = dealDice + val
 		}
 	}
-	return NewContract(1, code, dealDice)
+	return NewContract(1, code, dealDice+m.prices[categoryOf(code)])
 }
 
 type Buyer interface {
@@ -173,15 +181,14 @@ type Buyer interface {
 
 //ProposeBuy - Информация о передаче товара от купца к игроку
 func (m Merchant) ProposeBuy(code string) Contract {
-	dealDice := dice.Roll3D()
-	dealDice += m.tradeDice
-	purchaseDMmap := getPurchaseDMmap(code)
+	dealDice := m.tradeDice
+	purchaseDMmap := getPurchaseDMmap(code) // + dice.Roll("2d6").SumStr())
 	for i := range m.localTC {
 		if val, ok := purchaseDMmap[m.localTC[i]]; ok {
 			dealDice = dealDice + val
 		}
 	}
-	return NewContract(2, code, dealDice)
+	return NewContract(2, code, dealDice+m.prices[categoryOf(code)])
 }
 
 func (m Merchant) EncodeContract(code string, cType int) string {

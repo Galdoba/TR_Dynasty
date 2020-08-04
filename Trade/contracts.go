@@ -28,7 +28,7 @@ Contract Code
 func NewContract(cType int, lotCode string, cntrctDie int) Contract {
 	c := Contract{}
 	c.cType = cType
-	c.lotCode = lotCode
+	c.lotCode = lotCode // + dice.Roll("2d6").SumStr()
 	c.contractDice = cntrctDie
 	c.taxingAgent = "0"
 	return c
@@ -83,6 +83,7 @@ func (c Contract) ShowShort() string {
 	//short += strconv.Itoa(vol) + " tons 	"
 	short += strconv.Itoa(price) + "	"
 	short += getDescription(c.lotCode)
+
 	return short
 }
 

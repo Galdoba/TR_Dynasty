@@ -22,10 +22,6 @@ type TradeGoodR struct {
 	description             string
 }
 
-func Initiate() {
-	tgDB = TradeGoodRData()
-}
-
 // func TradeGood() *TradeGoodR {
 // 	return &TradeGoodR{}
 // }
@@ -157,6 +153,28 @@ func getDangerousGoodsDM(code string) int {
 		panic(err)
 	}
 	return res
+}
+
+func getMaximumForCategoryFormula(code string) string {
+	return tgDB[code][9]
+}
+
+func RollMaximumForCategory(code string) int {
+	qty := ""
+	add := "0"
+	formula := getMaximumForCategoryFormula(code)
+	rawAdd := strings.Split(formula, " + ")
+	if len(rawAdd) > 1 {
+		add = rawAdd[1]
+	}
+	rawQty := strings.Split(rawAdd[0], " x ")
+	if len(rawQty) < 2 {
+		fmt.Println(rawQty[1])
+		panic(code + " formula Error")
+	}
+	qty = rawQty[1]
+	up := utils.RollDiceRandom(qty+"d6", convert.StoI(add))
+	return up
 }
 
 func IncreseTG(code string) int {

@@ -3,25 +3,18 @@ package main
 import (
 	"fmt"
 
-	"github.com/Galdoba/TR_Dynasty/essc"
+	"github.com/Galdoba/TR_Dynasty/Trade"
+	"github.com/Galdoba/TR_Dynasty/constant"
+	"github.com/Galdoba/TR_Dynasty/profile"
+	"github.com/Galdoba/TR_Dynasty/world"
 )
 
 func main() {
-	//Trade.Initiate()
 
-	// sourceWorld := world.FromUWP(profile.RandomUWP(constant.WTpHospitable)).UpdateTC()
-	// fmt.Println(sourceWorld)
-	// merch := Trade.NewMerchant().SetTraderDice(dice.Roll3D()).SetLocalUWP(sourceWorld.UWP())
-	// merch = merch.SetLocalTC(sourceWorld.TradeCodes()).SetMType(constant.MerchantTypeTrade).DetermineGoodsAvailable()
-	// fmt.Println(merch)
-
-	//merch.ListPrices()
-	for i := 0; i < 50; i++ {
-		fmt.Println(i)
-		ss := essc.Create()
-		ss.Test()
-	}
-	//merch.DetermineGoodsAvailable()
+	sw := world.FromUWP(profile.RandomUWP()).UpdateTC()
+	merch := Trade.NewMerchant().SetLocalUWP(sw.UWP()).SetLocalTC(sw.TradeCodes()).SetMType(constant.MerchantTypeCommon).DetermineGoodsAvailable()
+	fmt.Println(merch)
+	merch.ListAvailable()
 }
 
 //OB Ia Ia Ia II II II II
