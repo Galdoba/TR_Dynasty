@@ -11,10 +11,12 @@ import (
 
 func main() {
 
+	//return
 	sw := world.FromUWP(profile.RandomUWP()).UpdateTC()
-	merch := Trade.NewMerchant().SetLocalUWP(sw.UWP()).SetLocalTC(sw.TradeCodes()).SetMType(constant.MerchantTypeCommon).DetermineGoodsAvailable()
+	merch := Trade.NewMerchant().SetLocalUWP(sw.UWP()).SetLocalTC(sw.TradeCodes()).SetMType(constant.MerchantTypeTrade).DetermineGoodsAvailable()
 	fmt.Println(merch)
-	merch.ListAvailable()
+	merch.MakeOffer("11", 1)
+	//merch.ListPrices()
 }
 
 //OB Ia Ia Ia II II II II

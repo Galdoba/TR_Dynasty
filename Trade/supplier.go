@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/Galdoba/TR_Dynasty/cli/prettytable"
+
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/dice"
-	"github.com/Galdoba/TR_Dynasty/world"
 	"github.com/Galdoba/utils"
 )
 
@@ -14,15 +15,6 @@ var tgDB map[string][]string
 
 func init() {
 	tgDB = TradeGoodRData()
-}
-
-type supplier struct {
-	sType string
-	//cargo    []*tradeLot
-	//cargo     map[string]*tradeLot
-	cargoNew  *Cargo
-	planet    *world.World
-	tradeDice int
 }
 
 type Merchant struct {
@@ -133,12 +125,12 @@ func (m Merchant) DetermineGoodsAvailable() Merchant {
 		}
 	}
 	sort.Strings(availableCategories)
-	fmt.Println(availableCategories)
+	//fmt.Println(availableCategories)
 	for c := range availableCategories {
 
 		key := availableCategories[c]
 		m.prices[key] = dice.Roll3D()
-		key = key + dice.Roll("2d6").SumStr()
+		//key = key + dice.Roll("2d6").SumStr()
 		m.volume[categoryOf(key)] = m.volume[categoryOf(key)] + RollMaximumForCategory(key)
 		avGoodsCodes = append(avGoodsCodes, key)
 
@@ -146,7 +138,7 @@ func (m Merchant) DetermineGoodsAvailable() Merchant {
 	sort.Strings(avGoodsCodes)
 
 	m.availableTGcodes = avGoodsCodes
-	fmt.Println(m.availableTGcodes)
+	//fmt.Println(m.availableTGcodes)
 	return m
 }
 
@@ -204,134 +196,31 @@ func (m Merchant) EncodeContract(code string, cType int) string {
 	return cCode
 }
 
-func (m Merchant) ListAvailable() {
-	fmt.Println(m.availableTGcodes, "----")
-	for i := range m.availableTGcodes {
-		c := m.ProposeBuy(m.availableTGcodes[i])
-		fmt.Println(c.ShowShort())
+func (m Merchant) MakeOffer(code string, operation int) []Contract {
+
+	var allCont []Contract
+	maxTons := RollMaximumForCategory(code)
+	fmt.Println("maxTons", maxTons)
+	exactVolume := make(map[string]int)
+	for i := 0; i < maxTons; i++ {
+		exactVolume[code+dice.Roll("2d6").SumStr()]++
 	}
-}
-
-func (m Merchant) ListPrices() {
-	allCodes := allTradeGoodsRCodes()
-	for i := range allCodes {
-		c := m.ProposeSell(allCodes[i])
-		fmt.Println(c.ShowShort())
+	table := prettytable.New()
+	table.AddRow([]string{"Category", "Operation", "Base Price", "Lot", "Price", "Trade Dice"})
+	for k, v := range exactVolume {
+		c := Contract{}
+		c.lotCode = k
+		c.volume = v
+		c.cType = operation
+		c.contractDice = m.tradeDice
+		c.taxingAgent = string([]byte(m.localUWP)[5])
+		c.taxingEnviroment = string([]byte(m.localUWP)[6])
+		c.lotDescription = getDescription(k)
+		c.category = getCategory(k)
+		table.AddRow(c.ShowShort())
+		allCont = append(allCont, c)
 	}
-}
-
-func Test() {
-
-}
-
-func NewSupplier(stype string, planet *world.World) *supplier {
-	sup := &supplier{}
-	// seed := utils.CurrentSeed()
-	sup.sType = stype
-	sup.planet = planet
-	//sup.cargo = make(map[string]*tradeLot)
-	sup.cargoNew = NewCargo()
-	//sup.determineGoodsAvailable()
-	return sup
-}
-
-func (sup *supplier) CargoNewShow() *Cargo {
-	return sup.cargoNew
-}
-
-// func (sup *supplier) determineGoodsAvailable() []string {
-// 	var avGoodsCodes []string
-// 	availableCategories := availableCategories(sup.planet)
-// 	switch sup.sType {
-// 	default:
-// 		return avGoodsCodes
-// 	case supplierTypeCommon:
-// 		availableCategories = []string{"11", "12", "13", "14", "15", "16"}
-// 		add := utils.RollDiceRandom("d6")
-// 		for i := 0; i < add; i++ {
-// 			roll := TrvCore.RollD66()
-// 			if !utils.ListContains([]string{"11", "12", "13", "14", "15", "16"}, roll) {
-// 				i--
-// 				continue
-// 			}
-// 			availableCategories = append(availableCategories, roll)
-// 		}
-// 	case supplierTypeTrade:
-// 		add := utils.RollDiceRandom("d6")
-// 		for i := 0; i < add; i++ {
-// 			roll := TrvCore.RollD66()
-// 			if utils.ListContains([]string{"61", "62", "63", "64", "65", "66"}, roll) {
-// 				i--
-// 				continue
-// 			}
-// 			availableCategories = append(availableCategories, roll)
-// 		}
-// 		ExcludeFromSliceStr(availableCategories, "61")
-// 		ExcludeFromSliceStr(availableCategories, "62")
-// 		ExcludeFromSliceStr(availableCategories, "63")
-// 		ExcludeFromSliceStr(availableCategories, "64")
-// 		ExcludeFromSliceStr(availableCategories, "65")
-// 	case supplierTypeNeutral:
-// 		add := utils.RollDiceRandom("d6")
-// 		for i := 0; i < add; i++ {
-// 			roll := TrvCore.RollD66()
-// 			if utils.ListContains([]string{"66"}, roll) {
-// 				i--
-// 				continue
-// 			}
-// 			availableCategories = append(availableCategories, roll)
-// 		}
-// 	case supplierTypeIlligal:
-// 		availableCategories = []string{"61", "62", "63", "64", "65"}
-// 		add := utils.RollDiceRandom("d6")
-// 		for i := 0; i < add; i++ {
-// 			roll := TrvCore.RollD66()
-// 			if !utils.ListContains([]string{"61", "62", "63", "64", "65"}, roll) {
-// 				i--
-// 				continue
-// 			}
-// 			availableCategories = append(availableCategories, roll)
-// 		}
-// 	}
-
-// 	for c := range availableCategories {
-// 		definition := convert.ItoS(trimDefinition(utils.RollDiceRandom("2d6")))
-// 		key := availableCategories[c] + definition
-// 		// if _, ok := sup.cargo[key]; ok {
-// 		// 	//do something here
-// 		// 	sup.cargo[key].cargoVolume = sup.cargo[key].cargoVolume + sup.cargo[key].lotTradeGoodR.IncreaseRandom()
-// 		// } else {
-// 		// 	newLot := NewTradeLot(availableCategories[c]+definition, sup.planet)
-// 		// 	sup.cargo[availableCategories[c]+definition] = newLot
-// 		// }
-// 		tgr := NewTradeGoodR(key)
-// 		sup.cargoNew.Add(tgr, tgr.IncreaseRandom())
-// 	}
-
-// 	return avGoodsCodes
-// }
-
-// func (sup *supplier) CargoInfo() (output []string) {
-// 	tradeGoodsCodesLIST := tradeGoodsCodesLIST()
-// 	var validKeys []string
-// 	for keyNum := range tradeGoodsCodesLIST {
-// 		key := tradeGoodsCodesLIST[keyNum]
-// 		if _, ok := sup.cargo[key]; ok {
-// 			validKeys = append(validKeys, key)
-// 		}
-// 	}
-// 	for i := range validKeys {
-// 		lot := sup.cargo[validKeys[i]]
-// 		outPutDesc := lot.lotTradeGoodR.pickRandomDescription()
-// 		outputTons := convert.ItoS(lot.cargoVolume)
-// 		basePrice := convert.ItoS(lot.lotTradeGoodR.basePrice) + " Cr"
-// 		output = append(output, outPutDesc+" -- "+outputTons+" -- "+basePrice)
-// 	}
-// 	return output
-// }
-
-func (sup *supplier) RerollTradeGoods() {
-	//sup.cargo = make(map[string]*tradeLot)
-	sup.cargoNew = NewCargo()
-	//sup.determineGoodsAvailable()
+	table = prettytable.InsertSeparatorRow(table, 1)
+	table.PTPrint()
+	return allCont
 }

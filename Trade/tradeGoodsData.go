@@ -161,19 +161,19 @@ func getMaximumForCategoryFormula(code string) string {
 
 func RollMaximumForCategory(code string) int {
 	qty := ""
-	add := "0"
-	formula := getMaximumForCategoryFormula(code)
+	//add := "0"
+	formula := getMaximumForCategoryFormula(code + "7")
 	rawAdd := strings.Split(formula, " + ")
-	if len(rawAdd) > 1 {
-		add = rawAdd[1]
-	}
+	// if len(rawAdd) > 1 {
+	// 	add = rawAdd[1]
+	// }
 	rawQty := strings.Split(rawAdd[0], " x ")
 	if len(rawQty) < 2 {
 		fmt.Println(rawQty[1])
 		panic(code + " formula Error")
 	}
 	qty = rawQty[1]
-	up := utils.RollDiceRandom(qty+"d6", convert.StoI(add))
+	up := utils.RollDiceRandom(qty+"d6") * convert.StoI(qty)
 	return up
 }
 
@@ -191,7 +191,7 @@ func IncreseTG(code string) int {
 		panic(code + " formula Error")
 	}
 	qty = rawQty[1]
-	up := utils.RollDiceRandom(qty+"d6", convert.StoI(add))
+	up := utils.RollDiceRandom(qty+"d6") * convert.StoI(add)
 	return up
 }
 

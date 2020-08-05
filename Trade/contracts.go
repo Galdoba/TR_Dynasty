@@ -10,6 +10,7 @@ import (
 //Contract - описываемые свойства структуры с информацией о договоре с участием денег
 type Contract struct {
 	cType            int
+	category         string
 	lotCode          string
 	lotDescription   string
 	contractDice     int
@@ -31,6 +32,7 @@ func NewContract(cType int, lotCode string, cntrctDie int) Contract {
 	c.lotCode = lotCode // + dice.Roll("2d6").SumStr()
 	c.contractDice = cntrctDie
 	c.taxingAgent = "0"
+	c.volume = IncreseTG(c.lotCode)
 	return c
 }
 
@@ -66,25 +68,28 @@ func (c Contract) SetTaxingAgent(ta string) Contract {
 	return c
 }
 
-func (c Contract) ShowShort() string {
-	short := c.lotCode + "	"
+func (c Contract) ShowShort() []string {
 	price := 0
+	var res []string
 	//vol := c.volume
+	res = append(res, getCategory(c.lotCode))
 	switch c.cType {
 	default:
-		short += "TODO: cType " + strconv.Itoa(c.cType)
 	case 1:
-		short += "SELL	"
 		price = modifyPriceSale(getBasePrice(c.lotCode), c.contractDice)
+		res = append(res, "SELL")
 	case 2:
-		short += "BUY	"
 		price = modifyPricePurchase(getBasePrice(c.lotCode), c.contractDice)
+		res = append(res, "BUY")
 	}
 	//short += strconv.Itoa(vol) + " tons 	"
-	short += strconv.Itoa(price) + "	"
-	short += getDescription(c.lotCode)
+	res = append(res, strconv.Itoa(getBasePrice(c.lotCode)))
+	res = append(res, strconv.Itoa(c.volume)+" x "+getDescription(c.lotCode))
+	res = append(res, strconv.Itoa(price))
 
-	return short
+	res = append(res, strconv.Itoa(c.contractDice))
+
+	return res
 }
 
 func (c Contract) String() string {
