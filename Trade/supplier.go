@@ -2,9 +2,11 @@ package Trade
 
 import (
 	"fmt"
+	"os"
 	"sort"
 
 	"github.com/Galdoba/TR_Dynasty/cli/prettytable"
+	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/dice"
@@ -222,5 +224,7 @@ func (m Merchant) MakeOffer(code string, operation int) []Contract {
 	}
 	table = prettytable.InsertSeparatorRow(table, 1)
 	table.PTPrint()
+	fmt.Println("terminal.GetSize(int(os.Stdout.Fd()))")
+	fmt.Println(terminal.GetSize(int(os.Stdout.Fd())))
 	return allCont
 }
