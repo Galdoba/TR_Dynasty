@@ -92,6 +92,23 @@ func (c Contract) ShowShort() []string {
 	return res
 }
 
+func (c Contract) SellShort() []string {
+	price := 0
+	basePrice := getBasePrice(c.lotCode)
+	var res []string
+	res = append(res, getCategory(c.lotCode))
+	price = modifyPriceSale(getBasePrice(c.lotCode), c.contractDice)
+	priceStr := strconv.Itoa(price)
+	res = append(res, "SELL")
+	res = append(res, strconv.Itoa(basePrice))
+	res = append(res, strconv.Itoa(c.volume)+" x "+getDescription(c.lotCode))
+	res = append(res, priceStr)
+
+	res = append(res, strconv.Itoa(c.contractDice))
+
+	return res
+}
+
 func (c Contract) String() string {
 	cInfo := ""
 	cInfo += "Contract type: " + cTypeToString(c.cType) + "\n"

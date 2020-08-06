@@ -244,6 +244,10 @@ func uwpValid(uwp string) bool {
 	return true
 }
 
+func UWPisValid(uwp string) bool {
+	return uwpValid(uwp)
+}
+
 //DebugInfo -
 func (w *World) DebugInfo() {
 	fmt.Println("stat        =", w.stat)

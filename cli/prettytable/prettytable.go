@@ -3,7 +3,13 @@ package prettytable
 import (
 	"errors"
 	"fmt"
+	"time"
+
+	"github.com/Galdoba/TR_Dynasty/cli/features"
 )
+
+//fmt.Println("terminal.GetSize(int(os.Stdout.Fd()))")
+//fmt.Println(terminal.GetSize(int(os.Stdout.Fd())))
 
 type pTable struct {
 	vals   [][]string
@@ -67,6 +73,28 @@ func (pt pTable) PTPrint() {
 		tbl += "\n"
 	}
 	fmt.Print(tbl)
+}
+
+func (pt pTable) PTPrintSlow(msDelay time.Duration) {
+	tbl := ""
+	colLen := ColLen(pt)
+	for _, row := range pt.vals {
+		tbl += "|"
+		for c, cell := range row {
+			tbl += cell
+			filled := len(cell)
+			for filled < colLen[c] {
+				tbl += " "
+				filled++
+			}
+			//if c != len(row)-1 {
+			tbl += " | "
+			//}
+		}
+		tbl += "\n"
+	}
+	//fmt.Print(tbl)
+	features.TypingSlowly(tbl, msDelay)
 }
 
 func InsertSeparatorRow(pt pTable, r int) pTable {

@@ -2,11 +2,10 @@ package Trade
 
 import (
 	"fmt"
-	"os"
 	"sort"
+	"strconv"
 
 	"github.com/Galdoba/TR_Dynasty/cli/prettytable"
-	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/dice"
@@ -67,6 +66,10 @@ func (m Merchant) SetTraderDice(tDice int) Merchant {
 	return m
 }
 
+func (m Merchant) AvailableCategories() []string {
+	return m.availableTGcodes
+}
+
 func (m Merchant) DetermineGoodsAvailable() Merchant {
 	var avGoodsCodes []string
 	availableCategories := m.availableTGcodes
@@ -88,7 +91,15 @@ func (m Merchant) DetermineGoodsAvailable() Merchant {
 			availableCategories = append(availableCategories, roll)
 		}
 	case supplierTypeTrade:
-		availableCategories = append([]string{"11", "12", "13", "14", "15", "16"}, availableCategories...)
+		//availableCategories = append([]string{"11", "12", "13", "14", "15", "16"}, availableCategories...)
+		allCodes := allCategories()
+		for i := range allCodes {
+			tgTCList := getAvailabilityTags(allCodes[i] + "7")
+			if len(commonElements(tgTCList, m.localTC)) > 0 {
+				availableCategories = append(availableCategories, allCodes[i])
+			}
+		}
+
 		add := utils.RollDiceRandom("d6")
 		for i := 0; i < add; i++ {
 			roll := dice.RollD66()
@@ -141,6 +152,7 @@ func (m Merchant) DetermineGoodsAvailable() Merchant {
 
 	m.availableTGcodes = avGoodsCodes
 	//fmt.Println(m.availableTGcodes)
+
 	return m
 }
 
@@ -207,24 +219,175 @@ func (m Merchant) MakeOffer(code string, operation int) []Contract {
 	for i := 0; i < maxTons; i++ {
 		exactVolume[code+dice.Roll("2d6").SumStr()]++
 	}
+	//categoryDice :=
 	table := prettytable.New()
-	table.AddRow([]string{"Category", "Operation", "Base Price", "Lot", "Price", "Trade Dice"})
+	table.AddRow([]string{"Category", "Maximum Tons", "Base Price", "Lot", "Price", "Trade Dice"})
 	for k, v := range exactVolume {
 		c := Contract{}
 		c.lotCode = k
 		c.volume = v
 		c.cType = operation
-		c.contractDice = m.tradeDice
+		c.contractDice = m.tradeDice + dice.Roll3D()
 		c.taxingAgent = string([]byte(m.localUWP)[5])
 		c.taxingEnviroment = string([]byte(m.localUWP)[6])
 		c.lotDescription = getDescription(k)
 		c.category = getCategory(k)
-		table.AddRow(c.ShowShort())
+		table.AddRow(c.SellShort())
 		allCont = append(allCont, c)
 	}
 	table = prettytable.InsertSeparatorRow(table, 1)
 	table.PTPrint()
-	fmt.Println("terminal.GetSize(int(os.Stdout.Fd()))")
-	fmt.Println(terminal.GetSize(int(os.Stdout.Fd())))
 	return allCont
+}
+
+func cleanSlice(sl []string) []string {
+	var newSl []string
+	for i := range sl {
+		newSl = utils.AppendUniqueStr(newSl, sl[i])
+	}
+	return newSl
+}
+
+func (m Merchant) PurchaseList() {
+	tb := prettytable.New()
+	tb.AddRow([]string{"Item", "Maximum Tons", "Tons per Defined Trade Good (Base Price)", "Cost", "Purchase DM"})
+	//cleanaTGcodes := cleanSlice(m.availableTGcodes)
+	aC := allCategories()
+	for i := range aC {
+
+		catList := listCategory(m, aC[i])
+		for l := range catList {
+			tb.AddRow(catList[l])
+
+		}
+		fmt.Print(".")
+	}
+	tb = prettytable.InsertSeparatorRow(tb, 1)
+	fmt.Print("OK!\n")
+	tb.PTPrintSlow(0)
+}
+
+func listCategory(m Merchant, code string) [][]string {
+	if code == "66" {
+		return [][]string{}
+	}
+	maxTons := RollMaximumForCategory(code) * countElement(code, m.availableTGcodes)
+	purchaseDM := -999
+	//var price int
+	var dataSheet [][]string
+	exactVolume := make(map[string]int)
+	purchDMmap := getPurchaseDMmap(code + "7")
+	for k, val := range purchDMmap {
+		for i := range m.localTC {
+			if m.localTC[i] == k {
+				if purchaseDM < val {
+					purchaseDM = val
+				}
+			}
+		}
+	}
+	if purchaseDM == -999 {
+		purchaseDM = 0
+	}
+
+	tradePurch := m.tradeDice + dice.Roll3D() + purchaseDM
+	for i := 0; i < maxTons; i++ {
+		descr := dice.Roll("2d6").SumStr()
+		switch descr {
+		case "3", "4", "5":
+			descr = "4"
+		case "6", "7", "8":
+			descr = "7"
+		case "9", "10", "11":
+			descr = "10"
+		}
+		exactVolume[code+descr]++
+	}
+	madeCat := false
+	for _, descr := range []string{"2", "4", "7", "10", "12"} {
+		if exactVolume[code+descr] == 0 {
+			continue
+		}
+		dataline := make([]string, 5)
+		// dataline[0] = ""
+		// dataline[1] = ""
+		// dataline[3] = ""
+		// dataline[4] = ""
+		//dataline[5] = ""
+		// dataline[6] = ""
+		if !madeCat {
+			dataline[0] = getCategory(code + descr)
+			dataline[1] = strconv.Itoa(maxTons)
+			dataline[4] = strconv.Itoa(purchaseDM)
+			if purchaseDM >= 0 {
+				dataline[4] = "+" + dataline[4]
+			}
+
+			madeCat = true
+		}
+		basePrice := getBasePrice(code + descr)
+		dataline[2] = strconv.Itoa(exactVolume[code+descr]) + " x " + getDescription(code+descr) + " (" + strconv.Itoa(basePrice) + ")"
+
+		costP := modifyPricePurchase(basePrice, tradePurch)
+
+		if exactVolume[code+descr] > 0 {
+			dataline[3] = strconv.Itoa(costP) // + " (" + strconv.Itoa(basePrice) + ")"
+		}
+
+		//dataline[5] = strconv.Itoa(basePrice)
+		dataSheet = append(dataSheet, dataline)
+	}
+	return dataSheet
+}
+
+func allCategories() []string {
+	return []string{
+		"11",
+		"12",
+		"13",
+		"14",
+		"15",
+		"16",
+		"21",
+		"22",
+		"23",
+		"24",
+		"25",
+		"26",
+		"31",
+		"32",
+		"33",
+		"34",
+		"35",
+		"36",
+		"41",
+		"42",
+		"43",
+		"44",
+		"45",
+		"46",
+		"51",
+		"52",
+		"53",
+		"54",
+		"55",
+		"56",
+		"61",
+		"62",
+		"63",
+		"64",
+		"65",
+		"66",
+	}
+
+}
+
+func countElement(elem string, sl []string) int {
+	var n int
+	for i := range sl {
+		if sl[i] == elem {
+			n++
+		}
+	}
+	return n
 }
