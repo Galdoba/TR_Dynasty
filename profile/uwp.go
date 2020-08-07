@@ -2,6 +2,7 @@ package profile
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/constant"
@@ -418,4 +419,117 @@ func From(pu Puller) Profile {
 		return p
 	}
 	return p
+}
+
+func TradeCodes(uwp string) []string {
+	tradeCodes := constant.TravelCodesMgT2()
+	var res []string
+	for _, tc := range tradeCodes {
+		switch tc {
+		default:
+		case constant.TradeCodeAgricultural:
+			if matchTradeClassificationRequirements(uwp, "-- 456789 45678 567 -- -- --") {
+				res = append(res, constant.TradeCodeAgricultural)
+			}
+		case constant.TradeCodeAsteroid:
+			if matchTradeClassificationRequirements(uwp, "0 0 0 -- -- -- --") {
+				res = append(res, constant.TradeCodeAsteroid)
+			}
+		case constant.TradeCodeBarren:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- 0 0 0") {
+				res = append(res, constant.TradeCodeBarren)
+			}
+		case constant.TradeCodeDesert:
+			if matchTradeClassificationRequirements(uwp, "-- 23456789ABCDEFS 0 -- -- -- --") {
+				res = append(res, constant.TradeCodeDesert)
+			}
+		case constant.TradeCodeFluidOceans:
+			if matchTradeClassificationRequirements(uwp, "-- ABCDEF 123456789A -- -- -- --") {
+				res = append(res, constant.TradeCodeFluidOceans)
+			}
+		case constant.TradeCodeGarden:
+			if matchTradeClassificationRequirements(uwp, "678 568 567 -- -- -- --") {
+				res = append(res, constant.TradeCodeGarden)
+			}
+		case constant.TradeCodeHighPopulation:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- 9ABCDEF -- -- --") {
+				res = append(res, constant.TradeCodeHighPopulation)
+			}
+		case constant.TradeCodeHighTech:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- -- -- -- CDEFGH") {
+				res = append(res, constant.TradeCodeHighTech)
+			}
+
+		case constant.TradeCodeIceCapped:
+			if matchTradeClassificationRequirements(uwp, "-- 01 123456789A -- -- -- --") {
+				res = append(res, constant.TradeCodeIceCapped)
+			}
+		case constant.TradeCodeIndustrial:
+			if matchTradeClassificationRequirements(uwp, "-- 012479 -- 9ABCDEF -- -- --") {
+				res = append(res, constant.TradeCodeIndustrial)
+			}
+		case constant.TradeCodeLowPopulation:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- 123 -- -- --") {
+				res = append(res, constant.TradeCodeLowPopulation)
+			}
+		case constant.TradeCodeLowTech:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- -- -- -- 12345") {
+				res = append(res, constant.TradeCodeLowTech)
+			}
+		case constant.TradeCodeNonAgricultural:
+			if matchTradeClassificationRequirements(uwp, "-- 0123 0123 6789ABCDEF -- -- --") {
+				res = append(res, constant.TradeCodeNonAgricultural)
+			}
+		case constant.TradeCodeNonIndustrial:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- 123456 -- -- --") {
+				res = append(res, constant.TradeCodeNonIndustrial)
+			}
+		case constant.TradeCodePoor:
+			if matchTradeClassificationRequirements(uwp, "-- 2345 0123 -- -- -- --") {
+				res = append(res, constant.TradeCodePoor)
+			}
+		case constant.TradeCodeRich:
+			if matchTradeClassificationRequirements(uwp, "-- 68 -- 678 456789 -- --") {
+				res = append(res, constant.TradeCodeRich)
+			}
+		case constant.TradeCodeVacuum:
+			if matchTradeClassificationRequirements(uwp, "-- 0 -- -- -- -- --") {
+				res = append(res, constant.TradeCodeVacuum)
+			}
+		case constant.TradeCodeWaterWorld:
+			if matchTradeClassificationRequirements(uwp, "-- -- A -- -- -- --") {
+				res = append(res, constant.TradeCodeWaterWorld)
+			}
+		case constant.TravelCodeAmber:
+			if matchTradeClassificationRequirements(uwp, "-- ABCDEF -- -- 07A 9ABCDEFGHJKLMNPQRSTUVWXYZ --") {
+				res = append(res, constant.TravelCodeAmber)
+			}
+		case constant.TravelCodeRed:
+			// if TrvCore.EhexToDigit(string([]byte(uwp)[2]))+TrvCore.EhexToDigit(string([]byte(uwp)[5]))+TrvCore.EhexToDigit(string([]byte(uwp)[6])) > 30 {
+			// 	res = append(res, constant.TravelCodeRed)
+			// }
+
+		}
+	}
+	return res
+}
+
+func matchTradeClassificationRequirements(uwp, reqLine string) bool {
+	stats := strings.Split(reqLine, " ") //-- 23456789 0 -- -- --
+	ehexList := TrvCore.ValidEhexs()
+	fullArray := ""
+	for i := range ehexList {
+		fullArray = fullArray + ehexList[i]
+	}
+	statArray := []string{string([]byte(uwp)[1]), string([]byte(uwp)[2]), string([]byte(uwp)[3]), string([]byte(uwp)[4]), string([]byte(uwp)[5]), string([]byte(uwp)[6]), string([]byte(uwp)[8])}
+	for i := range stats { //собираем аррэй
+		array := stats[i]
+		if array == "--" {
+			array = fullArray
+		}
+		if !strings.Contains(array, statArray[i]) {
+			return false
+		}
+	}
+	return true
 }

@@ -4,30 +4,75 @@ const (
 	//DIVIDER - не несет утверждения. Просто разделаяет части строки
 	DIVIDER = "-"
 	//UNKNOWN - неизвестный EHEX
-	UNKNOWN             = "_"
-	PrStarport          = "Starport"
-	PrSize              = "Size"
-	PrAtmo              = "Atmo"
-	PrHydr              = "Hydr"
-	PrPops              = "Pops"
-	PrGovr              = "Govr"
-	PrLaws              = "Laws"
-	PrTL                = "TL"
-	WTpHospitable       = "Hospitable"
-	WTpPlanetoid        = "Planetoid"
-	WTpIceWorld         = "IceWorld"
-	WTpRadWorld         = "RadWorld"
-	WTpInferno          = "Inferno"
-	WTpBigWorld         = "BigWorld"
-	WTpWorldlet         = "Worldlet"
-	WTpInnerWorld       = "InnerWorld"
-	WTpStormWorld       = "StormWorld"
-	WTpGG               = "GG"
-	MerchantTypeCommon  = "Common"
-	MerchantTypeTrade   = "Trade"
-	MerchantTypeNeutral = "Neutral"
-	MerchantTypeIlligal = "Illigal"
+	UNKNOWN                  = "_"
+	PrStarport               = "Starport"
+	PrSize                   = "Size"
+	PrAtmo                   = "Atmo"
+	PrHydr                   = "Hydr"
+	PrPops                   = "Pops"
+	PrGovr                   = "Govr"
+	PrLaws                   = "Laws"
+	PrTL                     = "TL"
+	WTpHospitable            = "Hospitable"
+	WTpPlanetoid             = "Planetoid"
+	WTpIceWorld              = "IceWorld"
+	WTpRadWorld              = "RadWorld"
+	WTpInferno               = "Inferno"
+	WTpBigWorld              = "BigWorld"
+	WTpWorldlet              = "Worldlet"
+	WTpInnerWorld            = "InnerWorld"
+	WTpStormWorld            = "StormWorld"
+	WTpGG                    = "GG"
+	MerchantTypeCommon       = "Common"
+	MerchantTypeTrade        = "Trade"
+	MerchantTypeNeutral      = "Neutral"
+	MerchantTypeIlligal      = "Illigal"
+	TradeCodeAgricultural    = "Ag"
+	TradeCodeAsteroid        = "As"
+	TradeCodeBarren          = "Ba"
+	TradeCodeDesert          = "De"
+	TradeCodeFluidOceans     = "Fl"
+	TradeCodeGarden          = "Ga"
+	TradeCodeHighPopulation  = "Hi"
+	TradeCodeHighTech        = "Ht"
+	TradeCodeIceCapped       = "Ic"
+	TradeCodeIndustrial      = "In"
+	TradeCodeLowPopulation   = "Lo"
+	TradeCodeLowTech         = "Lt"
+	TradeCodeNonAgricultural = "Na"
+	TradeCodeNonIndustrial   = "Ni"
+	TradeCodePoor            = "Po"
+	TradeCodeRich            = "Ri"
+	TradeCodeVacuum          = "Va"
+	TradeCodeWaterWorld      = "Wa"
+	TravelCodeAmber          = "AZ"
+	TravelCodeRed            = "RZ"
 )
+
+func TravelCodesMgT2() []string {
+	return []string{
+		TradeCodeAgricultural,
+		TradeCodeAsteroid,
+		TradeCodeBarren,
+		TradeCodeDesert,
+		TradeCodeFluidOceans,
+		TradeCodeGarden,
+		TradeCodeHighPopulation,
+		TradeCodeHighTech,
+		TradeCodeIceCapped,
+		TradeCodeIndustrial,
+		TradeCodeLowPopulation,
+		TradeCodeLowTech,
+		TradeCodeNonAgricultural,
+		TradeCodeNonIndustrial,
+		TradeCodePoor,
+		TradeCodeRich,
+		TradeCodeVacuum,
+		TradeCodeWaterWorld,
+		TravelCodeAmber,
+		TravelCodeRed,
+	}
+}
 
 //WorldTypeValid - Проверка правильности написания типа Планеты
 func WorldTypeValid(wType string) bool {

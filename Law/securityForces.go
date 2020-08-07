@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
-	"github.com/Galdoba/TR_Dynasty/worldBuilder"
+	"github.com/Galdoba/TR_Dynasty/world"
 )
 
 //Security - obj for describing state of security Forces of the World
@@ -18,7 +18,7 @@ type Security struct {
 }
 
 //NewSecurity - creates random obj to draw info from using World data
-func NewSecurity(world *worldBuilder.World) *Security {
+func NewSecurity(world *world.World) *Security {
 	sp := &Security{}
 	if world.Stats()["Pops"] == 0 {
 		return sp
@@ -69,7 +69,7 @@ func (sp *Security) Profile() string {
 	return sp.profile
 }
 
-func calculatePlanetaryPresence(world *worldBuilder.World) int {
+func calculatePlanetaryPresence(world *world.World) int {
 	dm := 0
 	if match(world.Stats()["Size"], 0, 1) {
 		dm += 2
@@ -108,7 +108,7 @@ func calculatePlanetaryPresence(world *worldBuilder.World) int {
 	return roll
 }
 
-func calculateOrbitalPresence(world *worldBuilder.World) int {
+func calculateOrbitalPresence(world *world.World) int {
 	if match(world.StarPort(), "X") {
 		return 0
 	}
@@ -168,7 +168,7 @@ func calculateOrbitalPresence(world *worldBuilder.World) int {
 	return roll
 }
 
-func calculateSystemPresence(world *worldBuilder.World, orbPrez int) int {
+func calculateSystemPresence(world *world.World, orbPrez int) int {
 	if match(world.StarPort(), "X") {
 		return 0
 	}
@@ -211,7 +211,7 @@ func calculateSystemPresence(world *worldBuilder.World, orbPrez int) int {
 	return roll
 }
 
-func calculateStanse(world *worldBuilder.World) int {
+func calculateStanse(world *world.World) int {
 	dm := 0
 	if match(world.StarPort(), "X") {
 		dm += 2
@@ -271,7 +271,7 @@ func match(val interface{}, chck ...interface{}) bool {
 	}
 }
 
-func assignSecurityCodes(world *worldBuilder.World, plpres int) (codes []string) {
+func assignSecurityCodes(world *world.World, plpres int) (codes []string) {
 	if match(world.Stats()["Govr"], 1, 3, 5, 6, 7, 8, 9, 11, 13, 14, 15) &&
 		world.Stats()["Pops"] >= 4 &&
 		match(world.TradeCodes(), "Po", "Ri") &&
@@ -331,7 +331,7 @@ func assignSecurityCodes(world *worldBuilder.World, plpres int) (codes []string)
 	return codes
 }
 
-func (sp *Security) formProfile(world *worldBuilder.World) {
+func (sp *Security) formProfile(world *world.World) {
 	sp.profile = "S"
 	sp.profile += TrvCore.DigitToEhex(sp.planetaryPresence)
 	sp.profile += TrvCore.DigitToEhex(sp.orbitalPresence)

@@ -2,6 +2,8 @@ package TrvCore
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/utils"
@@ -560,4 +562,42 @@ func EHex(data interface{}) Ehex {
 		ehex.glyph = DigitToEhex(data.(int))
 	}
 	return &ehex
+}
+
+func IntCondition(test int, codition string) bool {
+	//var range []int
+	rangeBounds := strings.Split(codition, " - ")
+	if len(rangeBounds) == 2 {
+		lowBound, err := strconv.Atoi(rangeBounds[0])
+		highBound, err := strconv.Atoi(rangeBounds[1])
+		if err != nil {
+			return false
+		}
+		for i := lowBound; i < highBound; i++ {
+			if test == i {
+				return true
+			}
+		}
+	}
+	if string([]byte(codition)[len(codition)-1]) == "-" && len(rangeBounds) == 1 {
+		mark := strings.Split(codition, "-")
+		highBound, err := strconv.Atoi(mark[0])
+		if err != nil {
+			return false
+		}
+		if test <= highBound {
+			return true
+		}
+	}
+	if string([]byte(codition)[len(codition)-1]) == "+" && len(rangeBounds) == 1 {
+		mark := strings.Split(codition, "+")
+		lowBound, err := strconv.Atoi(mark[0])
+		if err != nil {
+			return false
+		}
+		if test >= lowBound {
+			return true
+		}
+	}
+	return false
 }

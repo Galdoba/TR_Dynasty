@@ -1,56 +1,31 @@
 package Trade
 
-import (
-	"fmt"
-	"strconv"
-)
-
 type Cargo struct {
-	cargo map[string]int
+	code            string
+	sourceWorldUPP  string
+	aquisitionPrice int
+	volume          int
 }
 
-type Cargoer interface {
-	Add(TradeGoodR, int)
-	Remove(TradeGoodR)
-	Info(string) string
-}
-
-func NewCargo() *Cargo {
-	c := &Cargo{}
-	c.cargo = make(map[string]int)
-	return c
-}
-
-func (c *Cargo) Add(tgr *TradeGoodR, addVolume int) {
-	key := tgr.code
-	c.cargo[key] = c.cargo[key] + addVolume
-	if c.cargo[key] < 0 {
-		delete(c.cargo, key)
-	}
-}
-
-func (c *Cargo) Remove(tgr *TradeGoodR) {
-	key := tgr.code
-	if _, ok := c.cargo[key]; ok {
-		delete(c.cargo, key)
-	}
-}
-
-func (c *Cargo) Info(code string) (data string) {
-	for k, v := range c.cargo {
-		if k == code {
-			tgr := NewTradeGoodR(code)
-			data = tgr.description + "	(" + code + ")	" + strconv.Itoa(v) + " tons\n"
-		}
-	}
-	if code == "All" {
-		allCodes := allTradeGoodsRCodes()
-		for _, aCode := range allCodes {
-			if v, ok := c.cargo[aCode]; ok {
-				tgr := NewTradeGoodR(aCode)
-				data = data + fmt.Sprintf("%v	 %v 		%v tons\n", aCode, tgr.description, strconv.Itoa(v))
-			}
-		}
-	}
-	return data
-}
+/*
+код груза:
+A B C D E F G container type container size container mass atmospheric range temperature range humidity range gravity range
+H I J K L M N O cargo type number of items mass of each item atmospheric range temperature range humidity range gravity range EM spectrum range
+CONTAINER:
+container type				0-4
+container size				0-9
+container mass 				0-9
+atmospheric range 			0-9
+temperature range 			X 0-F Y
+humidity range 				0-A
+gravity range 				0-X
+CARGO:
+cargo type 					0-E
+number of items 			0-B
+mass of each item 			0-9
+atmospheric range 			0-9
+temperature range			X 0-F Y
+humidity range				0-A
+gravity range 				0-X
+EM spectrum range			0-8
+*/

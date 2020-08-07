@@ -1499,7 +1499,90 @@ func matchTradeClassificationRequirements(w *World, reqLine string) bool {
 	return true
 }
 
+//TradeCodeViable - эта версия считает TC по корнику Mongoose Traveller 2E (p. 228)
+//TODO: переписать функцию так чтобы исключить зависмость структуры World (поместить ее в Profile)
 func TradeCodeViable(w *World, tc string) bool {
+	switch tc {
+	default:
+		return false
+	case tradeClassificationAgricultural:
+		if matchTradeClassificationRequirements(w, "-- 456789 45678 567 -- --") {
+			return true
+		}
+	case tradeClassificationAsteroidBelt:
+		if matchTradeClassificationRequirements(w, "0 0 0 -- -- --") {
+			return true
+		}
+	case tradeClassificationBarren:
+		if matchTradeClassificationRequirements(w, "-- -- -- 0 0 0") {
+			return true
+		}
+	case tradeClassificationDesert:
+		if matchTradeClassificationRequirements(w, "-- 23456789ABCDEFS 0 -- -- --") {
+			return true
+		}
+	case tradeClassificationFluid:
+		if matchTradeClassificationRequirements(w, "-- ABCDEF 123456789A -- -- --") {
+			return true
+		}
+	case tradeClassificationGardenWorld:
+		if matchTradeClassificationRequirements(w, "678 568 567 -- -- --") {
+			return true
+		}
+	case tradeClassificationHighPopulation:
+		if matchTradeClassificationRequirements(w, "-- -- -- 9ABCDEF -- --") {
+			return true
+		}
+	case tradeClassificationHighTech:
+		if isInRange(w.Stat(constant.PrTL), 12, 30) {
+			return true
+		}
+	case tradeClassificationIceCapped:
+		if matchTradeClassificationRequirements(w, "-- 01 123456789A -- -- --") {
+			return true
+		}
+	case tradeClassificationIndustrial:
+		if matchTradeClassificationRequirements(w, "-- 012479 -- 9ABCDEF -- --") {
+			return true
+		}
+	case tradeClassificationLowPopulation:
+		if matchTradeClassificationRequirements(w, "-- -- -- 123 -- --") {
+			return true
+		}
+	case tradeClassificationLowTech:
+		if isInRange(w.Stat(constant.PrTL), 0, 5) {
+			return true
+		}
+	case tradeClassificationNonAgricultural:
+		if matchTradeClassificationRequirements(w, "-- 0123 0123 6789ABCDEF -- --") {
+			return true
+		}
+	case tradeClassificationNonIndustrial:
+		if matchTradeClassificationRequirements(w, "-- -- -- 123456 -- --") {
+			return true
+		}
+	case tradeClassificationPoor:
+		if matchTradeClassificationRequirements(w, "-- 2345 0123 -- -- --") {
+			return true
+		}
+	case tradeClassificationRich:
+		if matchTradeClassificationRequirements(w, "-- 68 -- 678 456789 --") {
+			return true
+		}
+	case tradeClassificationVacuum:
+		if matchTradeClassificationRequirements(w, "-- 0 -- -- -- --") {
+			return true
+		}
+	case tradeClassificationWaterWorld:
+		if matchTradeClassificationRequirements(w, "-- -- A -- -- --") {
+			return true
+		}
+
+	}
+	return false
+}
+
+func TradeCodeViableT5(w *World, tc string) bool {
 	switch tc {
 	default:
 		return false
