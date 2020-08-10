@@ -1,36 +1,32 @@
 package Trade
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
 	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/profile"
 	"github.com/Galdoba/TR_Dynasty/world"
-	"github.com/Galdoba/devtools/cli/features"
 	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
 )
 
 func Run() {
-	tst := user.InputStr()
-	fmt.Println(tst)
 
-	return
-	features.TypingSlowly("Initiating Trade Terminal...", 15)
-
+	fmt.Println("Initiating Trade Terminal...")
 	uwpNotValid := true
 	uwp := ""
 
 	for uwpNotValid {
-		features.TypingSlowly("\nInput World UWP: ", 15)
+		fmt.Println("\nInput World UWP: ")
 		uwp = utils.InputString("")
 		if world.UWPisValid(uwp) {
 			uwpNotValid = false
 		}
 		switch uwpNotValid {
 		default:
-			features.TypingSlowly("ERROR: Input unparseable", 15)
+			fmt.Println("ERROR: Input unparseable")
 		case false:
 		}
 
@@ -42,58 +38,70 @@ func Run() {
 	for i := range tc {
 		tcs += tc[i] + " "
 	}
-	features.TypingSlowly("World Trade Codes: ", 15)
-	features.TypingSlowly(tcs+"\n", 15)
-	features.TypingSlowly("Connecting to Local Trade Network...OK\n", 15)
+	fmt.Println(TradeDMs("15", tc))
+	fmt.Println("World Trade Codes: ")
+	fmt.Println(tcs + "\n")
+	fmt.Println("Connecting to Local Trade Network...OK\n")
 	switch actionSelector() {
 	case 0:
-		features.TypingSlowly("Disconnecting...\n", 15)
-		features.TypingSlowly("Have a nice day!\n", 15)
+		fmt.Println("Disconnecting...\n")
+		fmt.Println("Have a nice day!\n")
 	case 1:
-		features.TypingSlowly("Enter Negotiation Effect: ", 15)
+		fmt.Println("Enter Negotiation Effect: ")
 		neg := 0
 		neg = utils.InputInt("")
-		features.TypingSlowly("Compiling Datasheet\n", 15)
+		fmt.Println("Compiling Datasheet\n")
 		merch := NewMerchant().SetLocalUWP(uwp).SetLocalTC(tc).SetMType(constant.MerchantTypeTrade).SetTraderDice(neg).DetermineGoodsAvailable()
-		features.TypingSlowly("Gathering data", 15)
+		fmt.Println("Gathering data")
 		merch.PurchaseList()
 	case 2:
-		features.TypingSlowly("Enter Negotiation Effect: ", 15)
-		neg := 0
-		neg = utils.InputInt("")
-
-		features.TypingSlowly("Enter Trade Good code and volume '[tgCode] [X]': ", 15)
-		//err := true
-		codeVol := ""
-		codeVol = utils.InputString("")
-		fmt.Println(neg, codeVol)
+		neg := gatherInt("Roll Broker(SOC) 8 Check and enter Effect: ")
+		code := gatherInt("Enter Trade Good code: ")
+		vol := gatherInt("Enter Trade Good volume: ")
+		fmt.Println("neg, code, vol")
+		fmt.Println(neg, code, vol)
+		fmt.Println("--------------")
 
 	}
-	// features.TypingSlowly("Enter Negotiation Effect: ", 15)
+	// fmt.Println("Enter Negotiation Effect: ")
 	// neg := 0
 	// neg = utils.InputInt("")
-	// features.TypingSlowly("Compiling Datasheet", 15)
+	// fmt.Println("Compiling Datasheet")
 	// merch := NewMerchant().SetLocalUWP(sw.UWP()).SetLocalTC(sw.TradeCodes()).SetMType(constant.MerchantTypeTrade).SetTraderDice(neg).DetermineGoodsAvailable()
 	// //fmt.Println(merch)
 	// merch.PurchaseList()
 	// //merch.ListPrices()
 }
 
+func gatherInt(descr string) int {
+	res := 0
+	err := errors.New("No Data")
+	for err != nil {
+		fmt.Println(descr)
+		res, err = user.InputInt()
+		if err == nil {
+			break
+		}
+		fmt.Println(err.Error() + "\n")
+	}
+	return res
+}
+
 func actionSelector() int {
 	parsed := false
 	var action int
-	features.TypingSlowly("Select procesure:\n", 15)
-	features.TypingSlowly("[0] - Disconnect\n", 15)
-	features.TypingSlowly("[1] - Show available Trade Goods\n", 15)
-	features.TypingSlowly("[2] - Sell Trade Goods\n", 15)
+	fmt.Println("Select procesure:\n")
+	fmt.Println("[0] - Disconnect\n")
+	fmt.Println("[1] - Show available Trade Goods\n")
+	fmt.Println("[2] - Sell Trade Goods\n")
 	for !parsed {
-
-		action = utils.InputInt("User Input>")
+		fmt.Println("User Input>")
+		action, _ = user.InputInt()
 		switch action {
 		default:
-			features.TypingSlowly("Action "+strconv.Itoa(action)+" Incorrect", 15)
+			fmt.Println("Action " + strconv.Itoa(action) + " Incorrect")
 		case 0, 1, 2:
-			features.TypingSlowly("Initiating procesure "+strconv.Itoa(action)+"\n", 15)
+			fmt.Println("Initiating procesure " + strconv.Itoa(action) + "\n")
 			parsed = true
 		}
 	}

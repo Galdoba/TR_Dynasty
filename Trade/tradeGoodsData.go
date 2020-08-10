@@ -111,7 +111,11 @@ func getStockIncrementFormula(code string) string {
 }
 
 func getBasePrice(code string) int {
-	return convert.StoI(tgDB[code][4])
+	res, err := strconv.Atoi(tgDB[code][4])
+	if err != nil {
+		panic("TODO EXPALANATION: getBasePrice()")
+	}
+	return res
 }
 
 func getPurchaseDMmap(code string) map[string]int {

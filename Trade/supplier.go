@@ -46,6 +46,20 @@ func (m Merchant) SetLocalTC(tc []string) Merchant {
 	return m
 }
 
+func (m Merchant) CostPurchase(code string) int {
+	pDM, sDM := TradeDMs(categoryOf(code), m.localTC)
+	base := getBasePrice(code)
+	pPrice := modifyPricePurchase(base, pDM-sDM+m.tradeDice+m.prices[code])
+	return pPrice
+}
+
+func (m Merchant) CostSale(code string) int {
+	pDM, sDM := TradeDMs(categoryOf(code), m.localTC)
+	base := getBasePrice(code)
+	sPrice := modifyPriceSale(base, sDM-pDM+m.tradeDice+m.prices[code])
+	return sPrice
+}
+
 func (m Merchant) SetMType(mType string) Merchant {
 	mTypeErr := true
 	for _, val := range []string{supplierTypeCommon, supplierTypeTrade, supplierTypeNeutral, supplierTypeCommon} {
@@ -70,9 +84,44 @@ func (m Merchant) AvailableCategories() []string {
 	return m.availableTGcodes
 }
 
+func matchWorldsTC(code string, tc []string) bool {
+	pMap := getPurchaseDMmap(code)
+	var keys []string
+	for k, _ := range pMap {
+		keys = append(keys, k)
+	}
+	m, _ := matchTradeCodes(keys, tc)
+	if m {
+		return true
+	}
+	// for k, _ := range pMap {
+	// 	for i := range tc {
+	// 		if tc[i] == k {
+	// 			return true
+	// 		}
+	// 	}
+	// }
+	return false
+}
+
 func (m Merchant) DetermineGoodsAvailable() Merchant {
 	var avGoodsCodes []string
-	availableCategories := m.availableTGcodes
+	//availableCategories := m.availableTGcodes
+	availableCategories := []string{"11", "12", "13", "14", "15", "16"}
+	allCodes := allCategories()
+	for i := range allCodes {
+		if matchWorldsTC(allCodes[i]+"7", m.localTC) {
+			availableCategories = append(availableCategories, allCodes[i])
+		}
+	}
+	for i := 0; i < dice.Roll1D(); i++ {
+		roll := dice.RollD66()
+		fmt.Println(roll)
+		availableCategories = append(availableCategories, roll)
+	}
+	//TODO: дальше в зависимости от типа торговцев исключать не подходящие товары и считать их тоннаж
+
+	return m
 	switch m.mType {
 	default:
 		for i := 0; i < dice.Roll1D(); i++ {
@@ -92,8 +141,9 @@ func (m Merchant) DetermineGoodsAvailable() Merchant {
 		}
 	case supplierTypeTrade:
 		//availableCategories = append([]string{"11", "12", "13", "14", "15", "16"}, availableCategories...)
-		allCodes := allCategories()
+
 		for i := range allCodes {
+			fmt.Println(allCodes[i] + "7")
 			tgTCList := getAvailabilityTags(allCodes[i] + "7")
 			if len(commonElements(tgTCList, m.localTC)) > 0 {
 				availableCategories = append(availableCategories, allCodes[i])
@@ -309,12 +359,6 @@ func listCategory(m Merchant, code string) [][]string {
 			continue
 		}
 		dataline := make([]string, 5)
-		// dataline[0] = ""
-		// dataline[1] = ""
-		// dataline[3] = ""
-		// dataline[4] = ""
-		//dataline[5] = ""
-		// dataline[6] = ""
 		if !madeCat {
 			dataline[0] = getCategory(code + descr)
 			dataline[1] = strconv.Itoa(maxTons)
@@ -338,6 +382,10 @@ func listCategory(m Merchant, code string) [][]string {
 		dataSheet = append(dataSheet, dataline)
 	}
 	return dataSheet
+}
+
+func CategoryList() []string {
+	return allCategories()
 }
 
 func allCategories() []string {
@@ -377,7 +425,7 @@ func allCategories() []string {
 		"63",
 		"64",
 		"65",
-		"66",
+		//"66",
 	}
 
 }
@@ -390,4 +438,36 @@ func countElement(elem string, sl []string) int {
 		}
 	}
 	return n
+}
+
+func TradeDMs(code string, tc []string) (pDM int, sDM int) {
+	pDM = -999
+	purchDMmap := getPurchaseDMmap(code + "7")
+	for k, val := range purchDMmap {
+		for i := range tc {
+			if tc[i] == k {
+				if pDM < val {
+					pDM = val
+				}
+			}
+		}
+	}
+	if pDM == -999 {
+		pDM = 0
+	}
+	sDM = -999
+	saleDMmap := getSaleDMmap(code + "7")
+	for k, val := range saleDMmap {
+		for i := range tc {
+			if tc[i] == k {
+				if sDM < val {
+					sDM = val
+				}
+			}
+		}
+	}
+	if sDM == -999 {
+		sDM = 0
+	}
+	return pDM, sDM
 }
