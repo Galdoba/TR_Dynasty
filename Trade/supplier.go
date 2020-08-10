@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/Galdoba/TR_Dynasty/cli/prettytable"
+	"github.com/Galdoba/devtools/cli/prettytable"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/dice"

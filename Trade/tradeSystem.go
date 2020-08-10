@@ -1,22 +1,21 @@
 package Trade
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 	"strconv"
-	"strings"
 
-	"github.com/Galdoba/TR_Dynasty/cli/features"
 	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/profile"
 	"github.com/Galdoba/TR_Dynasty/world"
+	"github.com/Galdoba/devtools/cli/features"
+	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
 )
 
 func Run() {
+	tst := user.InputStr()
+	fmt.Println(tst)
 
-	testInput("dsf")
 	return
 	features.TypingSlowly("Initiating Trade Terminal...", 15)
 
@@ -102,12 +101,5 @@ func actionSelector() int {
 }
 
 func testInput(tst string) string { //TODO: Переписать утилсовые инпуты
-	in := bufio.NewReader(os.Stdin)
-	line, err := in.ReadString('\n')
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	line = strings.TrimSuffix(line, "\n")
-	line = strings.TrimSuffix(line, "\r")
-	return line
+	return utils.InputString(tst)
 }
