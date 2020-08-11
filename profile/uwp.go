@@ -533,3 +533,7 @@ func matchTradeClassificationRequirements(uwp, reqLine string) bool {
 	}
 	return true
 }
+
+func Goverment(uwp string) string {
+	return string([]byte(uwp)[5])
+}

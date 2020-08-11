@@ -1,4 +1,4 @@
-package Trade
+package trade
 
 import (
 	"strconv"
@@ -59,15 +59,18 @@ func tradeMark() string {
 	return str
 }
 
+//Negotiate -
 func (c Contract) Negotiate(effect int) Contract {
 	c.contractDice = c.contractDice + effect
 	return c
 }
 
+//SetTaxingAgent -
 func (c Contract) SetTaxingAgent(ta string) Contract {
 	return c
 }
 
+//ShowShort -
 func (c Contract) ShowShort() []string {
 	price := 0
 	var res []string
@@ -92,6 +95,7 @@ func (c Contract) ShowShort() []string {
 	return res
 }
 
+//SellShort -
 func (c Contract) SellShort() []string {
 	price := 0
 	basePrice := getBasePrice(c.lotCode)
@@ -140,6 +144,7 @@ func (c Contract) String() string {
 	return cInfo
 }
 
+//SetVolume -
 func (c Contract) SetVolume(newVolume int) Contract {
 	c.volume = newVolume
 	return c

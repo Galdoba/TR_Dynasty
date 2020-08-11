@@ -1,4 +1,4 @@
-package Trade
+package trade
 
 import (
 	"fmt"
@@ -9,18 +9,19 @@ import (
 	"github.com/Galdoba/utils"
 )
 
-type TradeGoodR struct {
-	code                    string
-	tgCategory              string
-	availabilityTags        []string
-	stockIncrementFormula   string
-	basePrice               int
-	purchaseDM              map[string]int
-	saleDM                  map[string]int
-	maximumRiskAssessmentDM int
-	dangerousGoodsDM        int
-	description             string
-}
+//TradeGoodR -
+// type TradeGoodR struct {
+// 	code                    string
+// 	tgCategory              string
+// 	availabilityTags        []string
+// 	stockIncrementFormula   string
+// 	basePrice               int
+// 	purchaseDM              map[string]int
+// 	saleDM                  map[string]int
+// 	maximumRiskAssessmentDM int
+// 	dangerousGoodsDM        int
+// 	description             string
+// }
 
 // func TradeGood() *TradeGoodR {
 // 	return &TradeGoodR{}
@@ -35,39 +36,40 @@ type TradeGoodR struct {
 // 	return ""
 // }
 
-func NewTradeGoodR(code string) *TradeGoodR {
-	//fmt.Println(code, "code")
-	//TODO: попробывать оптимизировать создание товара из других модулей
-	//(сейчас он создает 8 раз Мар на 600 записей при каждом создании TradeGoodR)
-	tgr := &TradeGoodR{}
-	tgr.code = code
-	tgr.purchaseDM = make(map[string]int)
-	tgr.saleDM = make(map[string]int)
-	tgr.tgCategory = getCategory(code)
-	tgr.description = getDescription(code)
-	tgr.availabilityTags = getAvailabilityTags(code)
-	tgr.stockIncrementFormula = getStockIncrementFormula(code)
-	tgr.basePrice = getBasePrice(code)
-	tgr.purchaseDM = getPurchaseDMmap(code)
-	tgr.saleDM = getSaleDMmap(code)
-	tgr.maximumRiskAssessmentDM = getMaximumRiskAssessment(code)
-	tgr.dangerousGoodsDM = getDangerousGoodsDM(code)
+//NewTradeGoodR -
+// func NewTradeGoodR(code string) *TradeGoodR {
+// 	//fmt.Println(code, "code")
+// 	//TODO: попробывать оптимизировать создание товара из других модулей
+// 	//(сейчас он создает 8 раз Мар на 600 записей при каждом создании TradeGoodR)
+// 	tgr := &TradeGoodR{}
+// 	tgr.code = code
+// 	tgr.purchaseDM = make(map[string]int)
+// 	tgr.saleDM = make(map[string]int)
+// 	tgr.tgCategory = getCategory(code)
+// 	tgr.description = getDescription(code)
+// 	tgr.availabilityTags = getAvailabilityTags(code)
+// 	tgr.stockIncrementFormula = getStockIncrementFormula(code)
+// 	tgr.basePrice = getBasePrice(code)
+// 	tgr.purchaseDM = getPurchaseDMmap(code)
+// 	tgr.saleDM = getSaleDMmap(code)
+// 	tgr.maximumRiskAssessmentDM = getMaximumRiskAssessment(code)
+// 	tgr.dangerousGoodsDM = getDangerousGoodsDM(code)
 
-	return tgr
-}
+// 	return tgr
+// }
 
-func (tgr *TradeGoodR) Info() {
-	fmt.Println(tgr.code)
-	fmt.Println(tgr.tgCategory)
-	fmt.Println(tgr.availabilityTags)
-	fmt.Println(tgr.stockIncrementFormula)
-	fmt.Println(tgr.basePrice)
-	fmt.Println(tgr.purchaseDM)
-	fmt.Println(tgr.saleDM)
-	fmt.Println(tgr.maximumRiskAssessmentDM)
-	fmt.Println(tgr.dangerousGoodsDM)
-	fmt.Println(tgr.description)
-}
+// func (tgr *TradeGoodR) Info() {
+// 	fmt.Println(tgr.code)
+// 	fmt.Println(tgr.tgCategory)
+// 	fmt.Println(tgr.availabilityTags)
+// 	fmt.Println(tgr.stockIncrementFormula)
+// 	fmt.Println(tgr.basePrice)
+// 	fmt.Println(tgr.purchaseDM)
+// 	fmt.Println(tgr.saleDM)
+// 	fmt.Println(tgr.maximumRiskAssessmentDM)
+// 	fmt.Println(tgr.dangerousGoodsDM)
+// 	fmt.Println(tgr.description)
+// }
 
 // func actualPriceDM(actualTags []string, tgr *TradeGoodR, operationType string) int {
 // 	maxVal := -999
@@ -131,9 +133,9 @@ func getPurchaseDMmap(code string) map[string]int {
 }
 
 func getSaleDMmap(code string) map[string]int {
-	TradeGoodsDataMap := TradeGoodRData()
+	//TradeGoodsDataMap := TradeGoodRData()
 	pMap := make(map[string]int)
-	rawData := TradeGoodsDataMap[code][6]
+	rawData := tgDB[code][6]
 	tagsMerged := strings.Split(rawData, ", ")
 	for i := range tagsMerged {
 		key := tagsMerged[i][0 : len(tagsMerged[i])-3]
@@ -163,14 +165,11 @@ func getMaximumForCategoryFormula(code string) string {
 	return tgDB[code][9]
 }
 
+//RollMaximumForCategory -
 func RollMaximumForCategory(code string) int {
 	qty := ""
-	//add := "0"
 	formula := getMaximumForCategoryFormula(code + "7")
 	rawAdd := strings.Split(formula, " + ")
-	// if len(rawAdd) > 1 {
-	// 	add = rawAdd[1]
-	// }
 	rawQty := strings.Split(rawAdd[0], " x ")
 	if len(rawQty) < 2 {
 		fmt.Println(rawQty[1])
@@ -181,9 +180,10 @@ func RollMaximumForCategory(code string) int {
 	return up
 }
 
+//IncreseTG -
 func IncreseTG(code string) int {
 	qty := ""
-	add := "0"
+	add := "1"
 	formula := getStockIncrementFormula(code)
 	rawAdd := strings.Split(formula, " + ")
 	if len(rawAdd) > 1 {
@@ -199,20 +199,20 @@ func IncreseTG(code string) int {
 	return up
 }
 
-func (tgr *TradeGoodR) IncreaseRandom() int {
-	qty := ""
-	add := "0"
-	formula := tgr.stockIncrementFormula
-	rawAdd := strings.Split(formula, " + ")
-	if len(rawAdd) > 1 {
-		add = rawAdd[1]
-	}
-	rawQty := strings.Split(rawAdd[0], " x ")
-	if len(rawQty) < 2 {
-		fmt.Println(rawQty[1])
-		panic(tgr.code + " formula Error")
-	}
-	qty = rawQty[1]
-	up := utils.RollDiceRandom(qty+"d6", convert.StoI(add))
-	return up
-}
+// func (tgr *TradeGoodR) IncreaseRandom() int {
+// 	qty := ""
+// 	add := "0"
+// 	formula := tgr.stockIncrementFormula
+// 	rawAdd := strings.Split(formula, " + ")
+// 	if len(rawAdd) > 1 {
+// 		add = rawAdd[1]
+// 	}
+// 	rawQty := strings.Split(rawAdd[0], " x ")
+// 	if len(rawQty) < 2 {
+// 		fmt.Println(rawQty[1])
+// 		panic(tgr.code + " formula Error")
+// 	}
+// 	qty = rawQty[1]
+// 	up := utils.RollDiceRandom(qty+"d6", convert.StoI(add))
+// 	return up
+// }

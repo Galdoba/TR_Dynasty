@@ -1,4 +1,4 @@
-package Trade
+package trade
 
 import (
 	"github.com/Galdoba/TR_Dynasty/world"
@@ -86,6 +86,7 @@ func passengerTraffic(dm int) string {
 	return convert.ItoS(res)
 }
 
+//SeekFreight -
 func SeekFreight(planet *world.World, npcEffect int) (major int, minor int, incedental int) {
 	trafficDM := trafficDM(planet)
 	majorDie := freightTraffic(trafficDM - 4)
@@ -186,6 +187,7 @@ func mailDM(planet *world.World, npcEffect int) int {
 	return dm + npcEffect
 }
 
+//SeekMail -
 func SeekMail(planet *world.World, npcEffect int) (mail int) {
 	mailDM := mailDM(planet, npcEffect)
 	mContainers := 0

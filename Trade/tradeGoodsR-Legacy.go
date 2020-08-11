@@ -1,6 +1,7 @@
+package trade
+
 // //CODE||TYPE            ||EXAMPLE                    ||PRODUCTION TAGS	||TON INCREMENT	||BASE PRICE||PURCHSE DM   							||SALE DM                                ||RISK||DANGER
 // //112||Basic Electronics||Calculators/Adding Machines||All				||1d6 x 12		||6000		||Industrial +2, High Tech +3, Rich +1	||Non-Industrial +2, Low Tech +1, Poor +1||+0	||-6
-package Trade
 
 // import (
 // 	"strconv"

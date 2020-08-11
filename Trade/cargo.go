@@ -1,5 +1,6 @@
-package Trade
+package trade
 
+//Cargo -
 type Cargo struct {
 	code            string
 	sourceWorldUPP  string

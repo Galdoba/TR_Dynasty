@@ -1,13 +1,11 @@
+package trade
+
 //CODE||TYPE            ||EXAMPLE                    ||PRODUCTION TAGS	||TON INCREMENT	||BASE PRICE||PURCHSE DM   							||SALE DM                                ||RISK||DANGER
 //112||Basic Electronics||Calculators/Adding Machines||All				||1d6 x 12		||6000		||In +2, Ht +3, Ri +1	||Ni +2, Lt +1, Po +1||+0	||-6
-package Trade
 
 import (
 	"strconv"
 	"strings"
-
-	"github.com/Galdoba/convert"
-	"github.com/Galdoba/utils"
 )
 
 const (
@@ -161,8 +159,8 @@ func inListCustom(position string, list []string) bool {
 	return false
 }
 
-//TradeGoodRData -
-func TradeGoodRData() map[string][]string {
+//TGoodsData -
+func TGoodsData() map[string][]string {
 	tgrMap := make(map[string][]string)
 	//fill map
 	tgrMap["112"] = []string{"Basic Electronics", "Calculators/Adding Machines", "All", "1d6 x 12", "6000", "In +2, Ht +3, Ri +1", "Ni +2, Lt +1, Po +1", "+0", "-6", "1d6 x 10"}
@@ -612,12 +610,12 @@ func tgrCategory(code string) string {
 	return ""
 }
 
-func (tgr *TradeGoodR) pickRandomDescription() string {
-	descrAll := strings.Split(tgr.description, "/")
-	dice := "d" + convert.ItoS(len(descrAll))
-	pos := utils.RollDice(dice, -1)
-	return descrAll[pos]
-}
+// func (tgr *TradeGoodR) pickRandomDescription() string {
+// 	descrAll := strings.Split(tgr.description, "/")
+// 	dice := "d" + convert.ItoS(len(descrAll))
+// 	pos := utils.RollDice(dice, -1)
+// 	return descrAll[pos]
+// }
 
 func allTradeGoodsRCodes() (allCodesSlice []string) {
 	for i := 1; i <= 6; i++ {

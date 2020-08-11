@@ -1,13 +1,9 @@
-package Trade
+package trade
 
 import (
-	"fmt"
 	"sort"
-	"strconv"
 
-	"github.com/Galdoba/devtools/cli/prettytable"
-
-	"github.com/Galdoba/TR_Dynasty/TrvCore"
+	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/utils"
 )
@@ -15,9 +11,10 @@ import (
 var tgDB map[string][]string
 
 func init() {
-	tgDB = TradeGoodRData()
+	tgDB = TGoodsData()
 }
 
+//Merchant -
 type Merchant struct {
 	mType            string
 	availableTGcodes []string
@@ -28,6 +25,7 @@ type Merchant struct {
 	volume           map[string]int
 }
 
+//NewMerchant -
 func NewMerchant() Merchant {
 	m := Merchant{}
 	m.tradeDice = 0
@@ -36,50 +34,47 @@ func NewMerchant() Merchant {
 	return m
 }
 
+//SetLocalUWP -
 func (m Merchant) SetLocalUWP(uwp string) Merchant {
 	m.localUWP = uwp
 	return m
 }
 
+//SetLocalTC -
 func (m Merchant) SetLocalTC(tc []string) Merchant {
 	m.localTC = tc
 	return m
 }
 
+//CostPurchase -
 func (m Merchant) CostPurchase(code string) int {
-	pDM, sDM := TradeDMs(categoryOf(code), m.localTC)
+	pDM, sDM := PurchSaleDMs(categoryOf(code), m.localTC)
 	base := getBasePrice(code)
-	pPrice := modifyPricePurchase(base, pDM-sDM+m.tradeDice+m.prices[code])
+	pPrice := modifyPricePurchase(base, pDM-sDM+m.tradeDice+m.prices[categoryOf(code)])
 	return pPrice
 }
 
+//CostSale -
 func (m Merchant) CostSale(code string) int {
-	pDM, sDM := TradeDMs(categoryOf(code), m.localTC)
+	pDM, sDM := PurchSaleDMs(categoryOf(code), m.localTC)
 	base := getBasePrice(code)
-	sPrice := modifyPriceSale(base, sDM-pDM+m.tradeDice+m.prices[code])
+	sPrice := modifyPriceSale(base, sDM-pDM+m.tradeDice+m.prices[categoryOf(code)])
 	return sPrice
 }
 
+//SetMType -
 func (m Merchant) SetMType(mType string) Merchant {
-	mTypeErr := true
-	for _, val := range []string{supplierTypeCommon, supplierTypeTrade, supplierTypeNeutral, supplierTypeCommon} {
-		if mType == val {
-			mTypeErr = false
-			break
-		}
-	}
-	if mTypeErr {
-		return m
-	}
 	m.mType = mType
 	return m
 }
 
+//SetTraderDice -
 func (m Merchant) SetTraderDice(tDice int) Merchant {
 	m.tradeDice = tDice
 	return m
 }
 
+//AvailableCategories -
 func (m Merchant) AvailableCategories() []string {
 	return m.availableTGcodes
 }
@@ -87,26 +82,18 @@ func (m Merchant) AvailableCategories() []string {
 func matchWorldsTC(code string, tc []string) bool {
 	pMap := getPurchaseDMmap(code)
 	var keys []string
-	for k, _ := range pMap {
+	for k := range pMap {
 		keys = append(keys, k)
 	}
 	m, _ := matchTradeCodes(keys, tc)
 	if m {
 		return true
 	}
-	// for k, _ := range pMap {
-	// 	for i := range tc {
-	// 		if tc[i] == k {
-	// 			return true
-	// 		}
-	// 	}
-	// }
 	return false
 }
 
+//DetermineGoodsAvailable -
 func (m Merchant) DetermineGoodsAvailable() Merchant {
-	var avGoodsCodes []string
-	//availableCategories := m.availableTGcodes
 	availableCategories := []string{"11", "12", "13", "14", "15", "16"}
 	allCodes := allCategories()
 	for i := range allCodes {
@@ -116,93 +103,41 @@ func (m Merchant) DetermineGoodsAvailable() Merchant {
 	}
 	for i := 0; i < dice.Roll1D(); i++ {
 		roll := dice.RollD66()
-		fmt.Println(roll)
 		availableCategories = append(availableCategories, roll)
 	}
-	//TODO: дальше в зависимости от типа торговцев исключать не подходящие товары и считать их тоннаж
-
-	return m
-	switch m.mType {
-	default:
-		for i := 0; i < dice.Roll1D(); i++ {
-			roll := dice.RollD66()
-			availableCategories = append(availableCategories, roll)
-		}
-	case supplierTypeCommon:
-		availableCategories = []string{"11", "12", "13", "14", "15", "16"}
-		add := utils.RollDiceRandom("d6")
-		for i := 1; i < add; i++ {
-			roll := TrvCore.RollD66()
-			if !utils.ListContains([]string{"11", "12", "13", "14", "15", "16"}, roll) {
-				i--
-				continue
-			}
-			availableCategories = append(availableCategories, roll)
-		}
-	case supplierTypeTrade:
-		//availableCategories = append([]string{"11", "12", "13", "14", "15", "16"}, availableCategories...)
-
-		for i := range allCodes {
-			fmt.Println(allCodes[i] + "7")
-			tgTCList := getAvailabilityTags(allCodes[i] + "7")
-			if len(commonElements(tgTCList, m.localTC)) > 0 {
-				availableCategories = append(availableCategories, allCodes[i])
+	switch m.mType { //case constant.MerchantTypeNeutral: имеет ВСЕ товары
+	case constant.MerchantTypeCommon:
+		var newAvail []string
+		for _, val := range availableCategories {
+			if val == "11" || val == "12" || val == "13" || val == "14" || val == "15" || val == "16" {
+				newAvail = append(newAvail, val)
 			}
 		}
-
-		add := utils.RollDiceRandom("d6")
-		for i := 0; i < add; i++ {
-			roll := dice.RollD66()
-			if utils.ListContains([]string{"61", "62", "63", "64", "65", "66"}, roll) {
-				i--
-				continue
+		availableCategories = newAvail
+	case constant.MerchantTypeTrade:
+		var newAvail []string
+		for _, val := range availableCategories {
+			if val != "61" && val != "62" && val != "63" && val != "64" && val != "65" {
+				newAvail = append(newAvail, val)
 			}
-			availableCategories = append(availableCategories, roll)
 		}
-		ExcludeFromSliceStr(availableCategories, "61")
-		ExcludeFromSliceStr(availableCategories, "62")
-		ExcludeFromSliceStr(availableCategories, "63")
-		ExcludeFromSliceStr(availableCategories, "64")
-		ExcludeFromSliceStr(availableCategories, "65")
-		//ExcludeFromSliceStr(availableCategories, "66")
-	case supplierTypeNeutral:
-		add := dice.Roll1D()
-		for i := 0; i < add; i++ {
-			roll := dice.RollD66()
-			if utils.ListContains([]string{"66"}, roll) {
-				i--
-				continue
+		availableCategories = newAvail
+	case constant.MerchantTypeIlligal:
+		var newAvail []string
+		for _, val := range availableCategories {
+			if val == "61" || val == "62" || val == "63" || val == "64" || val == "65" || val == "66" {
+				newAvail = append(newAvail, val)
 			}
-			availableCategories = append(availableCategories, roll)
 		}
-	case supplierTypeIlligal:
-		availableCategories = []string{"61", "62", "63", "64", "65"}
-		add := dice.Roll1D()
-		for i := 0; i < add; i++ {
-			roll := dice.RollD66()
-			if !utils.ListContains([]string{"61", "62", "63", "64", "65"}, roll) {
-				i--
-				continue
-			}
-			availableCategories = append(availableCategories, roll)
-		}
+		availableCategories = newAvail
 	}
 	sort.Strings(availableCategories)
-	//fmt.Println(availableCategories)
+	m.availableTGcodes = availableCategories
 	for c := range availableCategories {
-
 		key := availableCategories[c]
-		m.prices[key] = dice.Roll3D()
-		//key = key + dice.Roll("2d6").SumStr()
+		m.prices[categoryOf(key)] = dice.Roll3D()
 		m.volume[categoryOf(key)] = m.volume[categoryOf(key)] + RollMaximumForCategory(key)
-		avGoodsCodes = append(avGoodsCodes, key)
-
 	}
-	sort.Strings(avGoodsCodes)
-
-	m.availableTGcodes = avGoodsCodes
-	//fmt.Println(m.availableTGcodes)
-
 	return m
 }
 
@@ -210,85 +145,86 @@ func categoryOf(code string) string {
 	return string([]byte(code)[0]) + string([]byte(code)[1])
 }
 
+//AvailableTradeGoods -
 func (m Merchant) AvailableTradeGoods() []string {
 	return m.availableTGcodes
 }
 
-type Seller interface {
-	ProposeSell(string) Contract
-}
+// type Seller interface {
+// 	ProposeSell(string) Contract
+// }
 
-//ProposeSell - Информация о передаче товара от игрока к купцу
-func (m Merchant) ProposeSell(code string) Contract {
-	//dealDice := 10 //dice.Roll3D()
-	dealDice := m.tradeDice
-	saleDMmap := getSaleDMmap(code)
-	for i := range m.localTC {
-		if val, ok := saleDMmap[m.localTC[i]]; ok {
-			dealDice = dealDice + val
-		}
-	}
-	return NewContract(1, code, dealDice+m.prices[categoryOf(code)])
-}
+// //ProposeSell - Информация о передаче товара от игрока к купцу
+// func (m Merchant) ProposeSell(code string) Contract {
+// 	//dealDice := 10 //dice.Roll3D()
+// 	dealDice := m.tradeDice
+// 	saleDMmap := getSaleDMmap(code)
+// 	for i := range m.localTC {
+// 		if val, ok := saleDMmap[m.localTC[i]]; ok {
+// 			dealDice = dealDice + val
+// 		}
+// 	}
+// 	return NewContract(1, code, dealDice+m.prices[categoryOf(code)])
+// }
 
-type Buyer interface {
-	ProposeBuy(string) Contract
-}
+// type Buyer interface {
+// 	ProposeBuy(string) Contract
+// }
 
-//ProposeBuy - Информация о передаче товара от купца к игроку
-func (m Merchant) ProposeBuy(code string) Contract {
-	dealDice := m.tradeDice
-	purchaseDMmap := getPurchaseDMmap(code) // + dice.Roll("2d6").SumStr())
-	for i := range m.localTC {
-		if val, ok := purchaseDMmap[m.localTC[i]]; ok {
-			dealDice = dealDice + val
-		}
-	}
-	return NewContract(2, code, dealDice+m.prices[categoryOf(code)])
-}
+// //ProposeBuy - Информация о передаче товара от купца к игроку
+// func (m Merchant) ProposeBuy(code string) Contract {
+// 	dealDice := m.tradeDice
+// 	purchaseDMmap := getPurchaseDMmap(code) // + dice.Roll("2d6").SumStr())
+// 	for i := range m.localTC {
+// 		if val, ok := purchaseDMmap[m.localTC[i]]; ok {
+// 			dealDice = dealDice + val
+// 		}
+// 	}
+// 	return NewContract(2, code, dealDice+m.prices[categoryOf(code)])
+// }
 
-func (m Merchant) EncodeContract(code string, cType int) string {
-	//#[tgCode]-[die][cType][ta][te][TC]#
-	cCode := "#"
-	ta := string([]byte(m.localUWP)[5])
-	te := string([]byte(m.localUWP)[6])
-	tl := string([]byte(m.localUWP)[8])
-	cCode += code + "-" + TrvCore.DigitToEhex(m.tradeDice) + TrvCore.DigitToEhex(cType) + ta + te + tl
-	for i := range m.localTC {
-		cCode += m.localTC[i]
-	}
-	return cCode
-}
+// func (m Merchant) EncodeContract(code string, cType int) string {
+// 	//#[tgCode]-[die][cType][ta][te][TC]#
+// 	cCode := "#"
+// 	ta := string([]byte(m.localUWP)[5])
+// 	te := string([]byte(m.localUWP)[6])
+// 	tl := string([]byte(m.localUWP)[8])
+// 	cCode += code + "-" + TrvCore.DigitToEhex(m.tradeDice) + TrvCore.DigitToEhex(cType) + ta + te + tl
+// 	for i := range m.localTC {
+// 		cCode += m.localTC[i]
+// 	}
+// 	return cCode
+// }
 
-func (m Merchant) MakeOffer(code string, operation int) []Contract {
+// func (m Merchant) MakeOffer(code string, operation int) []Contract {
 
-	var allCont []Contract
-	maxTons := RollMaximumForCategory(code)
-	fmt.Println("maxTons", maxTons)
-	exactVolume := make(map[string]int)
-	for i := 0; i < maxTons; i++ {
-		exactVolume[code+dice.Roll("2d6").SumStr()]++
-	}
-	//categoryDice :=
-	table := prettytable.New()
-	table.AddRow([]string{"Category", "Maximum Tons", "Base Price", "Lot", "Price", "Trade Dice"})
-	for k, v := range exactVolume {
-		c := Contract{}
-		c.lotCode = k
-		c.volume = v
-		c.cType = operation
-		c.contractDice = m.tradeDice + dice.Roll3D()
-		c.taxingAgent = string([]byte(m.localUWP)[5])
-		c.taxingEnviroment = string([]byte(m.localUWP)[6])
-		c.lotDescription = getDescription(k)
-		c.category = getCategory(k)
-		table.AddRow(c.SellShort())
-		allCont = append(allCont, c)
-	}
-	table = prettytable.InsertSeparatorRow(table, 1)
-	table.PTPrint()
-	return allCont
-}
+// 	var allCont []Contract
+// 	maxTons := RollMaximumForCategory(code)
+// 	fmt.Println("maxTons", maxTons)
+// 	exactVolume := make(map[string]int)
+// 	for i := 0; i < maxTons; i++ {
+// 		exactVolume[code+dice.Roll("2d6").SumStr()]++
+// 	}
+// 	//categoryDice :=
+// 	table := prettytable.New()
+// 	table.AddRow([]string{"Category", "Maximum Tons", "Base Price", "Lot", "Price", "Trade Dice"})
+// 	for k, v := range exactVolume {
+// 		c := Contract{}
+// 		c.lotCode = k
+// 		c.volume = v
+// 		c.cType = operation
+// 		c.contractDice = m.tradeDice + dice.Roll3D()
+// 		c.taxingAgent = string([]byte(m.localUWP)[5])
+// 		c.taxingEnviroment = string([]byte(m.localUWP)[6])
+// 		c.lotDescription = getDescription(k)
+// 		c.category = getCategory(k)
+// 		table.AddRow(c.SellShort())
+// 		allCont = append(allCont, c)
+// 	}
+// 	table = prettytable.InsertSeparatorRow(table, 1)
+// 	table.PTPrint()
+// 	return allCont
+// }
 
 func cleanSlice(sl []string) []string {
 	var newSl []string
@@ -298,92 +234,15 @@ func cleanSlice(sl []string) []string {
 	return newSl
 }
 
-func (m Merchant) PurchaseList() {
-	tb := prettytable.New()
-	tb.AddRow([]string{"Item", "Maximum Tons", "Tons per Defined Trade Good (Base Price)", "Cost", "Purchase DM"})
-	//cleanaTGcodes := cleanSlice(m.availableTGcodes)
-	aC := allCategories()
-	for i := range aC {
-
-		catList := listCategory(m, aC[i])
-		for l := range catList {
-			tb.AddRow(catList[l])
-
-		}
-		fmt.Print(".")
+func sumMap(m map[string]int) int {
+	s := 0
+	for _, v := range m {
+		s += v
 	}
-	tb = prettytable.InsertSeparatorRow(tb, 1)
-	fmt.Print("OK!\n")
-	tb.PTPrintSlow(0)
+	return s
 }
 
-func listCategory(m Merchant, code string) [][]string {
-	if code == "66" {
-		return [][]string{}
-	}
-	maxTons := RollMaximumForCategory(code) * countElement(code, m.availableTGcodes)
-	purchaseDM := -999
-	//var price int
-	var dataSheet [][]string
-	exactVolume := make(map[string]int)
-	purchDMmap := getPurchaseDMmap(code + "7")
-	for k, val := range purchDMmap {
-		for i := range m.localTC {
-			if m.localTC[i] == k {
-				if purchaseDM < val {
-					purchaseDM = val
-				}
-			}
-		}
-	}
-	if purchaseDM == -999 {
-		purchaseDM = 0
-	}
-
-	tradePurch := m.tradeDice + dice.Roll3D() + purchaseDM
-	for i := 0; i < maxTons; i++ {
-		descr := dice.Roll("2d6").SumStr()
-		switch descr {
-		case "3", "4", "5":
-			descr = "4"
-		case "6", "7", "8":
-			descr = "7"
-		case "9", "10", "11":
-			descr = "10"
-		}
-		exactVolume[code+descr]++
-	}
-	madeCat := false
-	for _, descr := range []string{"2", "4", "7", "10", "12"} {
-		if exactVolume[code+descr] == 0 {
-			continue
-		}
-		dataline := make([]string, 5)
-		if !madeCat {
-			dataline[0] = getCategory(code + descr)
-			dataline[1] = strconv.Itoa(maxTons)
-			dataline[4] = strconv.Itoa(purchaseDM)
-			if purchaseDM >= 0 {
-				dataline[4] = "+" + dataline[4]
-			}
-
-			madeCat = true
-		}
-		basePrice := getBasePrice(code + descr)
-		dataline[2] = strconv.Itoa(exactVolume[code+descr]) + " x " + getDescription(code+descr) + " (" + strconv.Itoa(basePrice) + ")"
-
-		costP := modifyPricePurchase(basePrice, tradePurch)
-
-		if exactVolume[code+descr] > 0 {
-			dataline[3] = strconv.Itoa(costP) // + " (" + strconv.Itoa(basePrice) + ")"
-		}
-
-		//dataline[5] = strconv.Itoa(basePrice)
-		dataSheet = append(dataSheet, dataline)
-	}
-	return dataSheet
-}
-
+//CategoryList -
 func CategoryList() []string {
 	return allCategories()
 }
@@ -440,7 +299,8 @@ func countElement(elem string, sl []string) int {
 	return n
 }
 
-func TradeDMs(code string, tc []string) (pDM int, sDM int) {
+//PurchSaleDMs -
+func PurchSaleDMs(code string, tc []string) (pDM int, sDM int) {
 	pDM = -999
 	purchDMmap := getPurchaseDMmap(code + "7")
 	for k, val := range purchDMmap {
@@ -471,3 +331,43 @@ func TradeDMs(code string, tc []string) (pDM int, sDM int) {
 	}
 	return pDM, sDM
 }
+
+//////////////////////////////////////////////SALE
+
+func confirm(tgCodes []string) []string {
+	var confirmed []string
+	validCodes := allTradeGoodsRCodes()
+	for i := range tgCodes {
+		for j := range validCodes {
+			if validCodes[j] == tgCodes[i] {
+				confirmed = append(confirmed, tgCodes[i])
+				continue
+			}
+		}
+	}
+	return confirmed
+}
+
+// func (m Merchant) SaleProposalLegal(code string, amount int) string {
+// 	basePrice := getBasePrice(code)
+// 	salePrice := m.CostSale(code)
+// 	profit := (salePrice - basePrice) * amount
+// 	if profit < 0 {
+// 		//	profit = 0
+// 	}
+// 	tax := taxingAmount(profit, string([]byte(m.localUWP)[5]))
+// 	proposal := ""
+// 	//fmt.Println("Base", basePrice, "sale", salePrice, "#profit", profit, "||tax", tax, getDescription(code))
+// 	proposal += "Trade Lot: " + strconv.Itoa(amount) + " x " + getDescription(code) + "\n"
+// 	proposal += " Proposal: " + strconv.Itoa(salePrice) + " x " + strconv.Itoa(amount) + " (" + strconv.Itoa(salePrice*amount) + " Cr)" + "\n"
+// 	proposal += "      Tax: " + strconv.Itoa(tax) + " Cr" + "\n"
+// 	proposal += "---------------------" + "\n"
+// 	proposal += "   Profit: " + strconv.Itoa((salePrice-tax)*amount) + " Cr" + "\n"
+// 	return proposal
+// }
+
+/*
+sale table:
+|Tons per Defined Trade Good|Proposal|Tax|Total Profit|Sell DM|
+
+*/

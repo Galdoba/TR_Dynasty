@@ -1,4 +1,4 @@
-package Trade
+package trade
 
 import (
 	"fmt"
@@ -96,20 +96,20 @@ func startMENU() {
 	utils.TakeOptions("Select Action Menu:", "Trade", "Freight")
 }
 
-//var TradeGoodsDataMap map[string][]string
-var CharacterBrokerSkill int
-var CharacterInvestigateSkill int
-var CharacterStreetwiseSkill int
-var CharacterSocialDM int
-var RefereeDM int
-var sourceWorldUPP string
+// //var TradeGoodsDataMap map[string][]string
+// var CharacterBrokerSkill int
+// var CharacterInvestigateSkill int
+// var CharacterStreetwiseSkill int
+// var CharacterSocialDM int
+// var RefereeDM int
+// var sourceWorldUPP string
 
-type tradeLot struct {
-	lotTradeGoodR *TradeGoodR
-	cargoVolume   int
-	cost          int
-	purchseDice   int
-}
+// type tradeLot struct {
+// 	lotTradeGoodR *TradeGoodR
+// 	cargoVolume   int
+// 	cost          int
+// 	purchseDice   int
+// }
 
 func trimDefinition(def int) int {
 	switch def {
@@ -123,6 +123,7 @@ func trimDefinition(def int) int {
 	return def
 }
 
+//ExcludeFromSliceStr -
 func ExcludeFromSliceStr(slice []string, elem string) []string {
 	for i := 0; i < len(slice); i++ {
 		if elem == slice[i] {
