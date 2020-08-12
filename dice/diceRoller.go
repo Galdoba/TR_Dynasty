@@ -19,6 +19,8 @@ type Dicepool struct {
 	trueRandom bool
 	boon       bool
 	bane       bool
+	src        rand.Source
+	rand       rand.Rand
 }
 
 // func main() {
@@ -32,21 +34,48 @@ type Dicepool struct {
 
 // 			каждая функция действия должна принимать dp и отдавать его измененным
 
+//   dice.New(SeedFromStr("Planet Name")).RollSdd("2d6")
+
 // 	*/
 // }
+
+func New(seed int64) *Dicepool {
+	dp := Dicepool{}
+	dp.seed = seed
+	if dp.seed == 0 {
+		dp.seed = time.Now().UTC().UnixNano()
+	}
+	dp.src = rand.NewSource(dp.seed)
+	dp.rand = *rand.New(dp.src)
+	return &dp
+}
 
 //Roll - создает и возвращает структуру из которой можно брать результат,
 //манипулировать.
 func Roll(code string) *Dicepool {
 	dp := Dicepool{}
 	time.Sleep(time.Millisecond)
-	dp.seed = time.Now().UTC().UnixNano()
+	if dp.seed == 0 {
+		dp.seed = time.Now().UTC().UnixNano()
+		dp.src = rand.NewSource(dp.seed)
+		dp.rand = *rand.New(dp.src)
+	}
 	dp.dice, dp.edges = decodeDiceCode(code)
-	rand.Seed(dp.seed)
+	//rand.Seed(dp.seed)
+
 	for d := 0; d < dp.dice; d++ {
-		dp.result = append(dp.result, rand.Intn(dp.edges)+1)
+		dp.result = append(dp.result, dp.rand.Intn(dp.edges)+1)
 	}
 	return &dp
+}
+
+func (dp *Dicepool) RollNext(code string) *Dicepool {
+	dp.result = nil
+	dp.dice, dp.edges = decodeDiceCode(code)
+	for d := 0; d < dp.dice; d++ {
+		dp.result = append(dp.result, dp.rand.Intn(dp.edges)+1)
+	}
+	return dp
 }
 
 func decodeDiceCode(code string) (int, int) {
@@ -76,7 +105,7 @@ func (dp *Dicepool) Result() []int {
 	return dp.result
 }
 
-//ResultSum - возвращает сумму очков броска
+//Sum - возвращает сумму очков броска
 func (dp *Dicepool) Sum() int {
 	sum := 0
 	for i := 0; i < len(dp.result); i++ {
@@ -86,7 +115,7 @@ func (dp *Dicepool) Sum() int {
 	return sum
 }
 
-//ResultSum - возвращает сумму очков броска в виде стринга
+//SumStr - возвращает сумму очков броска в виде стринга
 func (dp *Dicepool) SumStr() string {
 	return strconv.Itoa(dp.Sum())
 }
@@ -163,9 +192,11 @@ func (dp *Dicepool) ModPerDie(s int) *Dicepool {
 func (dp *Dicepool) SetSeed(s int64) *Dicepool {
 	dp.seed = s
 	dp.result = nil
-	rand.Seed(dp.seed)
+	dp.src = rand.NewSource(dp.seed)
+	dp.rand = *rand.New(dp.src)
+	//rand.Seed(dp.seed)
 	for d := 0; d < dp.dice; d++ {
-		dp.result = append(dp.result, rand.Intn(dp.edges-1)+1)
+		dp.result = append(dp.result, dp.rand.Intn(dp.edges)+1)
 	}
 	return dp
 }
@@ -204,11 +235,11 @@ func (dp *Dicepool) ReplaceOne(die, newVal int) *Dicepool {
 }
 
 //ReRoll - меняет значение броска
-func (dp *Dicepool) ReRoll() *Dicepool {
-	code := encodeDiceCode(dp.dice, dp.edges)
-	dpNew := Roll(code)
-	return dpNew
-}
+// func (dp *Dicepool) ReRoll() *Dicepool {
+// 	code := encodeDiceCode(dp.dice, dp.edges)
+// 	dpNew := Roll(code)
+// 	return dpNew
+// }
 
 //////////////////////////////////////////////////////////
 //Probe:
@@ -275,11 +306,13 @@ func rollCombinations(max, len int) map[int][]int {
 //////////////////////////////////////////////////////////
 //QuickRolls:
 
+//RollD66 - Возвращает результат 2d6 в виде string
 func RollD66() string {
 	return Roll("2d6").ResultString()
 
 }
 
+//Roll1D -
 func Roll1D(dm ...int) int {
 	mod := 0
 	if len(dm) > 0 {
@@ -288,6 +321,7 @@ func Roll1D(dm ...int) int {
 	return Roll("1d6").DM(mod).Sum()
 }
 
+//Roll2D -
 func Roll2D(dm ...int) int {
 	mod := 0
 	if len(dm) > 0 {
@@ -296,6 +330,7 @@ func Roll2D(dm ...int) int {
 	return Roll("2d6").DM(mod).Sum()
 }
 
+//Roll3D -
 func Roll3D(dm ...int) int {
 	mod := 0
 	if len(dm) > 0 {
@@ -304,6 +339,7 @@ func Roll3D(dm ...int) int {
 	return Roll("3d6").DM(mod).Sum()
 }
 
+//Roll4D -
 func Roll4D(dm ...int) int {
 	mod := 0
 	if len(dm) > 0 {
@@ -312,6 +348,7 @@ func Roll4D(dm ...int) int {
 	return Roll("4d6").DM(mod).Sum()
 }
 
+//Roll5D -
 func Roll5D(dm ...int) int {
 	mod := 0
 	if len(dm) > 0 {

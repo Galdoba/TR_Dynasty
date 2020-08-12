@@ -6,78 +6,77 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/constant"
-	"github.com/Galdoba/TR_Dynasty/world"
 	"github.com/Galdoba/utils"
 )
 
-type Profiled interface {
-	ValueOf(string) string
-	SetValue(string, string)
-}
+// type Profiled interface {
+// 	ValueOf(string) string
+// 	SetValue(string, string)
+// }
 
-type Profile struct {
-	pType string
-	data  string
-}
+// type Profile struct {
+// 	pType string
+// 	data  string
+// }
 
-func NewProfile(pType, data string) Profile {
-	pr := Profile{}
-	pr.pType = pType
-	pr.data = data
-	return pr
-}
+// func NewProfile(pType, data string) Profile {
+// 	pr := Profile{}
+// 	pr.pType = pType
+// 	pr.data = data
+// 	return pr
+// }
 
-func (pr *Profile) order() []string {
-	return orderByType(pr.pType)
-}
+// func (pr *Profile) order() []string {
+// 	return orderByType(pr.pType)
+// }
 
-type Puller interface {
-	PullData() map[string]string
-}
+// type Puller interface {
+// 	PullData() map[string]string
+// }
 
-type Pusher interface {
-	SetValue(string, string)
-}
+// type Pusher interface {
+// 	SetValue(string, string)
+// }
 
-type PushPuller interface {
-	Pusher
-	Puller
-}
+// type PushPuller interface {
+// 	Pusher
+// 	Puller
+// }
 
-func Compose(prfType string, p Puller) string {
-	var profile string
-	order := orderByType(prfType)
-	if len(order) < 1 {
-		return "Error: Unknown profile Type"
-	}
-	data := p.PullData()
-	for _, val := range order {
-		if ok, caseResolution := specialCase(val); ok {
-			profile = profile + caseResolution
-			continue
-		}
-		if _, ok := data[val]; !ok {
-			profile = profile + constant.UNKNOWN
-			//return "Error: DATA UNAVAILABLE(" + val + ")"
-		}
-		profile = profile + data[val]
-	}
-	return profile
-}
+// func Compose(prfType string, p Puller) string {
+// 	var profile string
+// 	order := orderByType(prfType)
+// 	if len(order) < 1 {
+// 		return "Error: Unknown profile Type"
+// 	}
+// 	data := p.PullData()
+// 	for _, val := range order {
+// 		if ok, caseResolution := specialCase(val); ok {
+// 			profile = profile + caseResolution
+// 			continue
+// 		}
+// 		if _, ok := data[val]; !ok {
+// 			profile = profile + constant.UNKNOWN
+// 			//return "Error: DATA UNAVAILABLE(" + val + ")"
+// 		}
+// 		profile = profile + data[val]
+// 	}
+// 	return profile
+// }
 
-func AssignTo(pp PushPuller, prf Profile) {
+// func AssignTo(pp PushPuller, prf Profile) {
 
-}
+// }
 
-func specialCase(val string) (bool, string) {
-	var output string
-	switch val {
-	default:
-		return false, output
-	case constant.DIVIDER:
-		return true, "-"
-	}
-}
+// func specialCase(val string) (bool, string) {
+// 	var output string
+// 	switch val {
+// 	default:
+// 		return false, output
+// 	case constant.DIVIDER:
+// 		return true, "-"
+// 	}
+// }
 
 // type UWP struct {
 // 	data map[string]string
@@ -406,20 +405,20 @@ func orderByType(profileType string) (order []string) {
 	return order
 }
 
-func From(pu Puller) Profile {
-	p := Profile{}
-	switch pu.(type) {
-	case world.World:
-		data := pu.PullData()
-		p.pType = "UWP"
-		p.data = data[constant.PrStarport] +
-			data[constant.PrSize] + data[constant.PrAtmo] + data[constant.PrHydr] +
-			data[constant.PrPops] + data[constant.PrGovr] + data[constant.PrLaws] +
-			"-" + data[constant.PrTL]
-		return p
-	}
-	return p
-}
+// func From(pu Puller) Profile {
+// 	p := Profile{}
+// 	switch pu.(type) {
+// 	case world.World:
+// 		data := pu.PullData()
+// 		p.pType = "UWP"
+// 		p.data = data[constant.PrStarport] +
+// 			data[constant.PrSize] + data[constant.PrAtmo] + data[constant.PrHydr] +
+// 			data[constant.PrPops] + data[constant.PrGovr] + data[constant.PrLaws] +
+// 			"-" + data[constant.PrTL]
+// 		return p
+// 	}
+// 	return p
+// }
 
 func TradeCodes(uwp string) []string {
 	tradeCodes := constant.TravelCodesMgT2()

@@ -1,12 +1,8 @@
 package main
 
-import (
-	"github.com/Galdoba/TR_Dynasty/Trade"
-)
-
 func main() {
 	//Trade.Init()
-	Trade.Run()
+	//	Trade.Run()
 	// for i := 0; i < 300000; i++ {
 
 	// 	fmt.Print(strconv.Itoa(i) + "/3000\r")

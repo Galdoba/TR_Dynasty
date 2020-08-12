@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Galdoba/TR_Dynasty/dice"
+
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/convert"
@@ -16,6 +18,9 @@ import (
 
 const (
 	//constant.PrSize     = "Size"
+	typeHEX = "Hex"
+	typeUWP = "UWP"
+
 	planetStatPopDigit = "PopDigit"
 	planetStatBelt     = "Belts"
 	planetStatGasG     = "GG"
@@ -101,9 +106,8 @@ type World struct {
 	stat map[string]int    //Избавиться
 	data map[string]string //
 	//temperature  string            // увести в карту
-	hex          string            // увести в карту
-	name         string            //
-	uwp          string            // увести в карту или вообще избавиться
+	name string //
+	//uwp          string            // увести в карту или вообще избавиться
 	tradeCodes   []string          //
 	importanceEx string            // увести в карту или сделать интом
 	economyEx    string            // увести в карту
@@ -114,6 +118,7 @@ type World struct {
 	pbg          string            // увести в карту
 	worlds       string            // это вообще что?
 	stellar      map[string]string // технически должно быть в другом структе
+	dice         *dice.Dicepool
 	//esscStSyst   *esscStarSystem
 }
 
@@ -123,6 +128,10 @@ func NewWorld(name string) *World {
 	world.name = name
 	world.stat = make(map[string]int)
 	world.data = make(map[string]string)
+	seed := utils.SeedFromString(name)
+	world.dice = dice.New(seed)
+	world.dice.RollNext("6d6")
+	fmt.Println(world.dice.RollNext("6d6"))
 	// if !uwpValid(uwp) {
 	// 	uwp = "RANDOM"
 	// }
@@ -134,12 +143,12 @@ func NewWorld(name string) *World {
 
 //SetHex -
 func (w *World) SetHex(hex string) {
-	w.hex = hex
+	w.data[typeHEX] = hex
 }
 
 //Hex -
 func (w *World) Hex() string {
-	return w.hex
+	return w.data[typeHEX]
 }
 
 //UWP -
@@ -254,9 +263,9 @@ func (w *World) DebugInfo() {
 	fmt.Println("data        =", w.data)
 	fmt.Println("temperature =", w.data["Temperature"])
 	//fmt.Println("port        =", w.port)
-	fmt.Println("hex         =", w.hex)
+	fmt.Println("hex         =", w.data[typeHEX])
 	fmt.Println("name        =", w.name)
-	fmt.Println("uwp         =", w.uwp)
+	fmt.Println("uwp         =", w.UWP())
 	fmt.Println("tradeCodes  =", w.tradeCodes)
 	fmt.Println("importanceEx=", w.importanceEx)
 	fmt.Println("economyEx   =", w.economyEx)
@@ -642,7 +651,8 @@ func (w *World) EconomicEx() string {
 		return w.economyEx
 	}
 	w.PBG() // удоставеряемяся что данные в планете есть
-	resourses := utils.RollDice("2d6")
+	//resourses := utils.RollDice("2d6")
+	resourses := w.dice.RollNext("2d6").Sum()
 	if w.Stat(constant.PrTL) >= 8 {
 		resourses = resourses + w.Stat(planetStatBelt) + w.Stat(planetStatGasG)
 	}
