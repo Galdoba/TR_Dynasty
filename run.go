@@ -1,6 +1,19 @@
 package main
 
+import (
+	"fmt"
+
+	starport "github.com/Galdoba/TR_Dynasty/Starport"
+	"github.com/Galdoba/TR_Dynasty/world"
+)
+
 func main() {
+
+	w := world.NewWorld("Destiny").SetUWP("A540A98-E")
+	sp := starport.From(w)
+	fmt.Println(w)
+	fmt.Println(sp)
+
 	//Trade.Init()
 	//	Trade.Run()
 	// for i := 0; i < 300000; i++ {

@@ -1,11 +1,13 @@
 package profile
 
 import (
+	"errors"
 	"strconv"
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/constant"
+	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/utils"
 )
 
@@ -373,9 +375,10 @@ func RandomUWP(planetType ...string) string {
 	return result
 }
 
-func rollStat(dice, mod, dm int) int {
-	d := strconv.Itoa(dice)
-	r := utils.RollDice(d+"d6", mod+dm)
+func rollStat(die, mod, dm int) int {
+	d := strconv.Itoa(die)
+	//r := utils.RollDice(d+"d6", mod+dm)
+	r := dice.Roll(d + "d6").DM(mod + dm).Sum()
 	return r
 }
 
@@ -535,4 +538,66 @@ func matchTradeClassificationRequirements(uwp, reqLine string) bool {
 
 func Goverment(uwp string) string {
 	return string([]byte(uwp)[5])
+}
+
+type UWP struct {
+	data string
+}
+
+func NewUWP(s string) (UWP, error) {
+	uwp := UWP{}
+	if !uwpValid(s) {
+		return uwp, errors.New("NewUWP: can't parse UWP from string")
+	}
+	uwp.data = s
+	return uwp, nil
+}
+
+func uwpValid(uwp string) bool {
+	if len(uwp) != 9 {
+		return false
+	}
+	data := strings.Split(uwp, "")
+	if data[7] != constant.DIVIDER {
+		return false
+	}
+	for i := range data {
+		if i == 7 {
+			continue
+		}
+		if data[i] == "_" {
+			continue
+		}
+		if TrvCore.EhexToDigit(data[i]) == -999 {
+			return false
+		}
+	}
+	return true
+}
+
+func (uwp UWP) Starport() string {
+	return string([]byte(uwp.data)[0])
+}
+
+func (uwp UWP) Size() string {
+	return string([]byte(uwp.data)[1])
+}
+func (uwp UWP) Atmo() string {
+	return string([]byte(uwp.data)[2])
+}
+func (uwp UWP) Hydr() string {
+	return string([]byte(uwp.data)[3])
+}
+func (uwp UWP) Pops() string {
+	return string([]byte(uwp.data)[4])
+}
+func (uwp UWP) Govr() string {
+	return string([]byte(uwp.data)[5])
+}
+func (uwp UWP) Laws() string {
+	return string([]byte(uwp.data)[6])
+}
+
+func (uwp UWP) TL() string {
+	return string([]byte(uwp.data)[8])
 }

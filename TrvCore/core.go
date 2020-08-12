@@ -542,6 +542,10 @@ func (ex *ehex) Glyph() string {
 	return ex.glyph
 }
 
+func EhexFromStr(s string) ehex {
+	return ehex{val: EhexToDigit(s), glyph: s}
+}
+
 func EHex(data interface{}) Ehex {
 	var ehex ehex
 	switch data.(type) {

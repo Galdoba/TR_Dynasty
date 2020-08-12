@@ -3,9 +3,9 @@ package starport
 import (
 	"strconv"
 
-	"github.com/Galdoba/utils"
-
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
+	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/profile"
 	"github.com/Galdoba/TR_Dynasty/world"
 )
 
@@ -54,17 +54,21 @@ type Starport struct {
 //Planet - Штука которая может получить UWP
 type Planet interface {
 	Bases() []string
-	GetUWP() world.UWP
+	UWP() string
 }
 
 //From - создает старпорт и детали от планеты
-func From(planet Planet) *Starport {
-	sp := &Starport{}
-	uwp := planet.GetUWP()
-	spCode := uwp.DataType(dtStarport)
+func From(planet Planet) Starport {
+	sp := Starport{}
+	uwp, err := profile.NewUWP(planet.UWP())
+	if err != nil {
+		panic(err.Error())
+	}
+	spCode := uwp.Starport()
 	sp.sType = spCode
-	sp.tl = TrvCore.EhexToDigit(uwp.DataType(dtTechLevel))
-	popsCode := uwp.DataType(dtPopulation)
+	sp.tl = TrvCore.EhexToDigit(uwp.TL())
+	//sp.tl = TrvCore.EhexToDigit(uwp.DataType(dtTechLevel))
+	popsCode := uwp.Pops()
 	switch spCode {
 	case "A":
 		sp.quality = qualityExellent
@@ -100,6 +104,11 @@ func From(planet Planet) *Starport {
 	}
 
 	return sp
+}
+
+func (sp Starport) String() string {
+	str := ""
+
 }
 
 //Quality -
@@ -187,21 +196,21 @@ func WaitingTime(i int) string {
 		if i < 1 {
 			return "Immidiatly"
 		}
-		num := utils.RollDiceRandom("d6")
+		num := dice.Roll("d6").Sum()
 		return strconv.Itoa(num) + " days"
 	case 1:
-		num := utils.RollDiceRandom("d6")
+		num := dice.Roll("d6").Sum()
 		return strconv.Itoa(num) + " minutes"
 	case 2:
-		num := utils.RollDiceRandom("d6")
+		num := dice.Roll("d6").Sum()
 		return strconv.Itoa(num) + "0 minutes"
 	case 3:
 		return "1 Hour"
 	case 4:
-		num := utils.RollDiceRandom("d6")
+		num := dice.Roll("d6").Sum()
 		return strconv.Itoa(num) + " hours"
 	case 5:
-		num := utils.RollDiceRandom("2d6")
+		num := dice.Roll("2d6").Sum()
 		return strconv.Itoa(num) + " hours"
 	case 6:
 		return "1 day"

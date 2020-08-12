@@ -130,8 +130,7 @@ func NewWorld(name string) *World {
 	world.data = make(map[string]string)
 	seed := utils.SeedFromString(name)
 	world.dice = dice.New(seed)
-	world.dice.RollNext("6d6")
-	fmt.Println(world.dice.RollNext("6d6"))
+
 	// if !uwpValid(uwp) {
 	// 	uwp = "RANDOM"
 	// }
