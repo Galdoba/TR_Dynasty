@@ -3,16 +3,29 @@ package main
 import (
 	"fmt"
 
+	"github.com/Galdoba/TR_Dynasty/dice"
+
 	starport "github.com/Galdoba/TR_Dynasty/Starport"
 	"github.com/Galdoba/TR_Dynasty/world"
 )
 
 func main() {
 
-	w := world.NewWorld("Destiny").SetUWP("A540A98-E")
+	w := world.NewWorld("Destiny").SetUWP("C540A98-E")
 	sp := starport.From(w)
 	fmt.Println(w)
 	fmt.Println(sp)
+	servises := []string{"Berthing", "Refuiling", "Warehousing", "Hazmat", "Repairs"}
+	fmt.Println("Services available:")
+	for i, service := range servises {
+		fmt.Println(service+": ", sp.ServiseTime(i))
+	}
+	if dice.Roll("2d6").ResultTN(8) {
+		fmt.Println("General event!")
+	}
+	if dice.Roll("2d6").ResultTN(11) {
+		fmt.Println("Significant event!")
+	}
 
 	//Trade.Init()
 	//	Trade.Run()
