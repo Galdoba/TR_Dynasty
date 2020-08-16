@@ -1,35 +1,12 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/Galdoba/TR_Dynasty/dice"
-	"github.com/Galdoba/TR_Dynasty/npc"
-
-	starport "github.com/Galdoba/TR_Dynasty/Starport"
-	"github.com/Galdoba/TR_Dynasty/world"
+	trade "github.com/Galdoba/TR_Dynasty/Trade"
 )
 
 func main() {
-	npc.RandomNPC()
 
-	return
-
-	w := world.NewWorld("Destiny").SetUWP("C540A98-E")
-	sp := starport.From(w)
-	fmt.Println(w)
-	fmt.Println(sp)
-	servises := []string{"Berthing", "Refuiling", "Warehousing", "Hazmat", "Repairs"}
-	fmt.Println("Services available:")
-	for i, service := range servises {
-		fmt.Println(service+": ", sp.ServiseTime(i))
-	}
-	if dice.Roll("2d6").ResultTN(8) {
-		fmt.Println("General event!")
-	}
-	if dice.Roll("2d6").ResultTN(11) {
-		fmt.Println("Significant event!")
-	}
+	trade.RunTraffic()
 
 	//Trade.Init()
 	//	Trade.Run()

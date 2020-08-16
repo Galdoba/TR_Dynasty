@@ -897,7 +897,7 @@ func (npc *NPCensembleCast) skillTable() {
 		case 2:
 			npc.skills = "Admin 1, Broker 1, Carouse 1, Persuade 1, Vacc Suit 0, Zero-G 0"
 		case 3:
-			npc.skills = "Astrogation 1, Carouse 1, Electronics (Sensors) 1, Pilot (Spacecraft) 1, Drive 0, Flyer 0, Vacc Suit 	0, Zero-G 0"
+			npc.skills = "Astrogation 1, Carouse 1, Electronics (Sensors) 1, Pilot (Spacecraft) 1, Drive 0, Flyer 0, Vacc Suit 0, Zero-G 0"
 		case 4:
 			npc.skills = "Carouse 1, Engineer (M-Drive) 1, Engineer (Z-Drive) 1, Mechanic 1, Vacc Suit 0, Zero-G 0"
 		case 5:
