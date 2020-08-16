@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
-	"github.com/Galdoba/TR_Dynasty/cli"
 	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/devtools/cli"
 	"github.com/Galdoba/utils"
 )
 
@@ -191,7 +191,7 @@ func RandomNPC() NPCensembleCast {
 		npc.quirk2 = npc.quirk(dice.RollD66())
 	}
 	npc.age = 18 + utils.RollDiceRandom("6d6")
-
+	fmt.Print(npc.String())
 	return npc
 }
 

@@ -4,12 +4,16 @@ import (
 	"fmt"
 
 	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/npc"
 
 	starport "github.com/Galdoba/TR_Dynasty/Starport"
 	"github.com/Galdoba/TR_Dynasty/world"
 )
 
 func main() {
+	npc.RandomNPC()
+
+	return
 
 	w := world.NewWorld("Destiny").SetUWP("C540A98-E")
 	sp := starport.From(w)
