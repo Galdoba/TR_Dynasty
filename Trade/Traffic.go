@@ -6,12 +6,12 @@ import (
 	"time"
 
 	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/utils"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 
 	"github.com/Galdoba/TR_Dynasty/world"
 
-	"github.com/Galdoba/devtools/cli/features"
 	"github.com/Galdoba/devtools/cli/user"
 )
 
@@ -107,13 +107,13 @@ tools:
 var msDelay time.Duration
 var dp *dice.Dicepool
 
-func userInputUWP() string {
+func userInputStr(msg string) string {
 	done := false
-	fmt.Println("Введите коррдинаты и UWP текущего мира (пример: '0631 В555555-5'):")
+	fmt.Print(msg)
 	for !done {
 		uwp, err := user.InputStr()
 		if err != nil {
-			features.TypingSlowly(err.Error(), 15)
+			fmt.Println(err.Error())
 			continue
 		}
 		return uwp
@@ -121,20 +121,99 @@ func userInputUWP() string {
 	return "Must not happen !!"
 }
 
+func userInputInt(msg string) int {
+	done := false
+	fmt.Print(msg)
+	for !done {
+		i, err := user.InputInt()
+		if err != nil {
+			fmt.Println(err.Error())
+			continue
+		}
+		return i
+	}
+	return -999
+}
+
 func RunTraffic() {
-	dp = dice.New(1105018)
-	sourceWorld := world.NewWorld("Source World").SetUWP(userInputUWP())
+	fmt.Println("mgt2_Traffic  v1.0.0")
+	seedStr := userInputStr("Введите дату (формат ДДД-ГГГГ): ")
+	swUWP := userInputStr("Введите UWP текущего мира: ")
+	sourceWorld := world.NewWorld("Source World").SetUWP(swUWP)
+	dp = dice.New(utils.SeedFromString(seedStr + swUWP))
 	sp := sourceWorld.StarPort()
 	pops := sourceWorld.PlanetaryData("Pops")
-	pFactor := 0
-	pFactor += pFactorPops(pops)
-	pFactor += pFactorSp(sp)
-	fmt.Println(sourceWorld, sp, pops, pFactor)
-	fmt.Println("Low Pass", rollPassengerTrafficTable(pFactor+1))
-	fmt.Println("Mid Pass", rollPassengerTrafficTable(pFactor))
-	fmt.Println("Basic Pass", rollPassengerTrafficTable(pFactor))
-	fmt.Println("High Pass", rollPassengerTrafficTable(pFactor-4))
+	tl := sourceWorld.PlanetaryData("Tech")
+	//law := sourceWorld.PlanetaryData("Law")
+	//fmt.Println("////////////////////////////")
+	fmt.Println("Поиск пассажиров...")
+	pFactor := userInputInt("Введите эффект проверки Broker, Carouse или Streetwise: ")
 
+	pFactor += pFactorPops(pops)
+	pFactor += pfFactorSp(sp)
+	//fmt.Println(sourceWorld, sp, pops, pFactor)
+
+	lowPass := rollPassengerTrafficTable(pFactor + 1)
+	midPass := rollPassengerTrafficTable(pFactor)
+	basicPass := rollPassengerTrafficTable(pFactor)
+	highPass := rollPassengerTrafficTable(pFactor - 4)
+	//fmt.Println("////////////////////////////")
+	fmt.Println("Поиск грузов...")
+	fFactor := userInputInt("Введите эффект проверки Broker или Streetwise: ")
+	fFactor += fFactorPops(pops)
+	fFactor += pfFactorSp(sp)
+	fFactor += fFactorTL(tl)
+	inLots := rollFreightTrafficTable(pFactor + 2)
+	minorLots := rollFreightTrafficTable(pFactor)
+	majorLots := rollFreightTrafficTable(pFactor - 4)
+
+	fmt.Println("Поиск почтовых лотов...")
+	mFactor := mFactorFre(fFactor) + 7
+	mFactor += mFactorTL(tl)
+	mFactor += dp.RollNext("2d6").Sum()
+	//fmt.Println("mFactor:", mFactor)
+	mContainers := 0
+	if mFactor >= 12 {
+		mContainers = dp.RollNext("1d6").Sum()
+	}
+	fmt.Println("////////////////////////////")
+	fmt.Println("ПАССАЖИРЫ:")
+	fmt.Println("Первый класс:", highPass)
+	fmt.Println("Бизнес класс:", midPass)
+	fmt.Println("Эконом класс:", basicPass)
+	fmt.Println("Спящий класс:", lowPass)
+	fmt.Println("ГРУЗОПЕРЕВОЗКИ:")
+	fmt.Println("  Больших лотов:", majorLots)
+	fmt.Println("    Малых лотов:", minorLots)
+	fmt.Println("Случайных лотов:", inLots)
+	fmt.Println("ПОЧТА:")
+	fmt.Println("доступно", mContainers, "контейнеров с почтой")
+	fmt.Println("ДЕТАЛИ ЛОТОВ:")
+	distributeLots(majorLots, minorLots, inLots)
+
+}
+
+func distributeLots(majorLots, minorLots, inLots int) {
+	lotMap := make(map[int]int)
+	dp.DM(0)
+	for i := 0; i < majorLots; i++ {
+		size := dp.RollNext("1d6").Sum() * 10
+		lotMap[size]++
+	}
+	for i := 0; i < minorLots; i++ {
+		size := dp.RollNext("1d6").Sum() * 5
+		lotMap[size]++
+	}
+	for i := 0; i < inLots; i++ {
+		size := dp.RollNext("1d6").Sum() * 1
+		lotMap[size]++
+	}
+	sizes := []int{60, 50, 40, 30, 25, 20, 15, 10, 6, 5, 4, 3, 2, 1}
+	for _, val := range sizes {
+		if lotMap[val] != 0 {
+			fmt.Println(val, "tons -", lotMap[val], "lots")
+		}
+	}
 }
 
 func pFactorPops(pops string) int {
@@ -152,7 +231,7 @@ func pFactorPops(pops string) int {
 	return 0
 }
 
-func pFactorSp(sp string) int {
+func pfFactorSp(sp string) int {
 	switch sp {
 	case "A":
 		return 2
@@ -196,5 +275,96 @@ func rollPassengerTrafficTable(pF int) int {
 	case 19:
 		d = 9
 	}
-	return dp.RollNext(strconv.Itoa(d) + "d6").Sum()
+	ps := dp.RollNext(strconv.Itoa(d) + "d6").Sum()
+	if ps < 0 {
+		ps = 0
+	}
+	return ps
+}
+
+func fFactorPops(pops string) int {
+	popsInt := TrvCore.EhexToDigit(pops)
+	switch popsInt {
+	case 0, 1:
+		return -4
+	case 6, 7:
+		return 2
+	default:
+		if popsInt >= 8 {
+			return 4
+		}
+	}
+	return 0
+}
+
+func fFactorTL(tl string) int {
+	tlInt := TrvCore.EhexToDigit(tl)
+	if tlInt <= 6 {
+		return -1
+	}
+	if tlInt >= 9 {
+		return 2
+	}
+	return 0
+}
+
+func rollFreightTrafficTable(fF int) int {
+	fre := dp.RollNext("2d6").DM(fF).Sum()
+	d := 0
+	switch fre {
+	default:
+		if fre <= 1 {
+			return 0
+		}
+		if fre >= 20 {
+			d = 10
+		}
+	case 2, 3:
+		d = 1
+	case 4, 5:
+		d = 2
+	case 6, 7, 8:
+		d = 3
+	case 9, 10, 11:
+		d = 4
+	case 12, 13, 14:
+		d = 5
+	case 15, 16:
+		d = 6
+	case 17:
+		d = 7
+	case 18:
+		d = 8
+	case 19:
+		d = 9
+	}
+	fr := dp.RollNext(strconv.Itoa(d) + "d6").Sum()
+	if fr < 0 {
+		fr = 0
+	}
+	return fr
+}
+
+func mFactorFre(fFactor int) int {
+	if fFactor <= -10 {
+		return -2
+	}
+	if fFactor <= -5 {
+		return -1
+	}
+	if fFactor <= 4 {
+		return 0
+	}
+	if fFactor <= 9 {
+		return 1
+	}
+	return 2
+}
+
+func mFactorTL(tl string) int {
+	tlInt := TrvCore.EhexToDigit(tl)
+	if tlInt <= 5 {
+		return -4
+	}
+	return 0
 }
