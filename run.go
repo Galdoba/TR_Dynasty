@@ -1,12 +1,11 @@
 package main
 
-import (
-	trade "github.com/Galdoba/TR_Dynasty/Trade"
-)
+import "fmt"
 
 func main() {
-
-	trade.RunTraffic()
+	checkCoords("23")
+	fmt.Println(checkCoords("B3"))
+	//trade.RunTraffic()
 
 	//Trade.Init()
 	//	Trade.Run()
@@ -26,6 +25,22 @@ func main() {
 	// 	merch.SaleProposalLegal(tgCode, amount)
 	// }
 
+}
+
+func checkCoords(coords string) bool {
+	if len(coords) != 2 {
+		return false
+	}
+	for _, v := range coords {
+		switch string(v) {
+		default:
+			return false
+		case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9":
+			continue
+		}
+		//fmt.Println(i, string(v))
+	}
+	return true
 }
 
 //OB Ia Ia Ia II II II II
