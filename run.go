@@ -1,11 +1,9 @@
 package main
 
-import "fmt"
+import trade "github.com/Galdoba/TR_Dynasty/Trade"
 
 func main() {
-	checkCoords("23")
-	fmt.Println(checkCoords("B3"))
-	//trade.RunTraffic()
+	trade.RunTraffic()
 
 	//Trade.Init()
 	//	Trade.Run()
