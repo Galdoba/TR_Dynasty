@@ -1,7 +1,7 @@
 package otu
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 )
 
@@ -123,8 +123,8 @@ func init() {
 	troyanReachData = append(troyanReachData, []string{"Thalassa", "0803", "", "B88A889-8", "Wa Ri", "", "", "G", "F", "Dpres"})
 	troyanReachData = append(troyanReachData, []string{"Tktk", "0808", "", "D542640-6", "Po Ni", "", "", "G", "F", "Dpres"})
 	troyanReachData = append(troyanReachData, []string{"Tlazolteotl", "0604", "", "D5409CD-7", "In Po De Hi", "A", "", "G", "F", "Dpres"})
-	troyanReachData = append(troyanReachData, []string{"Torrance", "0409", "", "E560256-4", "De Ni Lo Lt", "", "Na", "G", "F", "Dpres"})
-	troyanReachData = append(troyanReachData, []string{"Tyr", "0608", "", "A551557-B", "Ni Po", "", "Na", "G", "F", "Dpres"})
+	troyanReachData = append(troyanReachData, []string{"Torrance", "0409", "", "E560256-4", "De Ni Lo Lt", "", "", "G", "F", "Dpres"})
+	troyanReachData = append(troyanReachData, []string{"Tyr", "0608", "", "A551557-B", "Ni Po", "", "", "G", "F", "Dpres"})
 	//SINDAL G
 	troyanReachData = append(troyanReachData, []string{"Ace", "0109", "", "E7A0889-9", "De Lt", "A", "", "", "G", "Sindal"})
 	troyanReachData = append(troyanReachData, []string{"Albe", "0601", "", "A540A98-E", "De Hi In Po Ht", "", "Imperium", "G", "G", "Sindal"})
@@ -305,7 +305,7 @@ func init() {
 	troyanReachData = append(troyanReachData, []string{"Teharl", "0506", "", "C654453-A", "Ni", "", "Hierate", "", "M", "Ranib"})
 	troyanReachData = append(troyanReachData, []string{"Uaeakhea", "0504", "ACS", "B530389-8", "Lo De Ni Po An", "", "Hierate", "G", "M", "Ranib"})
 	troyanReachData = append(troyanReachData, []string{"Uitasoayaw", "0810", "ACS", "B579687-9", "Ni", "", "Hierate", "G", "M", "Ranib"})
-	troyanReachData = append(troyanReachData, []string{"Uiwuar", "0105", "", "B101115-E", "Lo Ic Ni Va", "Hierate", "", "G", "M", "Ranib"})
+	troyanReachData = append(troyanReachData, []string{"Uiwuar", "0105", "", "B101115-E", "Lo Ic Ni Va", "", "Hierate", "G", "M", "Ranib"})
 	troyanReachData = append(troyanReachData, []string{"Yekhtia", "0202", "", "B423376-B", "Lo Ni Po", "", "Hierate", "G", "M", "Ranib"})
 	//SILRAAIHE N
 	troyanReachData = append(troyanReachData, []string{"Aisaoawi", "0108", "", "EAC5000-0", "Ba Fl", "", "Hierate", "G", "N", "Silraaihe"})
@@ -357,30 +357,49 @@ func TroyanReachData() [][]string {
 	return troyanReachData
 }
 
-func Test() {
-	dataMap := make(map[string]int)
-	for _, v := range troyanReachData {
-		//fmt.Println(i, v)
-		dataMap[v[4]]++
-		//fmt.Println(len(v))
-		if v[4] == "" {
-			//fmt.Println(v, len(v))
+func GetUWP(worldName string) (string, error) {
+	for _, line := range troyanReachData {
+		if line[0] == worldName {
+			return line[3], nil
 		}
 	}
-	tcMap := make(map[string]int)
-	for k, v := range dataMap {
-		tc := strings.Split(k, " ")
-		for i := range tc {
-			tcMap[tc[i]]++
-			if tc[i] == "" {
-				fmt.Println(tc[i], i, k, v)
-				fmt.Println(tc[i], i, k, v)
-			}
-		}
-		//fmt.Println(k, v)
+	return "", errors.New("worldName not found")
+}
 
+func GetTradeCodes(worldName string) ([]string, error) {
+	for _, line := range troyanReachData {
+		if line[0] == worldName {
+			return strings.Split(line[4], " "), nil
+		}
 	}
-	for k, v := range tcMap {
-		fmt.Println(k, v)
+	return []string{}, errors.New("worldName not found")
+}
+
+func GetBases(worldName string) ([]string, error) {
+	for _, line := range troyanReachData {
+		if line[0] == worldName {
+			return strings.Split(line[2], " "), nil
+		}
 	}
+	return []string{}, errors.New("worldName not found")
+}
+
+func GasGigantPresent(worldName string) (bool, error) {
+	for _, line := range troyanReachData {
+		if line[0] == worldName {
+			if line[7] == "G" {
+				return true, nil
+			}
+			return false, nil
+		}
+	}
+	return false, errors.New("worldName not found")
+}
+
+func SectorCoords(ssc string, ssp string) (string, error) {
+	sc := "XXXXX"
+	if len(ssc) != 4 {
+		return sc, errors.New("subSectorCoords Input Error")
+	}
+	return "", nil
 }

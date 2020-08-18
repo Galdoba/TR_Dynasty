@@ -1,13 +1,17 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/Galdoba/TR_Dynasty/otu"
 )
 
 func main() {
 	//trade.RunTraffic()
 	//otu.TroyanReachData()
-	otu.Test()
+	fmt.Println(otu.GetUWP("Drinax"))
+	fmt.Println(otu.GetTradeCodes("Drinax"))
+	fmt.Println(otu.GetBases("Drinax"))
 	//Trade.Init()
 	//	Trade.Run()
 	// for i := 0; i < 300000; i++ {
