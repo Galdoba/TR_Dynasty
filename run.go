@@ -1,10 +1,13 @@
 package main
 
-import trade "github.com/Galdoba/TR_Dynasty/Trade"
+import (
+	"github.com/Galdoba/TR_Dynasty/otu"
+)
 
 func main() {
-	trade.RunTraffic()
-
+	//trade.RunTraffic()
+	//otu.TroyanReachData()
+	otu.Test()
 	//Trade.Init()
 	//	Trade.Run()
 	// for i := 0; i < 300000; i++ {
