@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Galdoba/TR_Dynasty/otu"
+	"github.com/Galdoba/TR_Dynasty/tab"
 )
 
 func main() {
@@ -12,6 +13,14 @@ func main() {
 	fmt.Println(otu.GetUWP("Drinax"))
 	fmt.Println(otu.GetTradeCodes("Drinax"))
 	fmt.Println(otu.GetBases("Drinax"))
+
+	t, err := tab.NewTable("otu\\Trojan Reach.tab")
+	//fmt.Println(t)
+	fmt.Println(err)
+	fmt.Println(t.ColWidths())
+	//t.PTPrint()
+	fmt.Println(t.CellValue(0, 1))
+
 	//Trade.Init()
 	//	Trade.Run()
 	// for i := 0; i < 300000; i++ {
