@@ -22,9 +22,9 @@ func init() {
 }
 
 func RunMerchantPrince() {
-	sourceWorld := LoadWorld("Current World (Name, Hex or UWP)")
+	sourceWorld := LoadWorld("Current World (Name, Hex or UWP): ")
 	fmt.Println(sourceWorld)
-	targetWorld := LoadWorld("Target World (Name, Hex or UWP)")
+	targetWorld := LoadWorld("Target World (Name, Hex or UWP): ")
 	fmt.Println(targetWorld)
 }
 
