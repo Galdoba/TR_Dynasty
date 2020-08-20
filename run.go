@@ -1,20 +1,13 @@
 package main
 
-import trade "github.com/Galdoba/TR_Dynasty/Trade"
+import trademgt2 "github.com/Galdoba/TR_Dynasty/TradeMgT2"
 
 func main() {
-	trade.RunTraffic()
-	//otu.TroyanReachData()
-	// fmt.Println(otu.GetUWP("Drinax"))
-	// fmt.Println(otu.GetTradeCodes("Drinax"))
-	// fmt.Println(otu.GetBases("Drinax"))
+	//trade.RunTraffic()
 
-	// t, err := tab.NewTable("otu\\Trojan Reach.tab")
-	// //fmt.Println(t)
-	// fmt.Println(err)
-	// fmt.Println(t.ColWidths())
-	// //t.PTPrint()
-	// fmt.Println(t.CellValue(0, 1))
+	//sectorData := otu.TrojanReachData()
+
+	trademgt2.RunMerchantPrince()
 
 	//Trade.Init()
 	//	Trade.Run()

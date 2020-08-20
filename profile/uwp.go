@@ -423,7 +423,7 @@ func orderByType(profileType string) (order []string) {
 // 	return p
 // }
 
-func TradeCodes(uwp string) []string {
+func CalculateTradeCodes(uwp string) []string {
 	tradeCodes := constant.TravelCodesMgT2()
 	var res []string
 	for _, tc := range tradeCodes {
@@ -461,7 +461,6 @@ func TradeCodes(uwp string) []string {
 			if matchTradeClassificationRequirements(uwp, "-- -- -- -- -- -- CDEFGH") {
 				res = append(res, constant.TradeCodeHighTech)
 			}
-
 		case constant.TradeCodeIceCapped:
 			if matchTradeClassificationRequirements(uwp, "-- 01 123456789A -- -- -- --") {
 				res = append(res, constant.TradeCodeIceCapped)
@@ -502,14 +501,6 @@ func TradeCodes(uwp string) []string {
 			if matchTradeClassificationRequirements(uwp, "-- -- A -- -- -- --") {
 				res = append(res, constant.TradeCodeWaterWorld)
 			}
-		case constant.TravelCodeAmber:
-			if matchTradeClassificationRequirements(uwp, "-- ABCDEF -- -- 07A 9ABCDEFGHJKLMNPQRSTUVWXYZ --") {
-				res = append(res, constant.TravelCodeAmber)
-			}
-		case constant.TravelCodeRed:
-			// if TrvCore.EhexToDigit(string([]byte(uwp)[2]))+TrvCore.EhexToDigit(string([]byte(uwp)[5]))+TrvCore.EhexToDigit(string([]byte(uwp)[6])) > 30 {
-			// 	res = append(res, constant.TravelCodeRed)
-			// }
 
 		}
 	}

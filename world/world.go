@@ -1,12 +1,14 @@
 package world
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"strconv"
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/otu"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/constant"
@@ -123,7 +125,7 @@ type World struct {
 }
 
 //NewWorld -
-func NewWorld(name string) *World {
+func NewWorld(name string) World {
 	world := World{}
 	world.name = name
 	world.stat = make(map[string]int)
@@ -137,7 +139,7 @@ func NewWorld(name string) *World {
 	// world.SetUWP(uwp)
 
 	//world.SecondSurvey()
-	return &world
+	return world
 }
 
 //SetHex -
@@ -186,6 +188,7 @@ func (w *World) SetUWP(uwp string) *World {
 	w.data[constant.PrGovr] = code[5]
 	w.data[constant.PrLaws] = code[6]
 	w.data[constant.PrTL] = code[8]
+	w.data["UWP"] = uwp
 	return w
 }
 
@@ -845,6 +848,11 @@ func (w *World) StarPort() string {
 
 func (w *World) TradeCodes() []string {
 	return w.tradeCodes
+}
+
+func (w World) SetTradeCodes(tc []string) World {
+	w.tradeCodes = tc
+	return w
 }
 
 func (w *World) SetPlanetaryData(dataType, dataVal string) {
@@ -2470,4 +2478,40 @@ func FromUWP(uwp string) World {
 func (w World) SetName(newName string) World {
 	w.name = newName
 	return w
+}
+
+func FromOTUdata(otuData string) (World, error) {
+	w := World{}
+	data := strings.Split(otuData, "	")
+	if len(data) != 17 {
+		return w, errors.New("OTU data unparseble: (Len != 17)")
+	}
+	w = NewWorld(otu.Info{otuData}.Name())
+	w.data["SS"] = otu.Info{otuData}.SubSector()
+	w.data["Hex"] = otu.Info{otuData}.Hex()
+	w.SetUWP(otu.Info{otuData}.UWP())
+	w.bases = otu.Info{otuData}.Bases()
+	w.tradeCodes = otu.Info{otuData}.Remarks()
+	w.checkLtHtTradeCodes()
+	w.travelCode = otu.Info{otuData}.Zone()
+	w.pbg = otu.Info{otuData}.PBG()
+	w.data["Allegiance"] = otu.Info{otuData}.Allegiance()
+	w.data["Stars"] = otu.Info{otuData}.Stars()
+	w.data["Ix"] = otu.Info{otuData}.Iextention()
+	w.data["Ex"] = otu.Info{otuData}.Eextention()
+	w.data["Cx"] = otu.Info{otuData}.Cextention()
+	w.data["Nobility"] = otu.Info{otuData}.Nobility()
+	w.data["Worlds"] = otu.Info{otuData}.Worlds()
+	w.data["RU"] = otu.Info{otuData}.RU()
+
+	return w, nil
+}
+
+func (w *World) checkLtHtTradeCodes() {
+	if TrvCore.EhexToDigit(w.data[constant.PrTL]) <= TrvCore.EhexToDigit("5") {
+		w.tradeCodes = append(w.tradeCodes, constant.TradeCodeLowTech)
+	}
+	if TrvCore.EhexToDigit(w.data[constant.PrTL]) >= TrvCore.EhexToDigit("C") {
+		w.tradeCodes = append(w.tradeCodes, constant.TradeCodeHighTech)
+	}
 }

@@ -61,6 +61,11 @@ func (t Table) Line(num int) string {
 	return t.lines[num]
 }
 
+//Line - возвращает строку
+func (t Table) Lines() []string {
+	return t.lines
+}
+
 //ColWidths - Возвращает слайс длинн колонок таблицы
 func (t Table) ColWidths() []int {
 	return t.colWidth
@@ -90,4 +95,22 @@ func (t Table) PTPrint() {
 	}
 	pt := prettytable.From(ptSl)
 	pt.PTPrint()
+}
+
+func (t Table) LineMapByHex() map[string][]string {
+	hexMap := make(map[string][]string)
+	for _, line := range t.lines {
+		data := strings.Split(line, "	")
+		hexMap[data[2]] = data
+	}
+	return hexMap
+}
+
+func (t Table) LineMapByName() map[string][]string {
+	hexMap := make(map[string][]string)
+	for _, line := range t.lines {
+		data := strings.Split(line, "	")
+		hexMap[data[3]] = data
+	}
+	return hexMap
 }
