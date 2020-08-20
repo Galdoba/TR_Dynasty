@@ -158,6 +158,7 @@ func (w *World) UWP() string {
 
 //SetUWP -
 func (w *World) SetUWP(uwp string) *World {
+	uwp = strings.ToUpper(uwp)
 	if uwp == "RANDOM" {
 		rand.Seed(utils.SeedFromString(w.name))
 		//rWorld := BuildPlanet() //вот тут должен быть рандомный сборщик

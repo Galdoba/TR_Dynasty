@@ -3,6 +3,7 @@ package trade
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Galdoba/TR_Dynasty/dice"
@@ -136,9 +137,9 @@ func userInputInt(msg string) int {
 }
 
 func RunTraffic() {
-	fmt.Println("mgt2_Traffic  v1.0.0")
+	fmt.Println("mgt2_Traffic  v1.0.1")
 	seedStr := userInputStr("Введите дату (формат ДДД-ГГГГ): ")
-	swUWP := userInputStr("Введите UWP текущего мира: ")
+	swUWP := strings.ToUpper(userInputStr("Введите UWP текущего мира: "))
 	sourceWorld := world.NewWorld("Source World").SetUWP(swUWP)
 	dp = dice.New(utils.SeedFromString(seedStr + swUWP))
 	sp := sourceWorld.StarPort()
@@ -177,17 +178,17 @@ func RunTraffic() {
 		mContainers = dp.RollNext("1d6").Sum()
 	}
 	fmt.Println("////////////////////////////")
-	fmt.Println("ПАССАЖИРЫ:")
-	fmt.Println("Первый класс:", highPass)
-	fmt.Println("Бизнес класс:", midPass)
-	fmt.Println("Эконом класс:", basicPass)
-	fmt.Println("Спящий класс:", lowPass)
-	fmt.Println("ГРУЗОПЕРЕВОЗКИ:")
+	fmt.Println("      ПАССАЖИРЫ:")
+	fmt.Println("   Первый класс:", highPass)
+	fmt.Println("   Бизнес класс:", midPass)
+	fmt.Println("   Эконом класс:", basicPass)
+	fmt.Println("   Спящий класс:", lowPass)
+	fmt.Println(" ГРУЗОПЕРЕВОЗКИ:")
 	fmt.Println("  Больших лотов:", majorLots)
 	fmt.Println("    Малых лотов:", minorLots)
 	fmt.Println("Случайных лотов:", inLots)
-	fmt.Println("ПОЧТА:")
-	fmt.Println("доступно", mContainers, "контейнеров с почтой")
+	fmt.Println("          ПОЧТА:")
+	fmt.Println("Доступно", mContainers, "контейнеров с почтой")
 	fmt.Println("ДЕТАЛИ ЛОТОВ:")
 	distributeLots(majorLots, minorLots, inLots)
 
@@ -211,6 +212,10 @@ func distributeLots(majorLots, minorLots, inLots int) {
 	sizes := []int{60, 50, 40, 30, 25, 20, 15, 10, 6, 5, 4, 3, 2, 1}
 	for _, val := range sizes {
 		if lotMap[val] != 0 {
+			fmt.Print(" ")
+			if val < 10 && val > -10 {
+				fmt.Print(" ")
+			}
 			fmt.Println(val, "tons -", lotMap[val], "lots")
 		}
 	}
@@ -367,4 +372,9 @@ func mFactorTL(tl string) int {
 		return -4
 	}
 	return 0
+}
+
+func changesLog() {
+	fmt.Println("*v 1.0.1")
+	fmt.Println(" -Исправлен баг в котором UWP давал seed учитывая его регистр.\n	Теперь UWP 'с555555-5' и 'С555555-5' воспринимаются одинаково.")
 }
