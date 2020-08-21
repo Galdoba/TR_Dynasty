@@ -158,8 +158,10 @@ func hexDistance(hexA, hexB hexCoords) int {
 	return cubeDistance(cubeA, cubeB)
 }
 
-func JumpDistance(h1, h2 stellarHex) int {
-	return cubeDistance(h1.cube, h2.cube)
+func JumpDistance(h1, h2 string) int {
+	sh1 := Hex(h1)
+	sh2 := Hex(h2)
+	return cubeDistance(sh1.cube, sh2.cube)
 }
 
 func evenQToStr(hx hexCoords) string {

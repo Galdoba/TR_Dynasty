@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	trademgt2 "github.com/Galdoba/TR_Dynasty/TradeMgT2"
 	"github.com/Galdoba/TR_Dynasty/otu"
 
 	"github.com/Galdoba/TR_Dynasty/Astrogation"
@@ -10,22 +11,23 @@ import (
 
 func main() {
 	//trade.RunTraffic()
-
-	//sectorData := otu.TrojanReachData()
-	h1 := Astrogation.Hex("2624")
-	h2 := Astrogation.Hex("2520")
-	fmt.Println(h1)
-	fmt.Println(h2)
-	dist := Astrogation.JumpDistance(h1, h2)
-	fmt.Println(dist)
-	neib := Astrogation.JumpCoordinatesFrom("2625", 2)
+	neib := Astrogation.JumpCoordinatesFrom("2923", 2)
 	hexMap := otu.MapDataByHex(otu.TrojanReachData())
 	for _, hex := range neib {
 		if val, ok := hexMap[hex]; ok {
 			fmt.Println(val)
 		}
 	}
-	//trademgt2.RunMerchantPrince()
+
+	//sectorData := otu.TrojanReachData()
+	// h1 := Astrogation.Hex("2624")
+	// h2 := Astrogation.Hex("2520")
+	// fmt.Println(h1)
+	// fmt.Println(h2)
+	// dist := Astrogation.JumpDistance(h1, h2)
+	// fmt.Println(dist)
+
+	trademgt2.RunMerchantPrince()
 
 	//Trade.Init()
 	//	Trade.Run()
