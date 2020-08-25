@@ -75,19 +75,19 @@ func (c Contract) ShowShort() []string {
 	price := 0
 	var res []string
 	//vol := c.volume
-	res = append(res, getCategory(c.lotCode))
+	res = append(res, GetCategory(c.lotCode))
 	switch c.cType {
 	default:
 	case 1:
-		price = modifyPriceSale(getBasePrice(c.lotCode), c.contractDice)
+		price = modifyPriceSale(GetBasePrice(c.lotCode), c.contractDice)
 		res = append(res, "SELL")
 	case 2:
-		price = modifyPricePurchase(getBasePrice(c.lotCode), c.contractDice)
+		price = modifyPricePurchase(GetBasePrice(c.lotCode), c.contractDice)
 		res = append(res, "BUY")
 	}
 	//short += strconv.Itoa(vol) + " tons 	"
-	res = append(res, strconv.Itoa(getBasePrice(c.lotCode)))
-	res = append(res, strconv.Itoa(c.volume)+" x "+getDescription(c.lotCode))
+	res = append(res, strconv.Itoa(GetBasePrice(c.lotCode)))
+	res = append(res, strconv.Itoa(c.volume)+" x "+GetDescription(c.lotCode))
 	res = append(res, strconv.Itoa(price))
 
 	res = append(res, strconv.Itoa(c.contractDice))
@@ -98,14 +98,14 @@ func (c Contract) ShowShort() []string {
 //SellShort -
 func (c Contract) SellShort() []string {
 	price := 0
-	basePrice := getBasePrice(c.lotCode)
+	basePrice := GetBasePrice(c.lotCode)
 	var res []string
-	res = append(res, getCategory(c.lotCode))
-	price = modifyPriceSale(getBasePrice(c.lotCode), c.contractDice)
+	res = append(res, GetCategory(c.lotCode))
+	price = modifyPriceSale(GetBasePrice(c.lotCode), c.contractDice)
 	priceStr := strconv.Itoa(price)
 	res = append(res, "SELL")
 	res = append(res, strconv.Itoa(basePrice))
-	res = append(res, strconv.Itoa(c.volume)+" x "+getDescription(c.lotCode))
+	res = append(res, strconv.Itoa(c.volume)+" x "+GetDescription(c.lotCode))
 	res = append(res, priceStr)
 
 	res = append(res, strconv.Itoa(c.contractDice))
@@ -117,17 +117,17 @@ func (c Contract) String() string {
 	cInfo := ""
 	cInfo += "Contract type: " + cTypeToString(c.cType) + "\n"
 	cInfo += "Lot code: #" + c.lotCode + "-" + TrvCore.DigitToEhex(c.contractDice) + tradeMark() + "\n"
-	cInfo += "Lot description: " + getDescription(c.lotCode) + " (" + strconv.Itoa(getBasePrice(c.lotCode)) + ")\n"
+	cInfo += "Lot description: " + GetDescription(c.lotCode) + " (" + strconv.Itoa(GetBasePrice(c.lotCode)) + ")\n"
 	cInfo += "Lot price: "
 	price := 0
 	tax := 0
 	switch c.cType {
 	case 1:
-		price = modifyPriceSale(getBasePrice(c.lotCode), c.contractDice)
+		price = modifyPriceSale(GetBasePrice(c.lotCode), c.contractDice)
 		cInfo += strconv.Itoa(price)
-		tax = taxingAmount(c.volume*(price-getBasePrice(c.lotCode)), "4")
+		tax = taxingAmount(c.volume*(price-GetBasePrice(c.lotCode)), "4")
 	case 2:
-		price = modifyPricePurchase(getBasePrice(c.lotCode), c.contractDice)
+		price = modifyPricePurchase(GetBasePrice(c.lotCode), c.contractDice)
 		cInfo += strconv.Itoa(price)
 	}
 	if c.volume > 0 {

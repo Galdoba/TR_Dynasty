@@ -37,7 +37,7 @@ func Run() {
 		}
 
 	}
-	tc := profile.TradeCodes(uwp)
+	tc := profile.CalculateTradeCodes(uwp)
 	tcs := ""
 	for i := range tc {
 		tcs += tc[i] + " "
@@ -127,7 +127,7 @@ func actionSelector() int {
 
 //SaleProposalLegal -
 func (m Merchant) SaleProposalLegal(code string, amount int) string {
-	basePrice := getBasePrice(code)
+	basePrice := GetBasePrice(code)
 	salePrice := m.CostSale(code)
 	profit := (salePrice - basePrice) * amount
 	if profit < 0 {
@@ -135,7 +135,7 @@ func (m Merchant) SaleProposalLegal(code string, amount int) string {
 	}
 	tax := taxingAmount(profit, string([]byte(m.localUWP)[5]))
 	proposal := ""
-	proposal += "Trade Lot: " + strconv.Itoa(amount) + " x " + getDescription(code) + "\n"
+	proposal += "Trade Lot: " + strconv.Itoa(amount) + " x " + GetDescription(code) + "\n"
 	proposal += " Proposal: " + strconv.Itoa(salePrice) + " x " + strconv.Itoa(amount) + " (" + strconv.Itoa(salePrice*amount) + " Cr)" + "\n"
 	proposal += "      Tax: " + strconv.Itoa(tax) + " Cr" + "\n"
 	proposal += "---------------------" + "\n"
@@ -198,7 +198,7 @@ func listCategory(m Merchant, code string) [][]string {
 		}
 		dataline := make([]string, 5)
 		if !madeCat {
-			dataline[0] = getCategory(code + descr)
+			dataline[0] = GetCategory(code + descr)
 			dataline[1] = strconv.Itoa(maxTons)
 			dataline[4] = strconv.Itoa(purchaseDM)
 			if purchaseDM >= 0 {
@@ -207,8 +207,8 @@ func listCategory(m Merchant, code string) [][]string {
 
 			madeCat = true
 		}
-		basePrice := getBasePrice(code + descr)
-		dataline[2] = strconv.Itoa(exactVolume[code+descr]) + " x " + getDescription(code+descr) + " (" + strconv.Itoa(basePrice) + ")"
+		basePrice := GetBasePrice(code + descr)
+		dataline[2] = strconv.Itoa(exactVolume[code+descr]) + " x " + GetDescription(code+descr) + " (" + strconv.Itoa(basePrice) + ")"
 		costP := m.CostPurchase(code + descr)
 		if exactVolume[code+descr] > 0 {
 			dataline[3] = strconv.Itoa(costP) // + " (" + strconv.Itoa(basePrice) + ")"

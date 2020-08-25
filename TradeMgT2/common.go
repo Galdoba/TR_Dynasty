@@ -2,14 +2,21 @@ package trademgt2
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
+	"runtime"
+	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/Astrogation"
+	trade "github.com/Galdoba/TR_Dynasty/Trade"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/world"
+	"github.com/Galdoba/devtools/cli/prettytable"
 	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
 )
@@ -19,6 +26,8 @@ var sectorMapByName map[string]string
 var sectorMapByUWP map[string]string
 var sourceWorld world.World
 var targetWorld world.World
+var ftv int
+var dist int
 
 func init() {
 	sectorData := otu.TrojanReachData()
@@ -28,30 +37,66 @@ func init() {
 
 }
 
-func RunMerchantPrince() {
-	fmt.Println(" ")
-	fmt.Println("///////////////////////")
-	//sourceWorld := LoadWorld("Current World (Name, Hex or UWP): ")
-	sourceWorld, _ = world.FromOTUdata(sectorMapByHex["2923"]) //2724
-	//fmt.Println(sourceWorld)
-	//targetWorld := LoadWorld("Target World (Name, Hex or UWP): ")
-	targetWorld, _ = world.FromOTUdata(sectorMapByHex["2722"]) //2923
-	dist := Astrogation.JumpDistance(sourceWorld.Hex(), targetWorld.Hex())
-	fmt.Println("Jump Distance:", dist)
-	fmt.Println("Freight Traffic Value: " + sourceWorld.Name() + " - " + targetWorld.Name())
-	ftDMc := freightTrafficValue(sourceWorld, targetWorld)
-	fl := 3
-	inLot, mnLot, mjLot := AvailableFreightLots(ftDMc + fl)
-	lots := LotList(inLot, mnLot, mjLot)
-	for i := range lots {
-		fmt.Println(lots[i])
-		fmt.Println(lots[i].Price())
-	}
-	fmt.Println(ftDMc, fl)
+func printHead() {
+	fmt.Println("Curent World: " + sourceWorld.Hex() + " " + sourceWorld.Name() + " (" + sourceWorld.UWP() + ")")
+	fmt.Println("Target World: " + targetWorld.Hex() + " " + targetWorld.Name() + " (" + targetWorld.UWP() + ")")
+	fmt.Println("Direct Jump Distance:", dist)
+	fmt.Println("Freight Trafic Value:", ftv)
+	fmt.Println("------------------------------------------------------")
+}
 
-	fmt.Println("///////////////////////")
-	fmt.Println(sourceWorld)
-	fmt.Println(targetWorld)
+func RunMerchantPrince() {
+	clrScrn()
+	sourceWorld = LoadWorld("Current World (Name, Hex or UWP): ")
+	clrScrn()
+	targetWorld = LoadWorld("Target World (Name, Hex or UWP): ")
+
+	dist = Astrogation.JumpDistance(sourceWorld.Hex(), targetWorld.Hex())
+	clrScrn()
+	ftv = freightTrafficValue(sourceWorld, targetWorld)
+	//fmt.Println("Freight Traffic Value from "+sourceWorld.Name()+" to "+targetWorld.Name()+" is", ftv)
+	fmt.Println("Searching Freight Contracts...")
+	playerEffect := userInputInt("Enter Diplomat(8), Investigate(8) or Streetwise(8) check effect: ")
+
+	inLot, mnLot, mjLot := AvailableFreightLots(ftv + playerEffect)
+	lots := LotList(inLot, mnLot, mjLot)
+	for {
+		clrScrn()
+		informAboutLots(lots)
+
+		fmt.Println("------------------------------------------------------")
+
+		if len(lots) == 0 {
+			break
+		}
+		uchoise := userInputInt("Pick lot (-1 if none): ")
+		if uchoise < 0 || uchoise > len(lots)-1 {
+			if uchoise == -1 {
+				break
+			}
+			continue
+		}
+		lots[uchoise].Negotiate(ftv)
+	}
+}
+
+func informAboutLots(lots []lot) {
+	if len(lots) < 1 {
+		fmt.Println("No Freight Lots available")
+		return
+	}
+	tb := prettytable.New()
+	tb.AddRow([]string{"Lot #", "Tons volume", "Freight Offer", "Cargo Category", "Renegotiated", "Risk Factor"})
+
+	for i, lot := range lots {
+		neg := "FALSE"
+		if lot.Negotiated() {
+			neg = "TRUE"
+		}
+
+		tb.AddRow([]string{"Lot " + strconv.Itoa(i), strconv.Itoa(lot.Tonns()) + " tons", strconv.Itoa(lot.Price()) + " Cr", lot.Descr(), neg, lot.Risk()})
+	}
+	tb.PTPrint()
 }
 
 func LoadWorld(msg string) world.World {
@@ -211,42 +256,67 @@ func AvailableFreightLots(tfv int) (int, int, int) {
 	inLots := utils.Max(0, dice.Roll("1d6").DM(tfv-13).Sum())
 	mnLots := utils.Max(0, dice.Roll("1d6").DM(tfv-8).Sum())
 	mjLots := utils.Max(0, dice.Roll("1d6").DM(tfv-6).Sum())
-	fmt.Println(inLots, mnLots, mjLots)
 	return inLots, mnLots, mjLots
 }
 
 type freightLot struct {
-	tonns     int
-	basePrice int
-	source    string
-	target    string
-	dist      int
+	tonns      int
+	basePrice  int
+	source     string
+	target     string
+	dist       int
+	negotiated bool
+	cat        string
 }
 
 type lot interface {
 	Price() int
-	//Negotiate()
+	Tonns() int
+	Negotiated() bool
+	Descr() string
+	Risk() string
+	Negotiate(int)
 }
 
-func NewFreightLot(sourceHex, targetHex string, tons int) freightLot {
+func NewFreightLot(sourceHex, targetHex string, tons int) *freightLot {
 	frL := freightLot{}
 	frL.tonns = tons
 	frL.source = sourceHex
 	frL.target = targetHex
 	frL.dist = Astrogation.JumpDistance(frL.source, frL.target)
 	frL.basePrice = 500
-	return frL
+	frL.negotiated = false
+	frL.cat = trade.RandomTGCategory(sourceWorld) + dice.Roll("2d6").SumStr()
+	return &frL
 }
 
-func (l freightLot) Price() int {
-	price := 500 * l.tonns * l.dist
+func (l *freightLot) Price() int {
+	price := l.basePrice * l.tonns * l.dist
 	bonus := (price / 5) * l.dist
 	return price + bonus
+}
+
+func (l *freightLot) Tonns() int {
+	return l.tonns
+}
+
+func (l *freightLot) Descr() string {
+	return trade.GetDescription(l.cat)
+}
+
+func (l *freightLot) Risk() string {
+	risk := trade.GetMaximumRiskAssessment(l.cat)
+	return strconv.Itoa(risk)
+}
+
+func (l *freightLot) Negotiated() bool {
+	return l.negotiated
 }
 
 func LotList(inLot, mnLot, mjLot int) []lot {
 	var lots []lot
 	var tons []int
+	fmt.Print("Searching available Freight lots")
 	for i := 0; i < mjLot; i++ {
 		tons = append(tons, dice.Roll("1d6").Sum()*10)
 	}
@@ -256,8 +326,86 @@ func LotList(inLot, mnLot, mjLot int) []lot {
 	for i := 0; i < inLot; i++ {
 		tons = append(tons, dice.Roll("1d6").Sum()*1)
 	}
+	sort.Ints(tons)
 	for i := range tons {
 		lots = append(lots, NewFreightLot(sourceWorld.Hex(), targetWorld.Hex(), tons[i]))
 	}
 	return lots
+}
+
+func (l *freightLot) Negotiate(ftv int) {
+	if l.negotiated {
+		fmt.Println("Price on this lot was already renegotiated")
+		return
+	}
+	tn := brokerPersuadeDiff(ftv)
+	eff := userInputInt("Enter Broker(" + strconv.Itoa(tn) + ") or Persuade(" + strconv.Itoa(tn) + ") check effect: ")
+	l.basePrice = negotiateEffect(eff)
+	fmt.Println("After Negotiatios price for this lot was set as:", l.Price())
+	l.negotiated = true
+}
+
+func negotiateEffect(eff int) int {
+	base := 0
+	switch eff {
+	default:
+		if eff < -4 {
+			base = 200
+		}
+		if eff > 4 {
+			base = 1000
+		}
+	case -3, -4:
+		base = 300
+	case -2, -1:
+		base = 400
+	case 0:
+		base = 500
+	case 1, 2:
+		base = 600
+	case 3, 4:
+		base = 750
+	}
+	return base
+}
+
+func brokerPersuadeDiff(ftv int) int {
+	switch ftv {
+	default:
+		if ftv < 5 {
+			return 6
+		}
+		if ftv > 14 {
+			return 10
+		}
+	case 5, 6, 7:
+		return 7
+	case 8, 9, 10, 11:
+		return 8
+	case 12, 13, 14:
+		return 9
+	}
+	return 0
+}
+
+func clrScrn() {
+	var clear map[string]func()
+	clear = make(map[string]func()) //Initialize it
+	clear["linux"] = func() {
+		cmd := exec.Command("clear") //Linux example, its tested
+		cmd.Stdout = os.Stdout
+		cmd.Run()
+	}
+	clear["windows"] = func() {
+		cmd := exec.Command("cmd", "/c", "cls") //Windows example, its tested
+		cmd.Stdout = os.Stdout
+		cmd.Run()
+	}
+	value, ok := clear[runtime.GOOS] //runtime.GOOS -> linux, windows, darwin etc.
+	if ok {                          //if we defined a clear func for that platform:
+		value() //we execute it
+	} else { //unsupported platform
+		panic("Your platform is unsupported! I can't clear terminal screen :(")
+	}
+	printHead()
 }

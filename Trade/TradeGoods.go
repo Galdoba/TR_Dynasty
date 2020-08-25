@@ -179,7 +179,7 @@ func availableFromTCodes(planetCodes []string) (availableCategories []string) {
 	categories := categoryCodesLIST()
 	for j := range categories {
 		categ := categories[j]
-		if ok, _ := matchTradeCodes(planetCodes, getAvailabilityTags(categ+"7")); ok {
+		if ok, _ := matchTradeCodes(planetCodes, GetAvailabilityTags(categ+"7")); ok {
 			availableCategories = utils.AppendUniqueStr(availableCategories, categ)
 		}
 	}

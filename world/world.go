@@ -2483,9 +2483,11 @@ func (w World) SetName(newName string) World {
 func FromOTUdata(otuData string) (World, error) {
 	w := World{}
 	data := strings.Split(otuData, "	")
+	fmt.Println(otu.Info{otuData})
 	if len(data) != 17 {
 		return w, errors.New("OTU data unparseble: (Len != 17)")
 	}
+
 	w = NewWorld(otu.Info{otuData}.Name())
 	w.data["SS"] = otu.Info{otuData}.SubSector()
 	w.data["Hex"] = otu.Info{otuData}.Hex()

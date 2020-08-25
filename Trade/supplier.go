@@ -1,10 +1,13 @@
 package trade
 
 import (
+	"fmt"
 	"sort"
+	"strconv"
 
 	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/world"
 	"github.com/Galdoba/utils"
 )
 
@@ -49,7 +52,7 @@ func (m Merchant) SetLocalTC(tc []string) Merchant {
 //CostPurchase -
 func (m Merchant) CostPurchase(code string) int {
 	pDM, sDM := PurchSaleDMs(categoryOf(code), m.localTC)
-	base := getBasePrice(code)
+	base := GetBasePrice(code)
 	pPrice := modifyPricePurchase(base, pDM-sDM+m.tradeDice+m.prices[categoryOf(code)])
 	return pPrice
 }
@@ -57,7 +60,7 @@ func (m Merchant) CostPurchase(code string) int {
 //CostSale -
 func (m Merchant) CostSale(code string) int {
 	pDM, sDM := PurchSaleDMs(categoryOf(code), m.localTC)
-	base := getBasePrice(code)
+	base := GetBasePrice(code)
 	sPrice := modifyPriceSale(base, sDM-pDM+m.tradeDice+m.prices[categoryOf(code)])
 	return sPrice
 }
@@ -80,7 +83,7 @@ func (m Merchant) AvailableCategories() []string {
 }
 
 func matchWorldsTC(code string, tc []string) bool {
-	pMap := getPurchaseDMmap(code)
+	pMap := GetPurchaseDMmap(code)
 	var keys []string
 	for k := range pMap {
 		keys = append(keys, k)
@@ -145,6 +148,13 @@ func categoryOf(code string) string {
 	return string([]byte(code)[0]) + string([]byte(code)[1])
 }
 
+func RandomTGCategory(w world.World) string {
+	merch := NewMerchant().SetLocalUWP(w.UWP()).SetLocalTC(w.TradeCodes()).SetMType(constant.MerchantTypeTrade).DetermineGoodsAvailable()
+	l := len(merch.availableTGcodes)
+	fmt.Print(".")
+	return merch.availableTGcodes[dice.Roll("1d"+strconv.Itoa(l)).DM(-1).Sum()]
+}
+
 //AvailableTradeGoods -
 func (m Merchant) AvailableTradeGoods() []string {
 	return m.availableTGcodes
@@ -158,7 +168,7 @@ func (m Merchant) AvailableTradeGoods() []string {
 // func (m Merchant) ProposeSell(code string) Contract {
 // 	//dealDice := 10 //dice.Roll3D()
 // 	dealDice := m.tradeDice
-// 	saleDMmap := getSaleDMmap(code)
+// 	saleDMmap := GetSaleDMmap(code)
 // 	for i := range m.localTC {
 // 		if val, ok := saleDMmap[m.localTC[i]]; ok {
 // 			dealDice = dealDice + val
@@ -174,7 +184,7 @@ func (m Merchant) AvailableTradeGoods() []string {
 // //ProposeBuy - Информация о передаче товара от купца к игроку
 // func (m Merchant) ProposeBuy(code string) Contract {
 // 	dealDice := m.tradeDice
-// 	purchaseDMmap := getPurchaseDMmap(code) // + dice.Roll("2d6").SumStr())
+// 	purchaseDMmap := GetPurchaseDMmap(code) // + dice.Roll("2d6").SumStr())
 // 	for i := range m.localTC {
 // 		if val, ok := purchaseDMmap[m.localTC[i]]; ok {
 // 			dealDice = dealDice + val
@@ -216,8 +226,8 @@ func (m Merchant) AvailableTradeGoods() []string {
 // 		c.contractDice = m.tradeDice + dice.Roll3D()
 // 		c.taxingAgent = string([]byte(m.localUWP)[5])
 // 		c.taxingEnviroment = string([]byte(m.localUWP)[6])
-// 		c.lotDescription = getDescription(k)
-// 		c.category = getCategory(k)
+// 		c.lotDescription = GetDescription(k)
+// 		c.category = GetCategory(k)
 // 		table.AddRow(c.SellShort())
 // 		allCont = append(allCont, c)
 // 	}
@@ -302,7 +312,7 @@ func countElement(elem string, sl []string) int {
 //PurchSaleDMs -
 func PurchSaleDMs(code string, tc []string) (pDM int, sDM int) {
 	pDM = -999
-	purchDMmap := getPurchaseDMmap(code + "7")
+	purchDMmap := GetPurchaseDMmap(code + "7")
 	for k, val := range purchDMmap {
 		for i := range tc {
 			if tc[i] == k {
@@ -316,7 +326,7 @@ func PurchSaleDMs(code string, tc []string) (pDM int, sDM int) {
 		pDM = 0
 	}
 	sDM = -999
-	saleDMmap := getSaleDMmap(code + "7")
+	saleDMmap := GetSaleDMmap(code + "7")
 	for k, val := range saleDMmap {
 		for i := range tc {
 			if tc[i] == k {
@@ -349,7 +359,7 @@ func confirm(tgCodes []string) []string {
 }
 
 // func (m Merchant) SaleProposalLegal(code string, amount int) string {
-// 	basePrice := getBasePrice(code)
+// 	basePrice := GetBasePrice(code)
 // 	salePrice := m.CostSale(code)
 // 	profit := (salePrice - basePrice) * amount
 // 	if profit < 0 {
@@ -357,8 +367,8 @@ func confirm(tgCodes []string) []string {
 // 	}
 // 	tax := taxingAmount(profit, string([]byte(m.localUWP)[5]))
 // 	proposal := ""
-// 	//fmt.Println("Base", basePrice, "sale", salePrice, "#profit", profit, "||tax", tax, getDescription(code))
-// 	proposal += "Trade Lot: " + strconv.Itoa(amount) + " x " + getDescription(code) + "\n"
+// 	//fmt.Println("Base", basePrice, "sale", salePrice, "#profit", profit, "||tax", tax, GetDescription(code))
+// 	proposal += "Trade Lot: " + strconv.Itoa(amount) + " x " + GetDescription(code) + "\n"
 // 	proposal += " Proposal: " + strconv.Itoa(salePrice) + " x " + strconv.Itoa(amount) + " (" + strconv.Itoa(salePrice*amount) + " Cr)" + "\n"
 // 	proposal += "      Tax: " + strconv.Itoa(tax) + " Cr" + "\n"
 // 	proposal += "---------------------" + "\n"

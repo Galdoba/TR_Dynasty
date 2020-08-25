@@ -45,15 +45,15 @@ import (
 // 	tgr.code = code
 // 	tgr.purchaseDM = make(map[string]int)
 // 	tgr.saleDM = make(map[string]int)
-// 	tgr.tgCategory = getCategory(code)
-// 	tgr.description = getDescription(code)
-// 	tgr.availabilityTags = getAvailabilityTags(code)
-// 	tgr.stockIncrementFormula = getStockIncrementFormula(code)
-// 	tgr.basePrice = getBasePrice(code)
-// 	tgr.purchaseDM = getPurchaseDMmap(code)
-// 	tgr.saleDM = getSaleDMmap(code)
-// 	tgr.maximumRiskAssessmentDM = getMaximumRiskAssessment(code)
-// 	tgr.dangerousGoodsDM = getDangerousGoodsDM(code)
+// 	tgr.tgCategory = GetCategory(code)
+// 	tgr.description = GetDescription(code)
+// 	tgr.availabilityTags = GetAvailabilityTags(code)
+// 	tgr.stockIncrementFormula = GetStockIncrementFormula(code)
+// 	tgr.basePrice = GetBasePrice(code)
+// 	tgr.purchaseDM = GetPurchaseDMmap(code)
+// 	tgr.saleDM = GetSaleDMmap(code)
+// 	tgr.maximumRiskAssessmentDM = GetMaximumRiskAssessment(code)
+// 	tgr.dangerousGoodsDM = GetDangerousGoodsDM(code)
 
 // 	return tgr
 // }
@@ -89,17 +89,17 @@ import (
 // 	return maxVal
 // }
 
-func getCategory(code string) string {
+func GetCategory(code string) string {
 	return tgDB[code][0]
 }
 
-func getDescription(code string) string {
+func GetDescription(code string) string {
 	//descrMerged := tgDB[code][1]
 	//descriptionAll := strings.Split(descrMerged, "/")
 	return tgDB[code][1]
 }
 
-func getAvailabilityTags(code string) []string {
+func GetAvailabilityTags(code string) []string {
 	tagsMerged := tgDB[code][2]
 	tagsAll := strings.Split(tagsMerged, ", ")
 	if tagsAll[0] == "All" {
@@ -108,19 +108,19 @@ func getAvailabilityTags(code string) []string {
 	return tagsAll
 }
 
-func getStockIncrementFormula(code string) string {
+func GetStockIncrementFormula(code string) string {
 	return tgDB[code][3]
 }
 
-func getBasePrice(code string) int {
+func GetBasePrice(code string) int {
 	res, err := strconv.Atoi(tgDB[code][4])
 	if err != nil {
-		panic("TODO EXPALANATION: getBasePrice()")
+		panic("TODO EXPALANATION: GetBasePrice()")
 	}
 	return res
 }
 
-func getPurchaseDMmap(code string) map[string]int {
+func GetPurchaseDMmap(code string) map[string]int {
 	pMap := make(map[string]int)
 	rawData := tgDB[code][5]
 	tagsMerged := strings.Split(rawData, ", ")
@@ -132,7 +132,7 @@ func getPurchaseDMmap(code string) map[string]int {
 	return pMap
 }
 
-func getSaleDMmap(code string) map[string]int {
+func GetSaleDMmap(code string) map[string]int {
 	//TradeGoodsDataMap := TradeGoodRData()
 	pMap := make(map[string]int)
 	rawData := tgDB[code][6]
@@ -145,7 +145,7 @@ func getSaleDMmap(code string) map[string]int {
 	return pMap
 }
 
-func getMaximumRiskAssessment(code string) int {
+func GetMaximumRiskAssessment(code string) int {
 	res, err := strconv.Atoi(tgDB[code][7])
 	if err != nil {
 		panic(err)
@@ -153,7 +153,7 @@ func getMaximumRiskAssessment(code string) int {
 	return res
 }
 
-func getDangerousGoodsDM(code string) int {
+func GetDangerousGoodsDM(code string) int {
 	res, err := strconv.Atoi(tgDB[code][8])
 	if err != nil {
 		panic(err)
@@ -161,14 +161,14 @@ func getDangerousGoodsDM(code string) int {
 	return res
 }
 
-func getMaximumForCategoryFormula(code string) string {
+func GetMaximumForCategoryFormula(code string) string {
 	return tgDB[code][9]
 }
 
 //RollMaximumForCategory -
 func RollMaximumForCategory(code string) int {
 	qty := ""
-	formula := getMaximumForCategoryFormula(code + "7")
+	formula := GetMaximumForCategoryFormula(code + "7")
 	rawAdd := strings.Split(formula, " + ")
 	rawQty := strings.Split(rawAdd[0], " x ")
 	if len(rawQty) < 2 {
@@ -184,7 +184,7 @@ func RollMaximumForCategory(code string) int {
 func IncreseTG(code string) int {
 	qty := ""
 	add := "1"
-	formula := getStockIncrementFormula(code)
+	formula := GetStockIncrementFormula(code)
 	rawAdd := strings.Split(formula, " + ")
 	if len(rawAdd) > 1 {
 		add = rawAdd[1]
