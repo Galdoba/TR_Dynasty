@@ -21,74 +21,97 @@ import (
 	"github.com/Galdoba/utils"
 )
 
-var sectorMapByHex map[string]string
-var sectorMapByName map[string]string
-var sectorMapByUWP map[string]string
+//var sectorMapByHex map[string]string
+//var sectorMapByName map[string]string
+//var sectorMapByUWP map[string]string
 var sourceWorld world.World
 var targetWorld world.World
 var ftv int
 var dist int
+var freigtTable prettytable.PrettyTable
+var freightLots []*freightLot
 
 func init() {
-	sectorData := otu.TrojanReachData()
-	sectorMapByHex = otu.MapDataByHex(sectorData)
-	sectorMapByName = otu.MapDataByName(sectorData)
-	sectorMapByUWP = otu.MapDataByUWP(sectorData)
+	//sectorData := otu.TrojanReachData()
+	//sectorMapByHex = otu.MapDataByHex(sectorData)
+	//sectorMapByName = otu.MapDataByName(sectorData)
+	//sectorMapByUWP = otu.MapDataByUWP(sectorData)
 
 }
 
 func printHead() {
-	fmt.Println("Curent World: " + sourceWorld.Hex() + " " + sourceWorld.Name() + " (" + sourceWorld.UWP() + ")")
-	fmt.Println("Target World: " + targetWorld.Hex() + " " + targetWorld.Name() + " (" + targetWorld.UWP() + ")")
+	fmt.Println("Curent World: " + sourceWorld.Hex() + " " + sourceWorld.Name() + " (" + sourceWorld.UWP() + ") " + sliceToStr(sourceWorld.TradeCodes()))
+	fmt.Println("Target World: " + targetWorld.Hex() + " " + targetWorld.Name() + " (" + targetWorld.UWP() + ") " + sliceToStr(targetWorld.TradeCodes()))
 	fmt.Println("Direct Jump Distance:", dist)
 	fmt.Println("Freight Trafic Value:", ftv)
+	fmt.Println("Passenger Trafic Value:", ptv)
+	fmt.Println("Transit Hazard: [Not Implemented]")
 	fmt.Println("------------------------------------------------------")
 }
 
+func sliceToStr(sl []string) string {
+	str := ""
+	for i := range sl {
+		str = str + sl[i] + " "
+	}
+	str = strings.TrimSuffix(str, " ")
+	return str
+}
+
+//RunMerchantPrince - точка входа
 func RunMerchantPrince() {
 	clrScrn()
 	sourceWorld = LoadWorld("Current World (Name, Hex or UWP): ")
 	clrScrn()
 	targetWorld = LoadWorld("Target World (Name, Hex or UWP): ")
-
 	dist = Astrogation.JumpDistance(sourceWorld.Hex(), targetWorld.Hex())
-	clrScrn()
 	ftv = freightTrafficValue(sourceWorld, targetWorld)
-	//fmt.Println("Freight Traffic Value from "+sourceWorld.Name()+" to "+targetWorld.Name()+" is", ftv)
+	clrScrn()
 	fmt.Println("Searching Freight Contracts...")
-	playerEffect := userInputInt("Enter Diplomat(8), Investigate(8) or Streetwise(8) check effect: ")
+	//playerEffect := userInputInt("Enter Diplomat(8), Investigate(8) or Streetwise(8) check effect: ")
+	playerEffect := dice.Roll("2d6").DM(-8).Sum()
+	fmt.Println("Auto Roll:", playerEffect)
 
 	inLot, mnLot, mjLot := AvailableFreightLots(ftv + playerEffect)
-	lots := LotList(inLot, mnLot, mjLot)
+	freightLots = LotList(inLot, mnLot, mjLot)
+	clrScrn()
+	FreightProcedure()
+
+	MailProcedure()
+	PassengerProcedure()
+}
+
+func renegotiateFreightLots() {
 	for {
 		clrScrn()
-		informAboutLots(lots)
+		informAboutLots()
 
 		fmt.Println("------------------------------------------------------")
 
-		if len(lots) == 0 {
+		if len(freightLots) == 0 {
 			break
 		}
 		uchoise := userInputInt("Pick lot (-1 if none): ")
-		if uchoise < 0 || uchoise > len(lots)-1 {
+		if uchoise < 0 || uchoise > len(freightLots)-1 {
 			if uchoise == -1 {
 				break
 			}
 			continue
 		}
-		lots[uchoise].Negotiate(ftv)
+		freightLots[uchoise].Negotiate()
 	}
 }
 
-func informAboutLots(lots []lot) {
-	if len(lots) < 1 {
+func informAboutLots() {
+	defer fmt.Println("------------------------------------------------------")
+	if len(freightLots) < 1 {
 		fmt.Println("No Freight Lots available")
 		return
 	}
 	tb := prettytable.New()
-	tb.AddRow([]string{"Lot #", "Tons volume", "Freight Offer", "Cargo Category", "Renegotiated", "Risk Factor"})
+	tb.AddRow([]string{"Lot #", "Tons volume", "Freight Offer", "Cargo Manifest", "Renegotiated", "Risk Factor"})
 
-	for i, lot := range lots {
+	for i, lot := range freightLots {
 		neg := "FALSE"
 		if lot.Negotiated() {
 			neg = "TRUE"
@@ -96,10 +119,16 @@ func informAboutLots(lots []lot) {
 
 		tb.AddRow([]string{"Lot " + strconv.Itoa(i), strconv.Itoa(lot.Tonns()) + " tons", strconv.Itoa(lot.Price()) + " Cr", lot.Descr(), neg, lot.Risk()})
 	}
+
 	tb.PTPrint()
 }
 
+//LoadWorld - кандидад на вынос (загружает данные из OTU таблицы)
 func LoadWorld(msg string) world.World {
+	sectorData := otu.TrojanReachData()
+	sectorMapByHex := otu.MapDataByHex(sectorData)
+	sectorMapByName := otu.MapDataByName(sectorData)
+	sectorMapByUWP := otu.MapDataByUWP(sectorData)
 	done := false
 	key := ""
 	otuData := ""
@@ -201,14 +230,14 @@ func freightTrafficValue(sourceWorld, targetWorld world.World) int {
 			dm += -5
 		}
 	}
-	dm += TrvCore.EhexToDigit(targetWorld.PlanetaryData("Pops")) // - да хер пойми надо оно или нет (конфликт правил MgT1:MP p.66)
+	//dm += TrvCore.EhexToDigit(targetWorld.PlanetaryData("Pops")) // - да хер пойми надо оно или нет (конфликт правил MgT1:MP p.66)
 	for _, val := range targetWorld.TradeCodes() {
 		switch val {
 		default:
 		case constant.TradeCodeAgricultural:
-			dm += 1
+			dm++
 		case constant.TradeCodeAsteroid:
-			dm += 1
+			dm++
 		case constant.TradeCodeBarren:
 			dm += -5
 		case constant.TradeCodeDesert:
@@ -216,7 +245,7 @@ func freightTrafficValue(sourceWorld, targetWorld world.World) int {
 		case constant.TradeCodeFluidOceans:
 			dm += 0
 		case constant.TradeCodeGarden:
-			dm += 1
+			dm++
 		case constant.TradeCodeHighPopulation:
 			dm += 0
 		case constant.TradeCodeIceCapped:
@@ -226,9 +255,9 @@ func freightTrafficValue(sourceWorld, targetWorld world.World) int {
 		case constant.TradeCodeLowPopulation:
 			dm += 0
 		case constant.TradeCodeNonAgricultural:
-			dm += 1
+			dm++
 		case constant.TradeCodeNonIndustrial:
-			dm += 1
+			dm++
 		case constant.TradeCodePoor:
 			dm += -3
 		case constant.TradeCodeRich:
@@ -269,14 +298,14 @@ type freightLot struct {
 	cat        string
 }
 
-type lot interface {
-	Price() int
-	Tonns() int
-	Negotiated() bool
-	Descr() string
-	Risk() string
-	Negotiate(int)
-}
+// type lot interface {
+// 	Price() int
+// 	Tonns() int
+// 	Negotiated() bool
+// 	Descr() string
+// 	Risk() string
+// 	Negotiate(int)
+// }
 
 func NewFreightLot(sourceHex, targetHex string, tons int) *freightLot {
 	frL := freightLot{}
@@ -305,7 +334,7 @@ func (l *freightLot) Descr() string {
 }
 
 func (l *freightLot) Risk() string {
-	risk := trade.GetMaximumRiskAssessment(l.cat)
+	risk := trade.GetDangerousGoodsDM(l.cat)
 	return strconv.Itoa(risk)
 }
 
@@ -313,8 +342,7 @@ func (l *freightLot) Negotiated() bool {
 	return l.negotiated
 }
 
-func LotList(inLot, mnLot, mjLot int) []lot {
-	var lots []lot
+func LotList(inLot, mnLot, mjLot int) []*freightLot {
 	var tons []int
 	fmt.Print("Searching available Freight lots")
 	for i := 0; i < mjLot; i++ {
@@ -328,12 +356,12 @@ func LotList(inLot, mnLot, mjLot int) []lot {
 	}
 	sort.Ints(tons)
 	for i := range tons {
-		lots = append(lots, NewFreightLot(sourceWorld.Hex(), targetWorld.Hex(), tons[i]))
+		freightLots = append(freightLots, NewFreightLot(sourceWorld.Hex(), targetWorld.Hex(), tons[i]))
 	}
-	return lots
+	return freightLots
 }
 
-func (l *freightLot) Negotiate(ftv int) {
+func (l *freightLot) Negotiate() {
 	if l.negotiated {
 		fmt.Println("Price on this lot was already renegotiated")
 		return
@@ -409,3 +437,21 @@ func clrScrn() {
 	}
 	printHead()
 }
+
+func FreightProcedure() {
+
+	informAboutLots()
+}
+
+/*
+1 собираем инфу по планетам
+выводим шапку
+2 собираем инфу по перевозкам
+3 собираем инфу по почте
+4 собираем инфу по пассажирам
+
+
+
+
+
+*/
