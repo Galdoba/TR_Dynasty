@@ -1,6 +1,7 @@
 package otu
 
 import (
+	"strconv"
 	"strings"
 )
 
@@ -139,4 +140,80 @@ func MapDataByUWP(data []string) map[string]string {
 		dataMap[data[4]] = v
 	}
 	return dataMap
+}
+
+func subSectorOffset(ss string) (int, int) {
+	xOffset := 0
+	yOffset := 0
+	switch ss {
+	case "A":
+		xOffset = 0
+		yOffset = 0
+	case "B":
+		xOffset = 8
+		yOffset = 0
+	case "C":
+		xOffset = 16
+		yOffset = 0
+	case "D":
+		xOffset = 24
+		yOffset = 0
+	case "E":
+		xOffset = 0
+		yOffset = 10
+	case "F":
+		xOffset = 8
+		yOffset = 10
+	case "G":
+		xOffset = 16
+		yOffset = 10
+	case "H":
+		xOffset = 24
+		yOffset = 10
+	case "I":
+		xOffset = 0
+		yOffset = 20
+	case "J":
+		xOffset = 8
+		yOffset = 20
+	case "K":
+		xOffset = 16
+		yOffset = 20
+	case "L":
+		xOffset = 24
+		yOffset = 20
+	case "M":
+		xOffset = 0
+		yOffset = 30
+	case "N":
+		xOffset = 8
+		yOffset = 30
+	case "O":
+		xOffset = 16
+		yOffset = 30
+	case "P":
+		xOffset = 24
+		yOffset = 30
+	}
+	return xOffset, yOffset
+}
+
+func hex5ToHex4(hex5 string) string {
+	hexParts := strings.Split(hex5, "")
+	ss := hexParts[0]
+	xOffset, yOffset := subSectorOffset(ss)
+	x, _ := strconv.Atoi(hexParts[1] + hexParts[2])
+	y, _ := strconv.Atoi(hexParts[3] + hexParts[4])
+	x += xOffset
+	y += yOffset
+	res := ""
+	if x < 10 {
+		res += "0"
+	}
+	res += strconv.Itoa(x)
+	if y < 10 {
+		res += "0"
+	}
+	res += strconv.Itoa(y)
+	return res
 }

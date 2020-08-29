@@ -65,3 +65,14 @@ func TravelTime(distance float64, thrust float64) (travelHours float64) {
 	travelHours = utils.RoundFloat64(travelHours, 1)
 	return travelHours
 }
+
+//TravelTimeAU - distance считается в AU (Астрономическая единица), thrust - среднее ускореение которое может поддерживать пилот
+//на протяжении перелета. Возвращает количество часов требуемое для перелета.
+// TODO: рассмотреть необходимость и возможность ввести тест меру эффекта от теста 'Pilot(Routine, DEX)'
+//или механики Risk/Reward в Merchant Prince.
+func TravelTimeAU(au float64, thrust float64) (travelHours float64) {
+	distance := au * 149597.8707                      //149597.8707
+	travelHours = math.Sqrt(distance / thrust / 32.4) // SQRT(Distance (MegaMeters) / Acceleration (G or Trust) / 32.4) -- result Time (Hours) -- 32400 - это вес при 1G
+	travelHours = utils.RoundFloat64(travelHours, 1)
+	return travelHours
+}

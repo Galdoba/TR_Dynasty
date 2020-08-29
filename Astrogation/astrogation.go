@@ -195,4 +195,5 @@ func JumpCoordinatesFrom(initHex string, j int) []string {
 	//fmt.Println(coords)
 	sort.Strings(coords)
 	return coords
+
 }

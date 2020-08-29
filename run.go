@@ -1,11 +1,14 @@
 package main
 
 import (
-	trademgt2 "github.com/Galdoba/TR_Dynasty/TradeMgT2"
+	"fmt"
+
+	"github.com/Galdoba/TR_Dynasty/Astrogation"
+	"github.com/Galdoba/TR_Dynasty/DateManager"
 )
 
 func main() {
-	trademgt2.RunMerchantPrince()
+
 }
 
 //OB Ia Ia Ia II II II II
