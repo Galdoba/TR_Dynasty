@@ -430,17 +430,17 @@ func (w *World) GasGigantsDigit() int {
 	return p
 }
 
-//ULP - broken
-func (w *World) ULP() string {
-	if val, ok := w.data["ULP"]; ok {
-		return val
-	}
-	codex, err := NewCodex(w)
-	if err != nil {
-		return err.Error()
-	}
-	return codex.lawProfile
-}
+// //ULP - broken
+// func (w *World) ULP() string {
+// 	if val, ok := w.data["ULP"]; ok {
+// 		return val
+// 	}
+// 	codex, err := NewCodex(w)
+// 	if err != nil {
+// 		return err.Error()
+// 	}
+// 	return codex.lawProfile
+// }
 
 func createGGCode() string {
 	fl := TrvCore.Flux()
@@ -831,9 +831,9 @@ func BasePresent(base string, w *World) bool {
 	return false
 }
 
-func (w *World) Stats() map[string]int {
-	return w.stat
-}
+// func (w *World) Stats() map[string]int {
+// 	return w.stat
+// }
 
 func (w *World) StarPort() string {
 	if _, ok := w.data[constant.PrStarport]; !ok {
@@ -848,6 +848,15 @@ func (w *World) StarPort() string {
 
 func (w *World) TradeCodes() []string {
 	return w.tradeCodes
+}
+
+func (w *World) TradeCodesString() string {
+	str := ""
+	for i := range w.tradeCodes {
+		str += w.tradeCodes[i] + " "
+	}
+	str = strings.TrimSuffix(str, " ")
+	return str
 }
 
 func (w World) SetTradeCodes(tc []string) World {
@@ -2120,9 +2129,9 @@ func (w *World) UpdateTravelZone() {
 }
 
 func (w *World) TravelZone() string {
-	if w.travelCode == "" {
-		w.UpdateTravelZone()
-	}
+	// if w.travelCode == "" {
+	// 	w.UpdateTravelZone()
+	// }
 	return w.travelCode
 }
 
@@ -2483,12 +2492,13 @@ func (w World) SetName(newName string) World {
 func FromOTUdata(otuData string) (World, error) {
 	w := World{}
 	data := strings.Split(otuData, "	")
-	fmt.Println(otu.Info{otuData})
+	//fmt.Println(otu.Info{otuData})
 	if len(data) != 17 {
 		return w, errors.New("OTU data unparseble: (Len != 17)")
 	}
 
 	w = NewWorld(otu.Info{otuData}.Name())
+	w.data["Sector"] = otu.Info{otuData}.Sector()
 	w.data["SS"] = otu.Info{otuData}.SubSector()
 	w.data["Hex"] = otu.Info{otuData}.Hex()
 	w.SetUWP(otu.Info{otuData}.UWP())

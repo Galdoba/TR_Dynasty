@@ -3,6 +3,8 @@ package law
 import (
 	"strings"
 
+	"github.com/Galdoba/TR_Dynasty/constant"
+
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/world"
 )
@@ -17,13 +19,37 @@ type Security struct {
 	securityCodes     []string
 }
 
+func pops(w *world.World) int {
+	return TrvCore.EhexToDigit(w.PlanetaryData(constant.PrPops))
+}
+
+func govr(w *world.World) int {
+	return TrvCore.EhexToDigit(w.PlanetaryData(constant.PrGovr))
+}
+
+func laws(w *world.World) int {
+	return TrvCore.EhexToDigit(w.PlanetaryData(constant.PrLaws))
+}
+
+func size(w *world.World) int {
+	return TrvCore.EhexToDigit(w.PlanetaryData(constant.PrSize))
+}
+
+func atmo(w *world.World) int {
+	return TrvCore.EhexToDigit(w.PlanetaryData(constant.PrAtmo))
+}
+
+func tl(w *world.World) int {
+	return TrvCore.EhexToDigit(w.PlanetaryData(constant.PrTL))
+}
+
 //NewSecurity - creates random obj to draw info from using World data
 func NewSecurity(world *world.World) *Security {
 	sp := &Security{}
-	if world.Stats()["Pops"] == 0 {
+	if pops(world) == 0 {
 		return sp
 	}
-	if world.Stats()["Govr"] == 0 && world.Stats()["Laws"] == 0 {
+	if govr(world) == 0 && laws(world) == 0 {
 		sp.profile = "S000-0"
 		return sp
 	}
@@ -71,25 +97,25 @@ func (sp *Security) Profile() string {
 
 func calculatePlanetaryPresence(world *world.World) int {
 	dm := 0
-	if match(world.Stats()["Size"], 0, 1) {
+	if match(size(world), 0, 1) {
 		dm += 2
 	}
-	if match(world.Stats()["Size"], 2, 3) {
+	if match(size(world), 2, 3) {
 		dm++
 	}
-	if match(world.Stats()["Size"], 9, 10) {
+	if match(size(world), 9, 10) {
 		dm--
 	}
-	if match(world.Stats()["Govr"], 6, 13, 14, 15) {
+	if match(govr(world), 6, 13, 14, 15) {
 		dm += 2
 	}
-	if match(world.Stats()["Govr"], 1, 5, 11) {
+	if match(govr(world), 1, 5, 11) {
 		dm++
 	}
-	if match(world.Stats()["Govr"], 7, 10) {
+	if match(govr(world), 7, 10) {
 		dm--
 	}
-	if match(world.Stats()["Govr"], 2, 12) {
+	if match(govr(world), 2, 12) {
 		dm -= 2
 	}
 	if match(world.TradeCodes(), "Ht", "Ri") {
@@ -101,7 +127,7 @@ func calculatePlanetaryPresence(world *world.World) int {
 	if match(world.TradeCodes(), "Hi") {
 		dm -= 2
 	}
-	roll := TrvCore.Roll2D(dm) + world.Stats()["Laws"] - 7
+	roll := TrvCore.Roll2D(dm) + laws(world) - 7
 	if roll < 0 {
 		roll = 0
 	}
@@ -125,25 +151,25 @@ func calculateOrbitalPresence(world *world.World) int {
 	if match(world.StarPort(), "A") {
 		dm += 2
 	}
-	if match(world.Stats()["Size"], 10, 11, 12) {
+	if match(size(world), 10, 11, 12) {
 		dm--
 	}
-	if match(world.Stats()["Size"], 3, 4) {
+	if match(size(world), 3, 4) {
 		dm++
 	}
-	if match(world.Stats()["Size"], 0, 1, 2) {
+	if match(size(world), 0, 1, 2) {
 		dm += 2
 	}
-	if match(world.Stats()["Govr"], 2, 7, 12) {
+	if match(govr(world), 2, 7, 12) {
 		dm -= 2
 	}
-	if match(world.Stats()["Govr"], 10) {
+	if match(govr(world), 10) {
 		dm--
 	}
-	if match(world.Stats()["Govr"], 1, 5, 11) {
+	if match(govr(world), 1, 5, 11) {
 		dm++
 	}
-	if match(world.Stats()["Govr"], 6, 13, 14, 15) {
+	if match(govr(world), 6, 13, 14, 15) {
 		dm += 2
 	}
 	if match(world.TradeCodes(), "Lo", "Lt") {
@@ -161,7 +187,7 @@ func calculateOrbitalPresence(world *world.World) int {
 	if match(world.Bases(), "N") {
 		dm++
 	}
-	roll := TrvCore.Roll2D(dm) + world.Stats()["Laws"] - 7
+	roll := TrvCore.Roll2D(dm) + laws(world) - 7
 	if roll < 0 {
 		roll = 0
 	}
@@ -182,13 +208,13 @@ func calculateSystemPresence(world *world.World, orbPrez int) int {
 	if match(world.StarPort(), "A") {
 		dm++
 	}
-	if match(world.Stats()["Govr"], 7) {
+	if match(govr(world), 7) {
 		dm -= 2
 	}
-	if match(world.Stats()["Govr"], 1, 9, 10, 12) {
+	if match(govr(world), 1, 9, 10, 12) {
 		dm--
 	}
-	if match(world.Stats()["Govr"], 6) {
+	if match(govr(world), 6) {
 		dm += 2
 	}
 	if match(world.TradeCodes(), "Lo", "Po") {
@@ -216,22 +242,22 @@ func calculateStanse(world *world.World) int {
 	if match(world.StarPort(), "X") {
 		dm += 2
 	}
-	if match(world.Stats()["Atmo"], 1, 10) {
+	if match(atmo(world), 1, 10) {
 		dm++
 	}
-	if match(world.Stats()["Atmo"], 0, 11, 12) {
+	if match(atmo(world), 0, 11, 12) {
 		dm += 2
 	}
-	if match(world.Stats()["Govr"], 2, 12) {
+	if match(govr(world), 2, 12) {
 		dm -= 2
 	}
-	if match(world.Stats()["Govr"], 10) {
+	if match(govr(world), 10) {
 		dm--
 	}
-	if match(world.Stats()["Govr"], 1, 5, 11) {
+	if match(govr(world), 1, 5, 11) {
 		dm++
 	}
-	if match(world.Stats()["Govr"], 6, 13, 14, 15) {
+	if match(govr(world), 6, 13, 14, 15) {
 		dm += 2
 	}
 	if match(world.TradeCodes(), "Hi") {
@@ -243,7 +269,7 @@ func calculateStanse(world *world.World) int {
 	if match(world.TradeCodes(), "Lt") {
 		dm++
 	}
-	roll := TrvCore.Roll2D(dm) + world.Stats()["Laws"]
+	roll := TrvCore.Roll2D(dm) + laws(world)
 	return roll
 }
 
@@ -272,58 +298,58 @@ func match(val interface{}, chck ...interface{}) bool {
 }
 
 func assignSecurityCodes(world *world.World, plpres int) (codes []string) {
-	if match(world.Stats()["Govr"], 1, 3, 5, 6, 7, 8, 9, 11, 13, 14, 15) &&
-		world.Stats()["Pops"] >= 4 &&
+	if match(govr(world), 1, 3, 5, 6, 7, 8, 9, 11, 13, 14, 15) &&
+		pops(world) >= 4 &&
 		match(world.TradeCodes(), "Po", "Ri") &&
 		match(plpres, 1, 2, 3, 4, 5) &&
 		TrvCore.Roll2D() == 12 {
 		codes = append(codes, "Cr")
 	}
-	if match(world.Stats()["Govr"], 1, 3, 6, 8, 9, 11, 13, 14, 15) &&
-		world.Stats()["Pops"] >= 6 &&
+	if match(govr(world), 1, 3, 6, 8, 9, 11, 13, 14, 15) &&
+		pops(world) >= 6 &&
 		match(plpres, 1, 2, 3, 4, 5) &&
 		TrvCore.Roll2D() >= 10 {
 		codes = append(codes, "Co")
 	}
-	if match(world.Stats()["Govr"], 4, 5, 6, 9, 11, 12, 13, 14, 15) &&
-		world.Stats()["Pops"] >= 5 &&
+	if match(govr(world), 4, 5, 6, 9, 11, 12, 13, 14, 15) &&
+		pops(world) >= 5 &&
 		//match(world.TradeCodes(), "Po", "Ri") &&
 		plpres >= 5 &&
 		TrvCore.Roll2D() >= 10 {
 		codes = append(codes, "Fa")
 	}
-	if match(world.Stats()["Govr"], 1, 6, 9, 10, 11, 12, 13, 14, 15) &&
-		world.Stats()["Pops"] >= 8 &&
+	if match(govr(world), 1, 6, 9, 10, 11, 12, 13, 14, 15) &&
+		pops(world) >= 8 &&
 		//match(world.TradeCodes(), "Po", "Ri") &&
 		match(plpres, 1, 2, 3, 4, 5, 6) {
 		//TrvCore.Roll2D() >= 10 {
 		codes = append(codes, "Fo")
 	}
-	if match(world.Stats()["Govr"], 1, 3, 6, 9, 13, 14, 15) &&
-		world.Stats()["Pops"] >= 5 {
+	if match(govr(world), 1, 3, 6, 9, 13, 14, 15) &&
+		pops(world) >= 5 {
 		tn := 10
-		if world.Stats()["Govr"] == 9 {
+		if govr(world) == 9 {
 			tn = 5
 		}
 		if TrvCore.Roll2D() >= tn {
 			codes = append(codes, "Ip")
 		}
 	}
-	if match(world.Stats()["Govr"], 3, 5, 6, 7, 11, 15) &&
-		world.Stats()["Pops"] >= 4 &&
+	if match(govr(world), 3, 5, 6, 7, 11, 15) &&
+		pops(world) >= 4 &&
 		TrvCore.Roll2D() >= 10 {
 		codes = append(codes, "Mi")
 	}
-	if match(world.Stats()["Govr"], 1, 5, 6, 8, 9, 11, 13, 14, 15) &&
-		match(world.Stats()["Pops"], 1, 2, 3, 4, 5, 6, 7, 8, 9) &&
+	if match(govr(world), 1, 5, 6, 8, 9, 11, 13, 14, 15) &&
+		match(pops(world), 1, 2, 3, 4, 5, 6, 7, 8, 9) &&
 		plpres >= 7 {
 		codes = append(codes, "Pe")
 	}
-	if world.Stats()["Tech"] >= 12 {
+	if tl(world) >= 12 {
 		codes = append(codes, "Te")
 	}
-	if match(world.Stats()["Govr"], 2, 4, 7, 10, 12) &&
-		match(world.Stats()["Pops"], 1, 2) &&
+	if match(govr(world), 2, 4, 7, 10, 12) &&
+		match(pops(world), 1, 2) &&
 		TrvCore.Roll2D() >= 5 {
 		codes = append(codes, "Vo")
 	}
@@ -338,7 +364,7 @@ func (sp *Security) formProfile(world *world.World) {
 	sp.profile += TrvCore.DigitToEhex(sp.systemPresence)
 	sp.profile += "-"
 	sp.profile += TrvCore.DigitToEhex(sp.stance)
-	if world.Stats()["Govr"] == 7 {
+	if govr(world) == 7 {
 		sp.profile += "B"
 	}
 	for i := range sp.securityCodes {

@@ -1,14 +1,9 @@
 package main
 
-import (
-	"fmt"
-
-	"github.com/Galdoba/TR_Dynasty/Astrogation"
-	"github.com/Galdoba/TR_Dynasty/DateManager"
-)
+import "github.com/Galdoba/TR_Dynasty/routine"
 
 func main() {
-
+	routine.StartRoutine()
 }
 
 //OB Ia Ia Ia II II II II

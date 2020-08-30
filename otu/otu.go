@@ -1,6 +1,7 @@
 package otu
 
 import (
+	"errors"
 	"strconv"
 	"strings"
 )
@@ -199,6 +200,9 @@ func subSectorOffset(ss string) (int, int) {
 }
 
 func hex5ToHex4(hex5 string) string {
+	if len(hex5) != 5 {
+		return "Wrong Format"
+	}
 	hexParts := strings.Split(hex5, "")
 	ss := hexParts[0]
 	xOffset, yOffset := subSectorOffset(ss)
@@ -216,4 +220,20 @@ func hex5ToHex4(hex5 string) string {
 	}
 	res += strconv.Itoa(y)
 	return res
+}
+
+func GetDataOn(input string) (Info, error) {
+	if val, ok := MapDataByHex(trData)[input]; ok {
+		return Info{val}, nil
+	}
+	if val, ok := MapDataByHex(trData)[hex5ToHex4(input)]; ok {
+		return Info{val}, nil
+	}
+	if val, ok := MapDataByName(trData)[input]; ok {
+		return Info{val}, nil
+	}
+	if val, ok := MapDataByUWP(trData)[input]; ok {
+		return Info{val}, nil
+	}
+	return Info{}, errors.New("No Data on '" + input + "'")
 }
