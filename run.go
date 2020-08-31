@@ -1,8 +1,11 @@
 package main
 
-import "github.com/Galdoba/TR_Dynasty/routine"
+import (
+	"github.com/Galdoba/TR_Dynasty/routine"
+)
 
 func main() {
+
 	routine.StartRoutine()
 }
 

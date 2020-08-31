@@ -46,8 +46,8 @@ const (
 	TradeCodeRich            = "Ri"
 	TradeCodeVacuum          = "Va"
 	TradeCodeWaterWorld      = "Wa"
-	TravelCodeAmber          = "AZ"
-	TravelCodeRed            = "RZ"
+	TravelCodeAmber          = "A"
+	TravelCodeRed            = "R"
 	TradeCodeAsteroidBelt    = "As"
 	//T5 Codes
 	TradeCodeHellworld        = "He"

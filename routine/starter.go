@@ -8,8 +8,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/nsf/termbox-go"
-
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/world"
@@ -27,27 +25,24 @@ var delay time.Duration
 var emmersiveMode bool
 var sourceWorld world.World
 var targetWorld world.World
-var w int
 var currentDate string
 var dp *dice.Dicepool
-var pFactor int
+var ptValue int
+var ftValue int
 
 func init() {
+	fmt.Println("Initialisation...")
 	del, err := time.ParseDuration(typingDelay)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 	delay = del
-	//emmersiveMode = true
-	if err := termbox.Init(); err != nil {
-		panic(err)
-	}
-	w, _ = termbox.Size()
-	defer termbox.Close()
+	emmersiveMode = true
 
 }
 
 func StartRoutine() {
+	fmt.Println("Start...")
 	helloWorld()
 	printSlow("TAS information terminal greets you, Traveller!\n")
 	printSlow("Input current date: \n")
@@ -57,10 +52,10 @@ func StartRoutine() {
 	sourceWorld = pickWorld()
 	printSlow("Select your destination world: \n")
 	targetWorld = pickWorld()
-	pFactor = passengerTrafficValue(sourceWorld, targetWorld)
+	ptValue = passengerTrafficValue(sourceWorld, targetWorld)
+	ftValue = freightTrafficValue(sourceWorld, targetWorld)
 	clrScrn()
 	PassengerRoutine()
-
 }
 
 func selectOperation() {
@@ -174,18 +169,20 @@ func clrScrn() {
 }
 
 func helloWorld() {
+
 	printSlow("   LOGIN: ***********\n")
 	printSlow("PASSWORD: *************\n")
+
 	printSlow("Clearence granted\n")
+	printSlow("Тест русских символов\n")
 }
 
 func printHead() {
 	fmt.Println("         Date: ", currentDate)
 	fmt.Println("Current World: ", sourceWorld.Hex()+" - "+sourceWorld.Name()+" ("+sourceWorld.UWP()+") "+sourceWorld.TradeCodesString()+" "+sourceWorld.TravelZone())
 	fmt.Println("  Destination: ", targetWorld.Hex()+" - "+targetWorld.Name()+" ("+targetWorld.UWP()+") "+targetWorld.TradeCodesString()+" "+targetWorld.TravelZone())
-	fmt.Println("Passenger Traffic Value:", pFactor)
-	for i := 0; i < w; i++ {
-		fmt.Print("-")
-	}
+	fmt.Println("Passenger Traffic Value:", ptValue)
+	fmt.Println("  Freight Traffic Value:", ftValue)
+	fmt.Println("---------------------------------------------------")
 
 }

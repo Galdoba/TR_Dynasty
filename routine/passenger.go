@@ -2,7 +2,6 @@ package routine
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/Galdoba/TR_Dynasty/dice"
 
@@ -17,89 +16,16 @@ import (
 func PassengerRoutine() {
 
 	printSlow("Searching for Passengers...\n")
-	playerEffect := userInputInt("Enter Effect of Broker, Carouse or Streetwise: ")
+	playerEffect1 := userInputInt("Enter Effect 1: ")
+	playerEffect2 := userInputInt("Enter Effect 2: ")
 
-	//pFactor += pFactorPops(sourceWorld.PlanetaryData(constant.PrPops))
-	//pFactor += pfFactorSp(sourceWorld.PlanetaryData(constant.PrStarport))
-
-	//fmt.Println("pFactor", pFactor)
-	clrScrn()
-	// lowPass := rollPassengerTrafficTable(pFactor + 1 + playerEffect)
-	// midPass := rollPassengerTrafficTable(pFactor + playerEffect)
-	// basicPass := rollPassengerTrafficTable(pFactor + playerEffect)
-	// highPass := rollPassengerTrafficTable(pFactor - 4 + playerEffect)
-	// fmt.Println(lowPass, basicPass, midPass, highPass)
-	fmt.Println(AvailablePassengers(pFactor + playerEffect))
-}
-
-// func pFactorPops(pops string) int {
-// 	popInt := TrvCore.EhexToDigit(pops)
-// 	switch popInt {
-// 	case 0, 1:
-// 		return -4
-// 	case 6, 7:
-// 		return 1
-// 	default:
-// 		if popInt >= 8 {
-// 			return 3
-// 		}
-// 	}
-// 	return 0
-// }
-
-// func pfFactorSp(sp string) int {
-// 	switch sp {
-// 	case "A":
-// 		return 2
-// 	case "B":
-// 		return 1
-// 	case "E":
-// 		return -1
-// 	case "X":
-// 		return -3
-// 	}
-// 	return 0
-// }
-
-func rollPassengerTrafficTable(pF int) int {
-	pass := pF // dp.RollNext("2d6").DM(pF).Sum()
-	d := 0
-	switch pass {
-	default:
-		if pass <= 1 {
-			return 0
-		}
-		if pass >= 20 {
-			d = 10
-		}
-	case 2, 3:
-		d = 1
-	case 4, 5, 6:
-		d = 2
-	case 7, 8, 9, 10:
-		d = 3
-	case 11, 12, 13:
-		d = 4
-	case 14, 15:
-		d = 5
-	case 16:
-		d = 6
-	case 17:
-		d = 7
-	case 18:
-		d = 8
-	case 19:
-		d = 9
-	}
-	ps := dp.RollNext(strconv.Itoa(d) + "d6").Sum()
-	if ps < 0 {
-		ps = 0
-	}
-	return ps
+	//clrScrn()
+	fmt.Println(availablePassengers(ptValue + playerEffect1))
+	fmt.Println(availableFreight(ftValue + playerEffect2))
 }
 
 func passengerTrafficValue(sourceWorld, targetWorld world.World) int {
-	dm := TrvCore.EhexToDigit(sourceWorld.PlanetaryData("Pops"))
+	dm := TrvCore.EhexToDigit(sourceWorld.PlanetaryData(constant.PrPops))
 	for _, val := range sourceWorld.TradeCodes() {
 		switch val {
 		default:
@@ -139,17 +65,12 @@ func passengerTrafficValue(sourceWorld, targetWorld world.World) int {
 			dm += 4
 		}
 	}
-	//Starport Value
-	// switch sourceWorld.StarPort() {
-	// case "A":
-	// 	dm += 2
-	// case "B":
-	// 	dm += 1
-	// case "E":
-	// 	dm += -1
-	// case "X":
-	// 	dm += -3
-	// }
+	switch sourceWorld.TravelZone() {
+	case constant.TravelCodeAmber:
+		dm += 2
+	case constant.TravelCodeRed:
+		dm += 4
+	}
 	//dm += TrvCore.EhexToDigit(targetWorld.PlanetaryData("Pops")) // - да хер пойми надо оно или нет (конфликт правил MgT1:MP p.66)
 	for _, val := range targetWorld.TradeCodes() {
 		switch val {
@@ -184,11 +105,13 @@ func passengerTrafficValue(sourceWorld, targetWorld world.World) int {
 			dm += 2
 		case constant.TradeCodeWaterWorld:
 			dm += 0
-		case constant.TravelCodeAmber:
-			dm += -2
-		case constant.TravelCodeRed:
-			dm += -4
 		}
+	}
+	switch targetWorld.TravelZone() {
+	case constant.TravelCodeAmber:
+		dm += -2
+	case constant.TravelCodeRed:
+		dm += -4
 	}
 
 	tl1 := TrvCore.EhexToDigit(sourceWorld.PlanetaryData(constant.PrTL))
@@ -202,7 +125,7 @@ func passengerTrafficValue(sourceWorld, targetWorld world.World) int {
 	return dm
 }
 
-func AvailablePassengers(r int) (int, int, int, int) {
+func availablePassengers(r int) (int, int, int, int) {
 	return lowPass(r), midPass(r), midPass(r), hghPass(r)
 }
 
