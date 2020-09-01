@@ -1,11 +1,13 @@
 package routine
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Galdoba/TR_Dynasty/Astrogation"
@@ -19,7 +21,7 @@ import (
 )
 
 const (
-	typingDelay = "15ms"
+	typingDelay = "10ms"
 )
 
 var delay time.Duration
@@ -31,9 +33,10 @@ var currentDate string
 var dp *dice.Dicepool
 var ptValue int
 var ftValue int
+var jumpRoute []int
 
 func init() {
-	fmt.Println("Initialisation...")
+	printSlow("Initialisation...\n")
 	del, err := time.ParseDuration(typingDelay)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -44,26 +47,62 @@ func init() {
 }
 
 func StartRoutine() {
-	fmt.Println("Start...")
+	clrScrn()
+	printSlow("Start...\n")
 	helloWorld()
 	printSlow("TAS information terminal greets you, Traveller!\n")
+	printSlow("Gathering data...\n")
 	printSlow("Input current date: \n")
 	currentDate = userInputStr()
+	clrScrn()
 	dp = dice.New(utils.SeedFromString(currentDate))
 	printSlow("Select your current world: \n")
 	sourceWorld = pickWorld()
+	clrScrn()
 	printSlow("Select your destination world: \n")
 	targetWorld = pickWorld()
+
 	distance = Astrogation.JumpDistance(sourceWorld.Hex(), targetWorld.Hex())
 	ptValue = passengerTrafficValue(sourceWorld, targetWorld)
 	ftValue = freightTrafficValue(sourceWorld, targetWorld)
 	clrScrn()
+	jumpRoute = []int{distance}
+	if distance > 2 {
+		routeValid := false
+		for !routeValid {
+			jumpRouteTest, err := userInputJumpRoute()
+			if err != nil {
+				printSlow(err.Error())
+				continue
+			}
+			jumpRoute = jumpRouteTest
+			routeValid = true
+		}
+
+	}
+	clrScrn()
+	selectOperation()
 	PassengerRoutine()
 	FreightRoutine()
 }
 
 func selectOperation() {
-
+	printSlow("Selelect operation: \n")
+	printSlow("[0] - Disconnect \n")
+	printSlow("[1] - Search Passengers \n")
+	printSlow("[2] - Search Freight \n")
+	for {
+		input := userInputStr("Initiate ")
+		switch input {
+		default:
+			printSlow("Sorry, command '" + input + "' unrecognised\n")
+		case "0":
+			printSlow("Have a nice day!")
+			os.Exit(0)
+		case "1":
+			PassengerRoutine()
+		}
+	}
 }
 
 /*
@@ -129,8 +168,8 @@ func pickWorld() world.World {
 			printSlow(err.Error() + "\n")
 			continue
 		}
-		output := "Data retrived: " + w.Name() + " (" + w.UWP() + ")\n"
-		printSlow(output)
+		//output := "Data retrived: " + w.Name() + " (" + w.UWP() + ")\n"
+		//printSlow(output)
 		return w
 
 	}
@@ -148,6 +187,21 @@ func loadWorld(key string) (world.World, error) {
 		return world.World{}, err
 	}
 	return w, nil
+}
+
+func userInputJumpRoute() ([]int, error) {
+	route := userInputStr("Enter route sequence (format: 'XXYY XXYY ... XXYY'): ")
+	var routeSl []int
+	jumpPoints := strings.Split(route, " ")
+	for i := 1; i < len(jumpPoints); i++ {
+		locDist := Astrogation.JumpDistance(jumpPoints[i], jumpPoints[i-1])
+		if locDist > getJumpDrive() {
+			fmt.Println(routeSl)
+			return routeSl, errors.New("Jump route invalid: Distance > JumpDrive")
+		}
+		routeSl = append(routeSl, locDist)
+	}
+	return routeSl, nil
 }
 
 func clrScrn() {
@@ -173,21 +227,20 @@ func clrScrn() {
 }
 
 func helloWorld() {
-
 	printSlow("   LOGIN: ***********\n")
 	printSlow("PASSWORD: *************\n")
-
-	printSlow("Clearence granted\n")
-	printSlow("Тест русских символов\n")
+	printSlow("Clearance granted!\n")
 }
 
 func printHead() {
 	fmt.Println("         Date: ", currentDate)
 	fmt.Println("Current World: ", sourceWorld.Hex()+" - "+sourceWorld.Name()+" ("+sourceWorld.UWP()+") "+sourceWorld.TradeCodesString()+" "+sourceWorld.TravelZone())
 	fmt.Println("  Destination: ", targetWorld.Hex()+" - "+targetWorld.Name()+" ("+targetWorld.UWP()+") "+targetWorld.TradeCodesString()+" "+targetWorld.TravelZone())
-	fmt.Println("     Distance: ", distance)
 	fmt.Println("Passenger Traffic Value:", ptValue)
 	fmt.Println("  Freight Traffic Value:", ftValue)
+	fmt.Println("---------------------------------------------------")
+	fmt.Println("Expected Jump Distanses: ", jumpRoute)
+	fmt.Println("         Total Distance: ", distance)
 	fmt.Println("---------------------------------------------------")
 
 }

@@ -1,11 +1,9 @@
 package routine
 
 import (
-	"errors"
 	"fmt"
-	"strings"
+	"strconv"
 
-	"github.com/Galdoba/TR_Dynasty/Astrogation"
 	"github.com/Galdoba/TR_Dynasty/dice"
 
 	"github.com/Galdoba/TR_Dynasty/constant"
@@ -19,44 +17,23 @@ import (
 func PassengerRoutine() {
 
 	printSlow("Searching for Passengers...\n")
-	playerEffect1 := userInputInt("Enter Effect 1: ")
+	playerEffect1 := userInputInt("Enter Effect of Carouse(8) or Streetwise(8) check: ")
 
 	low, basic, middle, high := availablePassengers(ptValue + playerEffect1)
-	jumpRoute := []int{distance}
-	if distance > 2 {
-		routeValid := false
-		for !routeValid {
-			jumpRouteTest, err := userInputJumpRoute()
-			if err != nil {
-				printSlow(err.Error())
-				continue
-			}
-			jumpRoute = jumpRouteTest
-			fmt.Println("jumpRoute", jumpRoute)
-			fmt.Println("jumpRouteTest", jumpRouteTest)
-			routeValid = true
-		}
-
+	printSlow("Active passenger requests: " + strconv.Itoa(low+basic+middle+high) + "\n")
+	if low > 0 {
+		printSlow("   Low Passengers: " + strconv.Itoa(low) + " (" + strconv.Itoa(lowPassCost(jumpRoute)) + ")" + "\n")
 	}
-	fmt.Println("jumpRoute", jumpRoute)
-	fmt.Println(low, basic, middle, high)
-	fmt.Println("Цены:", getPassengerPrice(3, distance), getPassengerPrice(2, distance), getPassengerPrice(1, distance), getPassengerPrice(0, distance))
-
-}
-
-func userInputJumpRoute() ([]int, error) {
-	route := userInputStr("Введите маршрут (формат: 'XXYY XXYY ... XXYY')")
-	var routeSl []int
-	jumpPoints := strings.Split(route, " ")
-	for i := 1; i < len(jumpPoints); i++ {
-		locDist := Astrogation.JumpDistance(jumpPoints[i], jumpPoints[i-1])
-		if locDist > 2 {
-			fmt.Println(routeSl)
-			return routeSl, errors.New("Jump route invalid: Distance > 2")
-		}
-		routeSl = append(routeSl, locDist)
+	if basic > 0 {
+		printSlow(" Basic Passengers: " + strconv.Itoa(basic) + " (" + strconv.Itoa(basicPassCost(jumpRoute)) + ")" + "\n")
 	}
-	return routeSl, nil
+	if middle > 0 {
+		printSlow("Middle Passengers: " + strconv.Itoa(middle) + " (" + strconv.Itoa(middlePassCost(jumpRoute)) + ")" + "\n")
+	}
+	if high > 0 {
+		printSlow("  High Passengers: " + strconv.Itoa(high) + " (" + strconv.Itoa(highPassCost(jumpRoute)) + ")" + "\n")
+	}
+	fmt.Println(https://docs.google.com/spreadsheets/d/1bThnY4Bgr0sU1NXcOJtDzKjO3THgx-VL-Lq8fhMDZk4/edit#gid=860849043&range=A11)
 }
 
 //ABCD
@@ -339,18 +316,6 @@ const (
 	lowPassenger  = 3
 )
 
-func getPassengerPrice(pType int, dist int) int {
-	prices := [][]int{
-		[]int{8500, 6200, 2200, 700},
-		[]int{12000, 9000, 2900, 1300},
-		[]int{20000, 15000, 4400, 2200},
-		[]int{41000, 31000, 8600, 4300},
-		[]int{45000, 34000, 9400, 13000},
-		[]int{470000, 350000, 93000, 96000},
-	}
-	return prices[dist-1][pType]
-}
-
 func lowPassCost(jumpSeq []int) int {
 	totalPrice := 0
 	for _, val := range jumpSeq {
@@ -360,6 +325,49 @@ func lowPassCost(jumpSeq []int) int {
 		totalPrice = totalPrice + (800 + val*200)
 	}
 	return totalPrice
+}
+
+func basicPassCost(jumpSeq []int) int {
+	totalPrice := 0
+	for _, val := range jumpSeq {
+		if val < 1 {
+			return 0
+		}
+		if val == 1 {
+			totalPrice = totalPrice + 1500
+			continue
+		}
+		if val == 1 {
+			totalPrice = totalPrice + 3000
+			continue
+		}
+		totalPrice = totalPrice + ((val * 2500) - 2500)
+	}
+	return totalPrice
+}
+
+func middlePassCost(jumpSeq []int) int {
+	// totalPrice := 0
+	// for _, val := range jumpSeq {
+	// 	if val < 1 {
+	// 		return 0
+	// 	}
+	// 	if val == 1 {
+	// 		totalPrice = totalPrice + 3000
+	// 		continue
+	// 	}
+	// 	if val == 1 {
+	// 		totalPrice = totalPrice + 6000
+	// 		continue
+	// 	}
+	// 	totalPrice = totalPrice + ((val * 5000) - 5000)
+	// }
+	// return totalPrice
+	return basicPassCost(jumpSeq) * 2
+}
+
+func highPassCost(jumpSeq []int) int {
+	return middlePassCost(jumpSeq) * 2
 }
 
 // func basicPassCost() int {

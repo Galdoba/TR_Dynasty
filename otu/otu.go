@@ -239,13 +239,28 @@ func GetDataOn(input string) (Info, error) {
 	if val, ok := MapDataByHex(sectorData)[hex5ToHex4(input)]; ok {
 		return Info{val}, nil
 	}
-	if val, ok := MapDataByName(sectorData)[input]; ok {
+	nameInput := formatName(input)
+	if val, ok := MapDataByName(sectorData)[nameInput]; ok {
 		return Info{val}, nil
 	}
-	if val, ok := MapDataByUWP(sectorData)[input]; ok {
+	uwpInput := strings.ToUpper(input)
+	if val, ok := MapDataByUWP(sectorData)[uwpInput]; ok {
 		return Info{val}, nil
 	}
 	return Info{}, errors.New("No Data on '" + input + "'")
+}
+
+func formatName(name string) string {
+	rn := []rune(name)
+	fName := ""
+	for i := range rn {
+		if i == 0 || string(rn[i-1]) == " " || string(rn[i-1]) == "-" {
+			fName = fName + strings.ToUpper(string(rn[i]))
+			continue
+		}
+		fName = fName + string(rn[i])
+	}
+	return fName
 }
 
 func JumpCoordinatesVetted(coordPool []string, ggPresent bool, notRedZone bool) []string {
