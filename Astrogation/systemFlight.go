@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/world"
 	"github.com/Galdoba/utils"
 )
@@ -43,7 +44,7 @@ func JumpPointDistance(world *world.World) (megaMeters float64) {
 	star := world.HomeStar()
 	starJSOrbit := JumpDriveLimitStar(star)
 	planetOrbit := world.Orbit()
-	planetJSDistance := float64(world.Stats()["Size"]*100) * 1.6
+	planetJSDistance := float64(TrvCore.EhexToDigit(world.PlanetaryData("Size"))*100) * 1.6
 	if planetJSDistance == 0 {
 		planetJSDistance = 400 * 1.6
 	}

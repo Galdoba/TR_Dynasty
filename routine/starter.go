@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Galdoba/TR_Dynasty/Astrogation"
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/world"
@@ -25,6 +26,7 @@ var delay time.Duration
 var emmersiveMode bool
 var sourceWorld world.World
 var targetWorld world.World
+var distance int
 var currentDate string
 var dp *dice.Dicepool
 var ptValue int
@@ -52,10 +54,12 @@ func StartRoutine() {
 	sourceWorld = pickWorld()
 	printSlow("Select your destination world: \n")
 	targetWorld = pickWorld()
+	distance = Astrogation.JumpDistance(sourceWorld.Hex(), targetWorld.Hex())
 	ptValue = passengerTrafficValue(sourceWorld, targetWorld)
 	ftValue = freightTrafficValue(sourceWorld, targetWorld)
 	clrScrn()
 	PassengerRoutine()
+	FreightRoutine()
 }
 
 func selectOperation() {
@@ -181,6 +185,7 @@ func printHead() {
 	fmt.Println("         Date: ", currentDate)
 	fmt.Println("Current World: ", sourceWorld.Hex()+" - "+sourceWorld.Name()+" ("+sourceWorld.UWP()+") "+sourceWorld.TradeCodesString()+" "+sourceWorld.TravelZone())
 	fmt.Println("  Destination: ", targetWorld.Hex()+" - "+targetWorld.Name()+" ("+targetWorld.UWP()+") "+targetWorld.TradeCodesString()+" "+targetWorld.TravelZone())
+	fmt.Println("     Distance: ", distance)
 	fmt.Println("Passenger Traffic Value:", ptValue)
 	fmt.Println("  Freight Traffic Value:", ftValue)
 	fmt.Println("---------------------------------------------------")

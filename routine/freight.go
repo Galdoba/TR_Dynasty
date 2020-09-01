@@ -9,6 +9,11 @@ import (
 	"github.com/Galdoba/utils"
 )
 
+func FreightRoutine() {
+	playerEffect2 := userInputInt("Enter Effect 2: ")
+	fmt.Println(availableFreight(ftValue + playerEffect2))
+}
+
 func freightTrafficValue(sourceWorld, targetWorld world.World) int {
 	//dm := TrvCore.EhexToDigit(sourceWorld.PlanetaryData("Pops"))
 	dm := 0

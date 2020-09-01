@@ -10,10 +10,10 @@ type Info struct {
 	Info string
 }
 
-var trData []string
+var sectorData []string
 
 func init() {
-	trData = TrojanReachData()
+	sectorData = TrojanReachData()
 }
 
 type InfoRetriver interface {
@@ -83,6 +83,16 @@ func (oi Info) PBG() string {
 	data := strings.Split(oi.Info, "	")
 	return data[8]
 }
+
+func (oi Info) ggPresent() bool {
+	pbg := oi.PBG()
+	data := strings.Split(pbg, "")
+	if data[2] != "0" {
+		return true
+	}
+	return false
+}
+
 func (oi Info) Allegiance() string {
 	data := strings.Split(oi.Info, "	")
 	return data[9]
@@ -223,17 +233,40 @@ func hex5ToHex4(hex5 string) string {
 }
 
 func GetDataOn(input string) (Info, error) {
-	if val, ok := MapDataByHex(trData)[input]; ok {
+	if val, ok := MapDataByHex(sectorData)[input]; ok {
 		return Info{val}, nil
 	}
-	if val, ok := MapDataByHex(trData)[hex5ToHex4(input)]; ok {
+	if val, ok := MapDataByHex(sectorData)[hex5ToHex4(input)]; ok {
 		return Info{val}, nil
 	}
-	if val, ok := MapDataByName(trData)[input]; ok {
+	if val, ok := MapDataByName(sectorData)[input]; ok {
 		return Info{val}, nil
 	}
-	if val, ok := MapDataByUWP(trData)[input]; ok {
+	if val, ok := MapDataByUWP(sectorData)[input]; ok {
 		return Info{val}, nil
 	}
 	return Info{}, errors.New("No Data on '" + input + "'")
+}
+
+func JumpCoordinatesVetted(coordPool []string, ggPresent bool, notRedZone bool) []string {
+	var coords []string
+	for i, coord := range coordPool {
+		planetaryData, err := GetDataOn(coord)
+		if err != nil {
+			continue
+		}
+		if ggPresent { //исключаем найденые системы БЕЗ газовых гигантов
+			if !planetaryData.ggPresent() {
+				continue
+			}
+		}
+		if notRedZone { //исключаем найденые системы с кодом Красный
+			if planetaryData.Zone() == "A" {
+				continue
+			}
+		}
+		//fmt.Println(planetaryData, err, i)
+		coords = append(coords, coordPool[i])
+	}
+	return coords
 }

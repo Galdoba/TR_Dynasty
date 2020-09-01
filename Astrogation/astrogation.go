@@ -181,6 +181,8 @@ func addCube(ac, bc cubeCoords) cubeCoords {
 	return setCubeCoords(ac.x+bc.x, ac.y+bc.y, ac.z+bc.z)
 }
 
+//JumpCoordinatesFrom - дает перечень всех хексов в радиусе j
+//требует координатов секторной карты в формате "XXYY"
 func JumpCoordinatesFrom(initHex string, j int) []string {
 	var coords []string
 	start := Hex(initHex)
@@ -196,4 +198,16 @@ func JumpCoordinatesFrom(initHex string, j int) []string {
 	sort.Strings(coords)
 	return coords
 
+}
+
+func JumpCoordinatesAll() []string {
+	var jc []string
+	for x := 1; x <= 32; x++ {
+		for y := 1; y <= 40; y++ {
+			hexCoord := setHexCoords(x, y)
+			hex := evenQToStr(hexCoord)
+			jc = append(jc, hex)
+		}
+	}
+	return jc
 }
