@@ -6,7 +6,7 @@ import (
 )
 
 func MailRoutine() {
-	clrScrn()
+
 	mailDice := dp.RollNext("2d6").DM(mailDM()).Sum()
 	if mailDice >= 12 {
 		qty := dp.RollNext("1d6").Sum()

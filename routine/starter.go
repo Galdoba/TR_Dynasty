@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	typingDelay = "10ms"
+	typingDelay = "6ms"
 )
 
 var delay time.Duration
@@ -38,6 +38,9 @@ var ftValue int
 var jumpRoute []int
 var day int
 var year int
+var autoMod bool
+var localBrokerDM int
+var localBrokerCut float64
 
 func init() {
 	printSlow("Initialisation...\n")
@@ -48,6 +51,8 @@ func init() {
 	delay = del
 	emmersiveMode = true
 	freightBase = 500
+	localBrokerDM = -3
+	localBrokerCut = 0
 }
 
 func StartRoutine() {
@@ -127,9 +132,10 @@ func userInputDate() string {
 func printOptions() {
 	printSlow("Selelect operation: \n")
 	printSlow("[0] - Disconnect \n")
-	printSlow("[1] - Search Passengers \n")
+	printSlow("[1] - Hire Local Broker\n")
 	printSlow("[2] - Search Freight \n")
 	printSlow("[3] - Search Mail \n")
+	printSlow("[4] - Search ALL \n")
 }
 
 func selectOperation() {
@@ -142,10 +148,26 @@ func selectOperation() {
 			printSlow("Have a nice day!")
 			os.Exit(0)
 		case "1":
+
+		case "4":
+			clrScrn()
 			PassengerRoutine()
-		case "2":
+		case "5":
+			clrScrn()
 			FreightRoutine()
-		case "3":
+		case "6":
+			clrScrn()
+			MailRoutine()
+		case "7":
+			clrScrn()
+			PassengerRoutine()
+			FreightRoutine()
+			MailRoutine()
+		case "8":
+			clrScrn()
+			autoMod = true
+			PassengerRoutine()
+			FreightRoutine()
 			MailRoutine()
 
 		}

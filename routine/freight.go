@@ -15,10 +15,17 @@ import (
 var freightBase int
 
 func FreightRoutine() {
-	clrScrn()
+	printSlow("Searching freight: ")
 	//diff := freightDiff(ftValue)
 	//playerEffect2 := userInputInt("Enter Effect of Diplomat(" + strconv.Itoa(diff) + "), Investigate(" + strconv.Itoa(diff) + ") or Streetwise(" + strconv.Itoa(diff) + ") check: ")
-	playerEffect2 := userInputInt("Enter Effect of Diplomat(8), Investigate(8) or Streetwise(8) check: ")
+	//playerEffect2 := userInputInt("Enter Effect of Diplomat(8), Investigate(8) or Streetwise(8) check: ")
+	playerEffect2 := 0
+	switch autoMod {
+	case false:
+		playerEffect2 = userInputInt("Enter Effect of Diplomat(8), Investigate(8) or Streetwise(8) check: ")
+	case true:
+		playerEffect2 = TrvCore.Flux()
+	}
 	inLot, mnLot, mjLot := availableFreight(ftValue + playerEffect2)
 	//fmt.Println(inLot, mnLot, mjLot)
 	frList := freightListed(inLot, mnLot, mjLot)

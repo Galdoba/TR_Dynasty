@@ -14,9 +14,15 @@ import (
 
 //PassengerRoutine -
 func PassengerRoutine() {
-	clrScrn()
+
 	printSlow("Searching for Passengers...\n")
-	playerEffect1 := userInputInt("Enter Effect of Carouse(8) or Streetwise(8) check: ")
+	playerEffect1 := 0
+	switch autoMod {
+	case false:
+		playerEffect1 = userInputInt("Enter Effect of Carouse(8) or Streetwise(8) check: ")
+	case true:
+		playerEffect1 = TrvCore.Flux()
+	}
 
 	low, basic, middle, high := availablePassengers(ptValue + playerEffect1)
 	printSlow("Active passenger requests: " + strconv.Itoa(low+basic+middle+high) + "\n")
