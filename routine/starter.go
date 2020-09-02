@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/Galdoba/TR_Dynasty/Astrogation"
+	"github.com/Galdoba/TR_Dynasty/TrvCore"
+	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/world"
@@ -34,6 +36,8 @@ var dp *dice.Dicepool
 var ptValue int
 var ftValue int
 var jumpRoute []int
+var day int
+var year int
 
 func init() {
 	printSlow("Initialisation...\n")
@@ -43,17 +47,19 @@ func init() {
 	}
 	delay = del
 	emmersiveMode = true
-
+	freightBase = 500
 }
 
 func StartRoutine() {
+
 	clrScrn()
 	printSlow("Start...\n")
 	helloWorld()
 	printSlow("TAS information terminal greets you, Traveller!\n")
 	printSlow("Gathering data...\n")
-	printSlow("Input current date: \n")
-	currentDate = userInputStr()
+	//printSlow("Input current date: \n")
+	//currentDate = userInputStr()
+	currentDate = userInputDate()
 	clrScrn()
 	dp = dice.New(utils.SeedFromString(currentDate))
 	printSlow("Select your current world: \n")
@@ -81,16 +87,52 @@ func StartRoutine() {
 
 	}
 	clrScrn()
+	printOptions()
 	selectOperation()
-	PassengerRoutine()
-	FreightRoutine()
 }
 
-func selectOperation() {
+func userInputDate() string {
+	valid := false
+	input := "000-0000"
+	for !valid {
+		input = userInputStr("Enter current Imperial Date (format: ddd-yyyy): ")
+		data := strings.Split(input, "-")
+		if len(data) != 2 {
+			printSlow("WARNING: Unknown format '" + input + "'\n")
+			continue
+		}
+		for i := range data {
+			test, err := strconv.Atoi(data[i])
+			if err != nil {
+				printSlow("WARNING: " + err.Error() + "\n")
+			}
+			switch i {
+			case 0:
+				if test < 100 {
+					input = "0" + input
+				}
+				if test < 10 {
+					input = "0" + input
+				}
+				day = test
+			case 1:
+				year = test
+			}
+		}
+		valid = true
+	}
+	return input
+}
+
+func printOptions() {
 	printSlow("Selelect operation: \n")
 	printSlow("[0] - Disconnect \n")
 	printSlow("[1] - Search Passengers \n")
 	printSlow("[2] - Search Freight \n")
+	printSlow("[3] - Search Mail \n")
+}
+
+func selectOperation() {
 	for {
 		input := userInputStr("Initiate ")
 		switch input {
@@ -101,7 +143,13 @@ func selectOperation() {
 			os.Exit(0)
 		case "1":
 			PassengerRoutine()
+		case "2":
+			FreightRoutine()
+		case "3":
+			MailRoutine()
+
 		}
+		printOptions()
 	}
 }
 
@@ -204,6 +252,16 @@ func userInputJumpRoute() ([]int, error) {
 	return routeSl, nil
 }
 
+func techDifferenceDM() int {
+	tl1 := TrvCore.EhexToDigit(sourceWorld.PlanetaryData(constant.PrTL))
+	tl2 := TrvCore.EhexToDigit(targetWorld.PlanetaryData(constant.PrTL))
+	tlDiff := utils.Max(tl1, tl2) - utils.Min(tl1, tl2)
+	if tlDiff > 5 {
+		tlDiff = 5
+	}
+	return -tlDiff
+}
+
 func clrScrn() {
 	var clear map[string]func()
 	clear = make(map[string]func()) //Initialize it
@@ -236,11 +294,29 @@ func printHead() {
 	fmt.Println("         Date: ", currentDate)
 	fmt.Println("Current World: ", sourceWorld.Hex()+" - "+sourceWorld.Name()+" ("+sourceWorld.UWP()+") "+sourceWorld.TradeCodesString()+" "+sourceWorld.TravelZone())
 	fmt.Println("  Destination: ", targetWorld.Hex()+" - "+targetWorld.Name()+" ("+targetWorld.UWP()+") "+targetWorld.TradeCodesString()+" "+targetWorld.TravelZone())
+	fmt.Println("          ETA: ", formatDate(day+(len(jumpRoute)*7), year))
 	fmt.Println("Passenger Traffic Value:", ptValue)
 	fmt.Println("  Freight Traffic Value:", ftValue)
-	fmt.Println("---------------------------------------------------")
-	fmt.Println("Expected Jump Distanses: ", jumpRoute)
-	fmt.Println("         Total Distance: ", distance)
-	fmt.Println("---------------------------------------------------")
+	fmt.Println("-----------------------------------------------------")
+	fmt.Println("Expected Jump Sequance: ", jumpRoute)
+	fmt.Println("        Total Distance: ", distance)
+	fmt.Println("-----------------------------------------------------")
+}
 
+func formatDate(day, year int) string {
+	date := ""
+	if day < 100 {
+		date = "0" + date
+	}
+	if day < 10 {
+		date = "0" + date
+	}
+	if day > 365 {
+		day = day - 365
+		year++
+	}
+	date += strconv.Itoa(day)
+	date += "-"
+	date += strconv.Itoa(year)
+	return date
 }

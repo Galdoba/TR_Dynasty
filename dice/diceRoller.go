@@ -72,6 +72,8 @@ func Roll(code string) *Dicepool {
 func (dp *Dicepool) RollNext(code string) *Dicepool {
 	dp.result = nil
 	dp.dice, dp.edges = decodeDiceCode(code)
+	dp.modPerDie = 0
+	dp.modTotal = 0
 	for d := 0; d < dp.dice; d++ {
 		dp.result = append(dp.result, dp.rand.Intn(dp.edges)+1)
 	}

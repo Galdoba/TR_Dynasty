@@ -8,32 +8,32 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/world"
-	"github.com/Galdoba/utils"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 )
 
 //PassengerRoutine -
 func PassengerRoutine() {
-
+	clrScrn()
 	printSlow("Searching for Passengers...\n")
 	playerEffect1 := userInputInt("Enter Effect of Carouse(8) or Streetwise(8) check: ")
 
 	low, basic, middle, high := availablePassengers(ptValue + playerEffect1)
 	printSlow("Active passenger requests: " + strconv.Itoa(low+basic+middle+high) + "\n")
 	if low > 0 {
-		printSlow("   Low Passengers: " + strconv.Itoa(low) + " (" + strconv.Itoa(lowPassCost(jumpRoute)) + ")" + "\n")
+		printSlow("   Low Passengers: " + strconv.Itoa(low) + "		Transport fee: " + strconv.Itoa(lowPassCost(jumpRoute)) + "\n")
 	}
 	if basic > 0 {
-		printSlow(" Basic Passengers: " + strconv.Itoa(basic) + " (" + strconv.Itoa(basicPassCost(jumpRoute)) + ")" + "\n")
+		printSlow(" Basic Passengers: " + strconv.Itoa(basic) + "		Transport fee: " + strconv.Itoa(basicPassCost(jumpRoute)) + "\n")
 	}
 	if middle > 0 {
-		printSlow("Middle Passengers: " + strconv.Itoa(middle) + " (" + strconv.Itoa(middlePassCost(jumpRoute)) + ")" + "\n")
+		printSlow("Middle Passengers: " + strconv.Itoa(middle) + "		Transport fee: " + strconv.Itoa(middlePassCost(jumpRoute)) + "\n")
 	}
 	if high > 0 {
-		printSlow("  High Passengers: " + strconv.Itoa(high) + " (" + strconv.Itoa(highPassCost(jumpRoute)) + ")" + "\n")
+		printSlow("  High Passengers: " + strconv.Itoa(high) + "		Transport fee: " + strconv.Itoa(highPassCost(jumpRoute)) + "\n")
 	}
-	fmt.Println(https://docs.google.com/spreadsheets/d/1bThnY4Bgr0sU1NXcOJtDzKjO3THgx-VL-Lq8fhMDZk4/edit#gid=860849043&range=A11)
+	fmt.Println("-----------------------------------------------------")
+	//fmt.Println(https://docs.google.com/spreadsheets/d/1bThnY4Bgr0sU1NXcOJtDzKjO3THgx-VL-Lq8fhMDZk4/edit#gid=860849043&range=A11)
 }
 
 //ABCD
@@ -130,14 +130,7 @@ func passengerTrafficValue(sourceWorld, targetWorld world.World) int {
 		dm += -4
 	}
 
-	tl1 := TrvCore.EhexToDigit(sourceWorld.PlanetaryData(constant.PrTL))
-	tl2 := TrvCore.EhexToDigit(targetWorld.PlanetaryData(constant.PrTL))
-	tlDiff := utils.Max(tl1, tl2) - utils.Min(tl1, tl2)
-	if tlDiff > 5 {
-		tlDiff = 5
-	}
-	dm -= tlDiff
-	fmt.Println(dm)
+	dm += techDifferenceDM()
 	return dm
 }
 

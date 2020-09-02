@@ -2,16 +2,80 @@ package routine
 
 import (
 	"fmt"
+	"sort"
+	"strconv"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/constant"
+	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/world"
 	"github.com/Galdoba/utils"
 )
 
+var freightBase int
+
 func FreightRoutine() {
-	playerEffect2 := userInputInt("Enter Effect 2: ")
-	fmt.Println(availableFreight(ftValue + playerEffect2))
+	clrScrn()
+	//diff := freightDiff(ftValue)
+	//playerEffect2 := userInputInt("Enter Effect of Diplomat(" + strconv.Itoa(diff) + "), Investigate(" + strconv.Itoa(diff) + ") or Streetwise(" + strconv.Itoa(diff) + ") check: ")
+	playerEffect2 := userInputInt("Enter Effect of Diplomat(8), Investigate(8) or Streetwise(8) check: ")
+	inLot, mnLot, mjLot := availableFreight(ftValue + playerEffect2)
+	//fmt.Println(inLot, mnLot, mjLot)
+	frList := freightListed(inLot, mnLot, mjLot)
+	//fmt.Println(frList)
+	if len(frList) < 1 {
+		printSlow("No freight lots available\n")
+	}
+	for i := range frList {
+		printSlow("Freight lot " + strconv.Itoa(i+1) + " 		" + strconv.Itoa(frList[i]) + " tons		Hauling fee: " + strconv.Itoa(frList[i]*freightCostPerTon()) + " Cr\n")
+	}
+	fmt.Println("-----------------------------------------------------")
+
+}
+
+func freightDiff(ftValue int) int {
+	diff := 6
+	switch ftValue {
+	case 1, 2, 3, 4:
+		diff = 6
+	case 5, 6, 7:
+		diff = 7
+	case 8, 9, 10, 11:
+		diff = 8
+	case 12, 13, 14:
+		diff = 9
+	}
+	if ftValue > 14 {
+		diff = 10
+	}
+	return diff
+}
+
+func freightCostPerTon() int {
+	cpt := 0
+	for _, val := range jumpRoute {
+		cpt = cpt + (freightBase * val)
+	}
+
+	return cpt
+}
+
+func freightListed(inLot, mnLot, mjLot int) []int {
+	var tons []int
+	printSlow("Searching available Freight lots...\n")
+	for i := 0; i < mjLot; i++ {
+		tons = append(tons, dice.Roll("12d6").Sum()) //*10)
+	}
+	for i := 0; i < mnLot; i++ {
+		tons = append(tons, dice.Roll("6d6").Sum()) //*5)
+	}
+	for i := 0; i < inLot; i++ {
+		tons = append(tons, dice.Roll("1d6").Sum()*1)
+	}
+	sort.Ints(tons)
+	printSlow("Found " + strconv.Itoa(len(tons)) + " active requests...\n")
+	return tons
+
 }
 
 func freightTrafficValue(sourceWorld, targetWorld world.World) int {
@@ -108,13 +172,7 @@ func freightTrafficValue(sourceWorld, targetWorld world.World) int {
 	}
 	//}
 
-	tl1 := TrvCore.EhexToDigit(sourceWorld.PlanetaryData(constant.PrTL))
-	tl2 := TrvCore.EhexToDigit(targetWorld.PlanetaryData(constant.PrTL))
-	tlDiff := utils.Max(tl1, tl2) - utils.Min(tl1, tl2)
-	if tlDiff > 5 {
-		tlDiff = 5
-	}
-	dm -= tlDiff
+	dm += techDifferenceDM()
 	return dm
 }
 
