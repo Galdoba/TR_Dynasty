@@ -52,6 +52,17 @@ func getCrewSOCdm() int {
 	return vol
 }
 
+func getYear() int {
+	lines := utils.LinesFromTXT("mgt2_traffic.config")
+	l := utils.InFileContains("mgt2_traffic.config", "CURRENT_YEAR")
+	data := strings.Split(lines[l], ":")
+	vol, err := strconv.Atoi(data[1])
+	if err != nil {
+		return -999
+	}
+	return vol
+}
+
 func getCrewNavyScoutMerchantRank() int {
 	lines := utils.LinesFromTXT("mgt2_traffic.config")
 	l := utils.InFileContains("mgt2_traffic.config", "MAX_NAVY_SCOUT_MERCAHNT_RANK")

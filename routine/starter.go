@@ -39,8 +39,6 @@ var jumpRoute []int
 var day int
 var year int
 var autoMod bool
-var localBrokerDM int
-var localBrokerCut float64
 
 func init() {
 	printSlow("Initialisation...\n")
@@ -51,8 +49,7 @@ func init() {
 	delay = del
 	emmersiveMode = true
 	freightBase = 500
-	localBrokerDM = -3
-	localBrokerCut = 0
+	localBroker = broker{0, 0.0}
 }
 
 func StartRoutine() {
@@ -97,45 +94,39 @@ func StartRoutine() {
 }
 
 func userInputDate() string {
-	valid := false
-	input := "000-0000"
-	for !valid {
-		input = userInputStr("Enter current Imperial Date (format: ddd-yyyy): ")
-		data := strings.Split(input, "-")
-		if len(data) != 2 {
-			printSlow("WARNING: Unknown format '" + input + "'\n")
-			continue
-		}
-		for i := range data {
-			test, err := strconv.Atoi(data[i])
-			if err != nil {
-				printSlow("WARNING: " + err.Error() + "\n")
-			}
-			switch i {
-			case 0:
-				if test < 100 {
-					input = "0" + input
-				}
-				if test < 10 {
-					input = "0" + input
-				}
-				day = test
-			case 1:
-				year = test
-			}
-		}
-		valid = true
+	input := 0
+	output := ""
+	input = userInputInt("Enter current Imperial Date (day only): ")
+
+	year = getYear()
+	day = input
+	for day > 365 {
+		year++
+		day = day - 365
 	}
-	return input
+	for day < 1 {
+		year--
+		day = day + 365
+	}
+
+	if day < 100 {
+		output = "0" + output
+	}
+	if day < 10 {
+		output = "0" + output
+	}
+	output = output + strconv.Itoa(day) + "-" + strconv.Itoa(year)
+	return output
 }
 
 func printOptions() {
 	printSlow("Selelect operation: \n")
 	printSlow("[0] - Disconnect \n")
 	printSlow("[1] - Hire Local Broker\n")
-	printSlow("[2] - Search Freight \n")
-	printSlow("[3] - Search Mail \n")
-	printSlow("[4] - Search ALL \n")
+	printSlow("[4] - Search Passengers\n")
+	printSlow("[5] - Search Freight \n")
+	printSlow("[6] - Search Mail \n")
+	printSlow("[7] - Search ALL \n")
 }
 
 func selectOperation() {
@@ -148,7 +139,8 @@ func selectOperation() {
 			printSlow("Have a nice day!")
 			os.Exit(0)
 		case "1":
-
+			clrScrn()
+			chooseBroker()
 		case "4":
 			clrScrn()
 			PassengerRoutine()
@@ -163,7 +155,7 @@ func selectOperation() {
 			PassengerRoutine()
 			FreightRoutine()
 			MailRoutine()
-		case "8":
+		case "9":
 			clrScrn()
 			autoMod = true
 			PassengerRoutine()
@@ -316,12 +308,13 @@ func printHead() {
 	fmt.Println("         Date: ", currentDate)
 	fmt.Println("Current World: ", sourceWorld.Hex()+" - "+sourceWorld.Name()+" ("+sourceWorld.UWP()+") "+sourceWorld.TradeCodesString()+" "+sourceWorld.TravelZone())
 	fmt.Println("  Destination: ", targetWorld.Hex()+" - "+targetWorld.Name()+" ("+targetWorld.UWP()+") "+targetWorld.TradeCodesString()+" "+targetWorld.TravelZone())
-	fmt.Println("          ETA: ", formatDate(day+(len(jumpRoute)*7), year))
 	fmt.Println("Passenger Traffic Value:", ptValue)
 	fmt.Println("  Freight Traffic Value:", ftValue)
+	fmt.Println("     Local Broker's Cut:", localBroker.cut, "%")
 	fmt.Println("-----------------------------------------------------")
 	fmt.Println("Expected Jump Sequance: ", jumpRoute)
 	fmt.Println("        Total Distance: ", distance)
+	fmt.Println("                   ETA: ", formatDate(day+(len(jumpRoute)*7), year))
 	fmt.Println("-----------------------------------------------------")
 }
 
