@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	typingDelay = "6ms"
+	typingDelay = "4ms"
 )
 
 var delay time.Duration
@@ -39,6 +39,7 @@ var jumpRoute []int
 var day int
 var year int
 var autoMod bool
+var gmMode bool
 
 func init() {
 	printSlow("Initialisation...\n")
@@ -48,6 +49,7 @@ func init() {
 	}
 	delay = del
 	emmersiveMode = true
+	gmMode = true
 	freightBase = 500
 	localBroker = broker{0, 0.0}
 }
@@ -120,18 +122,20 @@ func userInputDate() string {
 }
 
 func printOptions() {
-	printSlow("Selelect operation: \n")
-	printSlow("[0] - Disconnect \n")
-	printSlow("[1] - Hire Local Broker\n")
-	printSlow("[4] - Search Passengers\n")
-	printSlow("[5] - Search Freight \n")
-	printSlow("[6] - Search Mail \n")
-	printSlow("[7] - Search ALL \n")
+	printSlow("Select operation: \n")
+	printSlow(" [0] - Disconnect \n")
+	printSlow(" [1] - Hire Local Broker\n")
+	printSlow(" [2] - Let Local Broker do all the work\n")
+	printSlow(" [4] - Search Passengers\n")
+	printSlow(" [5] - Search Freight \n")
+	printSlow(" [6] - Search Mail \n")
+	printSlow(" [7] - Search ALL \n")
 }
 
 func selectOperation() {
 	for {
 		input := userInputStr("Initiate ")
+		autoMod = false
 		switch input {
 		default:
 			printSlow("Sorry, command '" + input + "' unrecognised\n")
@@ -141,6 +145,7 @@ func selectOperation() {
 		case "1":
 			clrScrn()
 			chooseBroker()
+			clrScrn()
 		case "4":
 			clrScrn()
 			PassengerRoutine()
@@ -155,12 +160,17 @@ func selectOperation() {
 			PassengerRoutine()
 			FreightRoutine()
 			MailRoutine()
-		case "9":
+		case "2":
 			clrScrn()
 			autoMod = true
-			PassengerRoutine()
-			FreightRoutine()
-			MailRoutine()
+			if localBroker.cut == 0 {
+				clrScrn()
+				printSlow("Local Broker is not hired...\n")
+			} else {
+				PassengerRoutine()
+				FreightRoutine()
+				MailRoutine()
+			}
 
 		}
 		printOptions()
@@ -301,18 +311,19 @@ func clrScrn() {
 func helloWorld() {
 	printSlow("   LOGIN: ***********\n")
 	printSlow("PASSWORD: *************\n")
-	printSlow("Clearance granted!\n")
+	//printSlow("Clearance granted!\n")
+
 }
 
 func printHead() {
-	fmt.Println("         Date: ", currentDate)
+	fmt.Println("         Date: ", formatDate(day, year))
 	fmt.Println("Current World: ", sourceWorld.Hex()+" - "+sourceWorld.Name()+" ("+sourceWorld.UWP()+") "+sourceWorld.TradeCodesString()+" "+sourceWorld.TravelZone())
 	fmt.Println("  Destination: ", targetWorld.Hex()+" - "+targetWorld.Name()+" ("+targetWorld.UWP()+") "+targetWorld.TradeCodesString()+" "+targetWorld.TravelZone())
 	fmt.Println("Passenger Traffic Value:", ptValue)
 	fmt.Println("  Freight Traffic Value:", ftValue)
 	fmt.Println("     Local Broker's Cut:", localBroker.cut, "%")
 	fmt.Println("-----------------------------------------------------")
-	fmt.Println("Expected Jump Sequance: ", jumpRoute)
+	fmt.Println("Expected Jump Sequence: ", jumpRoute)
 	fmt.Println("        Total Distance: ", distance)
 	fmt.Println("                   ETA: ", formatDate(day+(len(jumpRoute)*7), year))
 	fmt.Println("-----------------------------------------------------")
@@ -334,4 +345,13 @@ func formatDate(day, year int) string {
 	date += "-"
 	date += strconv.Itoa(year)
 	return date
+}
+
+func spendTime() {
+	if localBroker.cut == 0 {
+		dTook := dice.Roll("1d6").Sum()
+		printSlow("This operation took " + strconv.Itoa(dTook) + " days...\n")
+	} else {
+		printSlow("This operation took few hours...\n")
+	}
 }

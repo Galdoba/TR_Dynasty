@@ -16,6 +16,7 @@ import (
 func PassengerRoutine() {
 
 	printSlow("Searching for Passengers...\n")
+	spendTime()
 	playerEffect1 := 0
 	switch autoMod {
 	case false:
@@ -23,20 +24,27 @@ func PassengerRoutine() {
 	case true:
 		playerEffect1 = TrvCore.Flux()
 	}
+	if gmMode {
+		fmt.Println("GM TIP: Passenger Roll:", ptValue, playerEffect1, localBroker.DM(), "|", ptValue+playerEffect1+localBroker.DM())
+	}
 
-	low, basic, middle, high := availablePassengers(ptValue + playerEffect1)
+	low, basic, middle, high := availablePassengers(ptValue + playerEffect1 + localBroker.DM())
 	printSlow("Active passenger requests: " + strconv.Itoa(low+basic+middle+high) + "\n")
 	if low > 0 {
-		printSlow("   Low Passengers: " + strconv.Itoa(low) + "		Transport fee: " + strconv.Itoa(lowPassCost(jumpRoute)) + "\n")
+		fee := lowPassCost(jumpRoute) - localBroker.CutFrom(lowPassCost(jumpRoute))
+		printSlow("   Low Passengers: " + strconv.Itoa(low) + "		Transport fee: " + strconv.Itoa(fee) + "\n")
 	}
 	if basic > 0 {
-		printSlow(" Basic Passengers: " + strconv.Itoa(basic) + "		Transport fee: " + strconv.Itoa(basicPassCost(jumpRoute)) + "\n")
+		fee := basicPassCost(jumpRoute) - localBroker.CutFrom(basicPassCost(jumpRoute))
+		printSlow(" Basic Passengers: " + strconv.Itoa(basic) + "		Transport fee: " + strconv.Itoa(fee) + "\n")
 	}
 	if middle > 0 {
-		printSlow("Middle Passengers: " + strconv.Itoa(middle) + "		Transport fee: " + strconv.Itoa(middlePassCost(jumpRoute)) + "\n")
+		fee := middlePassCost(jumpRoute) - localBroker.CutFrom(middlePassCost(jumpRoute))
+		printSlow("Middle Passengers: " + strconv.Itoa(middle) + "		Transport fee: " + strconv.Itoa(fee) + "\n")
 	}
 	if high > 0 {
-		printSlow("  High Passengers: " + strconv.Itoa(high) + "		Transport fee: " + strconv.Itoa(highPassCost(jumpRoute)) + "\n")
+		fee := highPassCost(jumpRoute) - localBroker.CutFrom(highPassCost(jumpRoute))
+		printSlow("  High Passengers: " + strconv.Itoa(high) + "		Transport fee: " + strconv.Itoa(fee) + "\n")
 	}
 	fmt.Println("-----------------------------------------------------")
 	//fmt.Println(https://docs.google.com/spreadsheets/d/1bThnY4Bgr0sU1NXcOJtDzKjO3THgx-VL-Lq8fhMDZk4/edit#gid=860849043&range=A11)

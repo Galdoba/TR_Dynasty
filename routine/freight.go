@@ -15,7 +15,8 @@ import (
 var freightBase int
 
 func FreightRoutine() {
-	printSlow("Searching freight: ")
+	printSlow("Searching for Freight...\n")
+	spendTime()
 	//diff := freightDiff(ftValue)
 	//playerEffect2 := userInputInt("Enter Effect of Diplomat(" + strconv.Itoa(diff) + "), Investigate(" + strconv.Itoa(diff) + ") or Streetwise(" + strconv.Itoa(diff) + ") check: ")
 	//playerEffect2 := userInputInt("Enter Effect of Diplomat(8), Investigate(8) or Streetwise(8) check: ")
@@ -26,7 +27,10 @@ func FreightRoutine() {
 	case true:
 		playerEffect2 = TrvCore.Flux()
 	}
-	inLot, mnLot, mjLot := availableFreight(ftValue + playerEffect2)
+	if gmMode {
+		fmt.Println("GM TIP: Freight Roll:", ftValue, playerEffect2, localBroker.DM(), "|", ftValue+playerEffect2+localBroker.DM())
+	}
+	inLot, mnLot, mjLot := availableFreight(ftValue + playerEffect2 + localBroker.DM())
 	//fmt.Println(inLot, mnLot, mjLot)
 	frList := freightListed(inLot, mnLot, mjLot)
 	//fmt.Println(frList)
@@ -34,7 +38,10 @@ func FreightRoutine() {
 		printSlow("No freight lots available\n")
 	}
 	for i := range frList {
-		printSlow("Freight lot " + strconv.Itoa(i+1) + " 		" + strconv.Itoa(frList[i]) + " tons		Hauling fee: " + strconv.Itoa(frList[i]*freightCostPerTon()) + " Cr\n")
+		base := 500
+
+		fee := frList[i]*freightCostPerTon(base) - localBroker.CutFrom(frList[i]*freightCostPerTon(base))
+		printSlow("Freight lot " + strconv.Itoa(i+1) + " 		" + strconv.Itoa(frList[i]) + " tons		Hauling fee: " + strconv.Itoa(fee) + " Cr\n")
 	}
 	fmt.Println("-----------------------------------------------------")
 
@@ -58,10 +65,10 @@ func freightDiff(ftValue int) int {
 	return diff
 }
 
-func freightCostPerTon() int {
+func freightCostPerTon(base int) int {
 	cpt := 0
 	for _, val := range jumpRoute {
-		cpt = cpt + (freightBase * val)
+		cpt = cpt + (base * val)
 	}
 
 	return cpt
@@ -69,12 +76,12 @@ func freightCostPerTon() int {
 
 func freightListed(inLot, mnLot, mjLot int) []int {
 	var tons []int
-	printSlow("Searching available Freight lots...\n")
+	//printSlow("Searching available Freight lots...\n")
 	for i := 0; i < mjLot; i++ {
-		tons = append(tons, dice.Roll("12d6").Sum()) //*10)
+		tons = append(tons, dice.Roll(dice.Roll("d6").DM(6).SumStr()+"d6").Sum()) //*10)
 	}
 	for i := 0; i < mnLot; i++ {
-		tons = append(tons, dice.Roll("6d6").Sum()) //*5)
+		tons = append(tons, dice.Roll(dice.Roll("1d6").SumStr()+"d6").Sum()) //*5)
 	}
 	for i := 0; i < inLot; i++ {
 		tons = append(tons, dice.Roll("1d6").Sum()*1)

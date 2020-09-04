@@ -24,6 +24,7 @@ func NewBroker(skill int) broker {
 	switch skill {
 	default:
 		br.cut = 0
+		br.skill = 0
 	case 0:
 		br.cut = 0.5
 	case 1:
@@ -52,20 +53,26 @@ func (br broker) DM() int {
 
 func chooseBroker() {
 	printSlow("Please, choose your Broker:\n")
-	printSlow("	[0] - DM: +0	Percentage: 0.5 %	Name: " + name.RandomNew() + "\n")
-	printSlow("	[1] - DM: +1	Percentage:   1 %	Name: " + name.RandomNew() + "\n")
-	printSlow("	[2] - DM: +2	Percentage:   2 %	Name: " + name.RandomNew() + "\n")
-	printSlow("	[3] - DM: +3	Percentage:   5 %	Name: " + name.RandomNew() + "\n")
-	printSlow("	[4] - DM: +4	Percentage:   7 %	Name: " + name.RandomNew() + "\n")
-	printSlow("	[5] - DM: +5	Percentage:  10 %	Name: " + name.RandomNew() + "\n")
-	printSlow("	[6] - DM: +6	Percentage:  15 %	Name: " + name.RandomNew() + "\n")
+	printSlow(" [0] - DM: +0	Percentage: 0.5 %	Name: " + name.RandomNew() + "\n")
+	printSlow(" [1] - DM: +1	Percentage:   1 %	Name: " + name.RandomNew() + "\n")
+	printSlow(" [2] - DM: +2	Percentage:   2 %	Name: " + name.RandomNew() + "\n")
+	printSlow(" [3] - DM: +3	Percentage:   5 %	Name: " + name.RandomNew() + "\n")
+	printSlow(" [4] - DM: +4	Percentage:   7 %	Name: " + name.RandomNew() + "\n")
+	printSlow(" [5] - DM: +5	Percentage:  10 %	Name: " + name.RandomNew() + "\n")
+	printSlow(" [6] - DM: +6	Percentage:  15 %	Name: " + name.RandomNew() + "\n")
+	printSlow(" [7] - Refuse local broker's services\n")
 	valid := false
 	for !valid {
 		skill := userInputInt("Select: ")
 		switch skill {
-		case 0, 1, 2, 3, 4, 5, 6:
+		case 0, 1, 2, 3, 4, 5, 6, 7:
 			localBroker = NewBroker(skill)
 			valid = true
+			if skill == 7 {
+				printSlow("Services refused\n")
+			} else {
+				printSlow("Local broker hired\n")
+			}
 		default:
 			printSlow("WARNING: can't parse '" + strconv.Itoa(skill) + "'")
 		}
