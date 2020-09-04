@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/Galdoba/TR_Dynasty/dice"
-
 	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/world"
 
@@ -22,7 +20,7 @@ func PassengerRoutine() {
 	case false:
 		playerEffect1 = userInputInt("Enter Effect of Carouse(8) or Streetwise(8) check: ")
 	case true:
-		playerEffect1 = TrvCore.Flux()
+		playerEffect1 = autoFlux()
 	}
 	if gmMode {
 		fmt.Println("GM TIP: Passenger Roll:", ptValue, playerEffect1, localBroker.DM(), "|", ptValue+playerEffect1+localBroker.DM())
@@ -47,7 +45,6 @@ func PassengerRoutine() {
 		printSlow("  High Passengers: " + strconv.Itoa(high) + "		Transport fee: " + strconv.Itoa(fee) + "\n")
 	}
 	fmt.Println("-----------------------------------------------------")
-	//fmt.Println(https://docs.google.com/spreadsheets/d/1bThnY4Bgr0sU1NXcOJtDzKjO3THgx-VL-Lq8fhMDZk4/edit#gid=860849043&range=A11)
 }
 
 //ABCD
@@ -168,10 +165,10 @@ func lowPass(ptv int) int {
 		d = "2d6"
 	case 4:
 		d = "3d6"
-		dm = dice.Roll("1d6").Sum()
+		dm = dp.RollNext("1d6").Sum()
 	case 5:
 		d = "3d6"
-		dm = dice.Roll("1d6").Sum()
+		dm = dp.RollNext("1d6").Sum()
 	case 6:
 		d = "3d6"
 	case 7:
@@ -197,7 +194,7 @@ func lowPass(ptv int) int {
 			d = "9d6"
 		}
 	}
-	lp := dice.Roll(d).DM(dm).Sum()
+	lp := dp.RollNext(d).DM(dm).Sum()
 	if lp < 0 {
 		lp = 0
 	}
@@ -220,21 +217,21 @@ func midPass(ptv int) int {
 		d = "1d6"
 	case 4:
 		d = "2d6"
-		dm = dice.Roll("1d6").Sum()
+		dm = dp.RollNext("1d6").Sum()
 	case 5:
 		d = "2d6"
-		dm = dice.Roll("1d6").Sum()
+		dm = dp.RollNext("1d6").Sum()
 	case 6:
 		d = "2d6"
 	case 7:
 		d = "3d6"
-		dm = dice.Roll("2d6").Sum()
+		dm = dp.RollNext("2d6").Sum()
 	case 8:
 		d = "3d6"
-		dm = dice.Roll("1d6").Sum()
+		dm = dp.RollNext("1d6").Sum()
 	case 9:
 		d = "3d6"
-		dm = dice.Roll("1d6").Sum()
+		dm = dp.RollNext("1d6").Sum()
 	case 10:
 		d = "3d6"
 	case 11:
@@ -252,7 +249,7 @@ func midPass(ptv int) int {
 			d = "6d6"
 		}
 	}
-	mp := dice.Roll(d).DM(dm).Sum()
+	mp := dp.RollNext(d).DM(dm).Sum()
 	if mp < 0 {
 		mp = 0
 	}
@@ -272,28 +269,28 @@ func hghPass(ptv int) int {
 		return 0
 	case 3:
 		d = "1d6"
-		dm = dice.Roll("1d6").Sum()
+		dm = dp.RollNext("1d6").Sum()
 	case 4:
 		d = "2d6"
-		dm = dice.Roll("2d6").Sum()
+		dm = dp.RollNext("2d6").Sum()
 	case 5:
 		d = "2d6"
-		dm = dice.Roll("1d6").Sum()
+		dm = dp.RollNext("1d6").Sum()
 	case 6:
 		d = "3d6"
-		dm = dice.Roll("2d6").Sum()
+		dm = dp.RollNext("2d6").Sum()
 	case 7:
 		d = "3d6"
-		dm = dice.Roll("2d6").Sum()
+		dm = dp.RollNext("2d6").Sum()
 	case 8:
 		d = "3d6"
-		dm = dice.Roll("1d6").Sum()
+		dm = dp.RollNext("1d6").Sum()
 	case 9:
 		d = "3d6"
-		dm = dice.Roll("1d6").Sum()
+		dm = dp.RollNext("1d6").Sum()
 	case 10:
 		d = "3d6"
-		dm = dice.Roll("1d6").Sum()
+		dm = dp.RollNext("1d6").Sum()
 	case 11:
 		d = "3d6"
 	case 12:
@@ -309,7 +306,7 @@ func hghPass(ptv int) int {
 			d = "5d6"
 		}
 	}
-	hp := dice.Roll(d).DM(dm).Sum()
+	hp := dp.RollNext(d).DM(dm).Sum()
 	if hp < 0 {
 		hp = 0
 	}

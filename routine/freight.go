@@ -7,7 +7,6 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/constant"
-	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/world"
 	"github.com/Galdoba/utils"
 )
@@ -25,7 +24,7 @@ func FreightRoutine() {
 	case false:
 		playerEffect2 = userInputInt("Enter Effect of Diplomat(8), Investigate(8) or Streetwise(8) check: ")
 	case true:
-		playerEffect2 = TrvCore.Flux()
+		playerEffect2 = autoFlux()
 	}
 	if gmMode {
 		fmt.Println("GM TIP: Freight Roll:", ftValue, playerEffect2, localBroker.DM(), "|", ftValue+playerEffect2+localBroker.DM())
@@ -78,13 +77,13 @@ func freightListed(inLot, mnLot, mjLot int) []int {
 	var tons []int
 	//printSlow("Searching available Freight lots...\n")
 	for i := 0; i < mjLot; i++ {
-		tons = append(tons, dice.Roll(dice.Roll("d6").DM(6).SumStr()+"d6").Sum()) //*10)
+		tons = append(tons, dp.RollNext(dp.RollNext("d6").DM(6).SumStr()+"d6").Sum()) //*10)
 	}
 	for i := 0; i < mnLot; i++ {
-		tons = append(tons, dice.Roll(dice.Roll("1d6").SumStr()+"d6").Sum()) //*5)
+		tons = append(tons, dp.RollNext(dp.RollNext("1d6").SumStr()+"d6").Sum()) //*5)
 	}
 	for i := 0; i < inLot; i++ {
-		tons = append(tons, dice.Roll("1d6").Sum()*1)
+		tons = append(tons, dp.RollNext("1d6").Sum()*1)
 	}
 	sort.Ints(tons)
 	printSlow("Found " + strconv.Itoa(len(tons)) + " active requests...\n")

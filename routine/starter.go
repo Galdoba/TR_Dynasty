@@ -31,7 +31,6 @@ var emmersiveMode bool
 var sourceWorld world.World
 var targetWorld world.World
 var distance int
-var currentDate string
 var dp *dice.Dicepool
 var ptValue int
 var ftValue int
@@ -63,9 +62,9 @@ func StartRoutine() {
 	printSlow("Gathering data...\n")
 	//printSlow("Input current date: \n")
 	//currentDate = userInputStr()
-	currentDate = userInputDate()
+	userInputDate()
 	clrScrn()
-	dp = dice.New(utils.SeedFromString(currentDate))
+	dp = dice.New(utils.SeedFromString(formatDate(day, year)))
 	printSlow("Select your current world: \n")
 	sourceWorld = pickWorld()
 	clrScrn()
@@ -349,9 +348,19 @@ func formatDate(day, year int) string {
 
 func spendTime() {
 	if localBroker.cut == 0 {
-		dTook := dice.Roll("1d6").Sum()
+		dTook := dp.RollNext("1d6").Sum()
 		printSlow("This operation took " + strconv.Itoa(dTook) + " days...\n")
 	} else {
 		printSlow("This operation took few hours...\n")
 	}
+}
+
+func autoFlux() int {
+	d1 := dp.RollNext("1d6").Sum()
+	d2 := dp.RollNext("1d6").Sum()
+	fl := d1 - d2
+	if fl < 0 {
+		fl = fl * -1
+	}
+	return fl
 }
