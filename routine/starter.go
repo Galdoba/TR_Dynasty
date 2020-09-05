@@ -80,6 +80,7 @@ func StartRoutine() {
 		routeValid := false
 		for !routeValid {
 			jumpRouteTest, err := userInputJumpRoute()
+			//jumpRouteTest, err :=
 			if err != nil {
 				printSlow(err.Error())
 				continue
@@ -261,7 +262,16 @@ func loadWorld(key string) (world.World, error) {
 }
 
 func userInputJumpRoute() ([]int, error) {
-	route := userInputStr("Enter route sequence (format: 'XXYY XXYY ... XXYY'): ")
+
+	//route := userInputStr("Enter route sequence (format: 'XXYY XXYY ... XXYY'): ")
+	route, err := Astrogation.PlotCourse(sourceWorld.Hex(), targetWorld.Hex(), getJumpDrive())
+
+	if err != nil {
+
+		printSlow(err.Error())
+		panic(0)
+		//return []int{}, err
+	}
 	var routeSl []int
 	jumpPoints := strings.Split(route, " ")
 	for i := 1; i < len(jumpPoints); i++ {
