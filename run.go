@@ -1,10 +1,10 @@
 package main
 
-import "github.com/Galdoba/TR_Dynasty/routine"
+import "github.com/Galdoba/TR_Dynasty/Astrogation"
 
 func main() {
-	routine.StartRoutine()
-	//Astrogation.Test()
+	//routine.StartRoutine()
+	Astrogation.Test()
 }
 
 //OB Ia Ia Ia II II II II
