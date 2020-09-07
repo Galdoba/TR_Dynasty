@@ -30,14 +30,17 @@ remainingT - (MaxJumps - T) количество оставшихся итера
 
 func Test() {
 	fmt.Println("Run Test")
-	path, err := PlotCourse("Oihu", "Drinax", 2)
-	fmt.Println(path, err)
+	path, err := PlotCourse("Clarke", "Kteiroa", 3)
+	fmt.Println("Path", path, err)
+	if err != nil {
+		return
+	}
 	points := strings.Split(path, " ")
 	way := ""
 	for _, val := range points {
 		name, err := otu.GetDataOn(val)
 		if err != nil {
-			panic(err.Error())
+			return
 		}
 		way += name.Name() + " -> "
 	}
@@ -46,10 +49,8 @@ func Test() {
 }
 
 func PlotCourse(start, end string, drive int) (string, error) {
-	courseMap := make(map[int]string)
-	//_, err := newPlot(startHex, endHex, drive, 50)
-	//return "plot", err
 	data1, err := otu.GetDataOn(start)
+	plot := jumpPlot{}
 	if err != nil {
 		return "", err
 	}
@@ -59,23 +60,14 @@ func PlotCourse(start, end string, drive int) (string, error) {
 	}
 	startHex := data1.Hex()
 	endHex := data2.Hex()
-	for maxJumps := 0; maxJumps < 50; maxJumps++ {
-		//fmt.Println(maxJumps)
-		plot, err := newPlot(startHex, endHex, drive, maxJumps)
-		if err != nil {
-			fmt.Println(err.Error() + strconv.Itoa(maxJumps) + " jumps")
-			continue
-		}
-		courseMap = plot.jumpMap
-
-		if maxJumps == 60 {
-			return "", errors.New("DEBUG: It will take to long to calculate :(")
+	for maxJumps := 0; maxJumps < 99; maxJumps++ {
+		plot, err = newPlot(startHex, endHex, drive, maxJumps)
+		if plot.err != nil {
+			return "", plot.err
 		}
 		break
-		//return plot, nil
 	}
-
-	return chooseBest(courseMap), nil
+	return chooseBest(plot.jumpMap), plot.err
 }
 
 func chooseBest(crsmap map[int]string) string {
@@ -104,11 +96,9 @@ type jumpPlot struct {
 	end      string
 	drives   int
 	maxJumps int
-	sMap     map[int][]string
-	eMap     map[int][]string
 	pMap     map[int][]string
 	jumpMap  map[int]string
-	testMap  map[int][]string
+	err      error
 }
 
 func newPlot(startHex, endHex string, drive, maxJumps int) (jumpPlot, error) {
@@ -117,160 +107,41 @@ func newPlot(startHex, endHex string, drive, maxJumps int) (jumpPlot, error) {
 	jp.end = endHex
 	jp.drives = drive
 	jp.maxJumps = maxJumps
-
-	// if !jp.possible() {
-	// 	return jumpPlot{}, errors.New("Jump Plot not possible with ")
-	// }
-	//jp.testNextJump()
-	//panic(0)
-	jp.sMap = make(map[int][]string)
-	jp.eMap = make(map[int][]string)
 	jp.pMap = make(map[int][]string)
-	jp.testMap = make(map[int][]string)
-	//jp.possiblePointsMap[0] = JumpCoordinatesFrom(jp.start, drive)
-	//jp.testNextJump()
+	jp.jumpMap = make(map[int]string)
 	jp.calcJumpWaves()
-	// 	return jp, nil
-	// search:
-	// 	for i := 0; i <= maxJumps; i++ {
-	// 		jp.sMap[i] = JumpCoordinatesFrom(jp.start, (i)*drive) //sMap - все что находится не дальше чем (i)*drive
-	// 		//	jp.eMap[i] = JumpCoordinatesFrom(jp.end, (maxJumps-i)*drive)
-	// 		endCoords := JumpCoordinatesFrom(jp.end, (maxJumps-i)*drive)
-
-	// 		endCoords = removeEmpty(endCoords)
-
-	// 		for e := range endCoords {
-	// 			if JumpDistance(endCoords[e], jp.end) <= (maxJumps-i)*drive {
-	// 				jp.eMap[i] = append(jp.eMap[i], endCoords[e])
-	// 				//	fmt.Println("ADD", JumpDistance(endCoords[e], jp.end), (maxJumps-i)*drive, endCoords[e])
-	// 			} else {
-	// 				//	fmt.Println("DONT ADD")
-	// 			}
-	// 		}
-	// 		jp.eMap[i] = removeEmpty(jp.eMap[i])
-	// 		jp.pMap[i] = commonInSlices(jp.sMap[i], jp.eMap[i])
-	// 		jp.pMap[i] = removeEmpty(jp.pMap[i])
-	// 		//		fmt.Println("--------------------")
-	// 		//		fmt.Println(jp.pMap)
-	// 		for _, val := range jp.pMap {
-	// 			for p := range val {
-	// 				if val[p] == jp.end {
-	// 					break search // типа надо отсечь все что дальше необходимого
-	// 					//Прекращаем поиск если найден порядок точек с N прыжков меньше максимального
-	// 				}
-	// 			}
-	// 		}
-	// 		//88panic(0)
-	// 	}
-	// 	// jp.testNextJump()
-	// 	// if len(jp.pMap) == 0 {
-	// 	// 	return jumpPlot{}, errors.New("Jump Plot not possible with ")
-	// 	// }
-
-	// 	//fmt.Println("Connect Dots", len(jp.pMap))
-	jp.jumpMap = jp.connectDots(jp.pMap)
-	// for k, val := range jp.jumpMap {
-	// 	fmt.Println(k, val)
-	// }
-	jp.removeImpossibleRoads()
-	if len(jp.jumpMap) == 0 {
-		err := errors.New("1 Jump Plot not possible with ")
-		return jp, err
+	if jp.err != nil {
+		return jp, jp.err
 	}
-	//findShortest(jp.jumpMap, jp.end)
-	return jp, nil
+	jp.connectDots()
+	//jp.removeImpossibleRoads()
+
+	return jp, jp.err
 }
-
-func (jp *jumpPlot) testNextJump() {
-	//fmt.Println("Start testNextJump()")
-	jump := make(map[int][]string)
-	allCoords := []string{jp.start}
-	lastLen := len(allCoords)
-	for i := 0; i < 1000; i++ {
-		if i >= jp.maxJumps {
-			return
-		}
-		//fmt.Println("Go i =", i, lastLen)
-		for r := range allCoords {
-			//	fmt.Println("Go r =", r, lastLen)
-			coords := JumpCoordinatesFrom(allCoords[r], jp.drives)
-			coords = removeEmpty(coords)
-			//fmt.Println(coords)
-			allCoords = commonInSlices2(allCoords, coords)
-			jump[i] = allCoords
-		}
-		for k := range allCoords {
-			if allCoords[k] == jp.end {
-				//			fmt.Println("Stop!!")
-				//			fmt.Println("End testNextJump() 3")
-
-				jp.pMap = jump
-				//fmt.Println(jump)
-				//fmt.Println(jp.pMap)
-				return
-			}
-		}
-		if lastLen < len(allCoords) {
-			lastLen = len(allCoords)
-		} else {
-			//		fmt.Println("Stop Here")
-			//	fmt.Println(jump)
-			jp.pMap = jump
-			//		fmt.Println("End testNextJump() 1")
-			return
-		}
-		jump[i] = allCoords
-	}
-	//fmt.Println("End testNextJump() 2")
-	// for k, v := range jump {
-	// 	fmt.Println("1111JUMP", k, "=", v)
-	// 	jump[k] = removeEmpty(jump[k])
-	// 	fmt.Println("2222JUMP", k, "=", jump[k])
-	// }
-
-	//fmt.Println("JUMP:", jump)
-	//fmt.Println("allCoords:", allCoords)
-}
-
-func (jp jumpPlot) totalDistance() int {
-	return JumpDistance(jp.start, jp.end)
-}
-
-// func (jp jumpPlot) possible() bool {
-// 	if jp.totalDistance() <= jp.drives*jp.maxJumps {
-// 		return true
-// 	}
-// 	return false
-// }
 
 func commonInSlices(sl1, sl2 []string) []string {
 	sl3 := []string{}
-	//fmt.Println(sl1)
-	//fmt.Println(sl2)
 	for i := range sl1 {
 		for j := range sl2 {
 			if sl1[i] == sl2[j] {
 				sl3 = utils.AppendUniqueStr(sl3, sl1[i])
-				//			fmt.Println("+++")
 			}
 		}
 	}
 	return sl3
 }
 
-func commonInSlices2(sl1, sl2 []string) []string {
-	for j := range sl2 {
-		sl1 = utils.AppendUniqueStr(sl1, sl2[j])
-	}
-
-	return sl1
-}
+// func commonInSlices2(sl1, sl2 []string) []string {
+// 	for j := range sl2 {
+// 		sl1 = utils.AppendUniqueStr(sl1, sl2[j])
+// 	}
+// 	return sl1
+// }
 
 func appendSlice(sl1, sl2 []string) []string {
 	for j := range sl2 {
 		sl1 = utils.AppendUniqueStr(sl1, sl2[j])
 	}
-
 	return sl1
 }
 
@@ -286,11 +157,11 @@ func removeEmpty(sl []string) []string {
 	return newSl
 }
 
-func (jp jumpPlot) connectDots(jmap map[int][]string) map[int]string {
+func (jp jumpPlot) connectDots() {
 	routeMapMax := []int{}
 	currentRoad := []int{}
-	for k := 0; k < len(jmap); k++ {
-		toadd := len(jmap[k]) - 1
+	for k := 0; k < len(jp.pMap); k++ {
+		toadd := len(jp.pMap[k]) - 1
 		if toadd < 0 {
 			toadd = 0
 		}
@@ -301,21 +172,18 @@ func (jp jumpPlot) connectDots(jmap map[int][]string) map[int]string {
 	for i := range routeMapMax {
 		v = v * (routeMapMax[i] + 1)
 	}
-	//fmt.Println(v)
 	route := 0
-	roadMap := make(map[int]string)
-	roadMap[route] = projectCourse(jmap, currentRoad, jp.end)
+	jp.jumpMap[route] = projectCourse(jp.pMap, currentRoad, jp.end)
+	fmt.Println("j", jp.jumpMap[route])
 	for !roadIsEqual(routeMapMax, currentRoad) {
-
-		//	fmt.Println(routeMapMax, currentRoad)
+		fmt.Println("c", currentRoad)
 		route++
 		currentRoad = pushCloser(currentRoad, routeMapMax)
-		roadMap[route] = projectCourse(jmap, currentRoad, jp.end)
-
-		//fmt.Print("Processing Route: ", route, " of ", v, "\r")
+		jp.jumpMap[route] = projectCourse(jp.pMap, currentRoad, jp.end)
+		fmt.Println("j", jp.jumpMap[route])
 	}
 
-	return roadMap
+	//return roadMap
 }
 
 func roadIsEqual(sli1, sli2 []int) bool {
@@ -368,7 +236,6 @@ func findShortest(jmap map[int]string, end string) []string {
 			}
 		}
 	}
-	//fmt.Println(shortJumpsf, 1)
 	shortJumpsS := []string{}
 	for i := range shortJumpsf {
 		jumpPoints := strings.Split(shortJumpsf[i], " ")
@@ -377,14 +244,10 @@ func findShortest(jmap map[int]string, end string) []string {
 		}
 		shortJumpsS = append(shortJumpsS, shortJumpsf[i])
 	}
-
-	//fmt.Println(shortJumpsS, "TEst")
-	//removeImpossibleRoads(shortJumpsS)
 	return shortJumpsS
 }
 
 func (jp *jumpPlot) removeImpossibleRoads() {
-	//	newMap := make(map[int]string)
 	p1 := ""
 	p2 := ""
 	invalid := 0
@@ -404,7 +267,6 @@ func (jp *jumpPlot) removeImpossibleRoads() {
 				p1 = points[i-1]
 			}
 			p2 = points[i]
-			//fmt.Println("p2 =", p2)
 			if p2 == "" {
 				p1 = jp.start
 				p2 = jp.end
@@ -416,22 +278,18 @@ func (jp *jumpPlot) removeImpossibleRoads() {
 			}
 		}
 	}
-	//fmt.Println(invalid, len(jp.jumpMap), shortestLen)
 	newMap := make(map[int]string)
 	validKey := 0
 	for _, road := range jp.jumpMap {
 		points := strings.Split(road, " ")
-		//verdict := "Long"
 		if points[shortestLen] == jp.end {
-			//	verdict = "short"
-			//	fmt.Println(key, points, verdict)
 			newMap[validKey] = road
 		}
 	}
 	jp.jumpMap = newMap
 }
 
-func (jp jumpPlot) calcJumpWaves() []string {
+func (jp *jumpPlot) calcJumpWaves() {
 	pointsPool := []string{jp.start}
 	workingPool := pointsPool
 	workingPoolR := []string{jp.end}
@@ -439,47 +297,35 @@ func (jp jumpPlot) calcJumpWaves() []string {
 	currentWaveLenR := 0
 	forwardSearch := make(map[int][]string)
 	reverseSearch := make(map[int][]string)
-	//lastWave := 0
-	//lastWaveR := 0
+	fmt.Print("Constructing Jump Plot.")
 fSearch:
 	for i := 0; i < 99; i++ {
-		fmt.Println("Testing plot with", i, "jumps: ")
-		//lastWave = i
+		fmt.Print(".")
 		forwardSearch[i] = workingPool
-
 		workingPool = addCoordsInRange(workingPool, jp.drives)
-		//fmt.Println("workingPool", workingPool)
-
-		//fmt.Println("i =", lastWave, "wl =", currentWaveLen, "wp =", len(workingPool))
 		if currentWaveLen == len(workingPool) {
-			fmt.Println("Jump Imposible with Drives", jp.drives)
-			return []string{"xxx"}
-			break
+			fmt.Print("\r")
+			jp.err = errors.New("Jump Plot Impossible with drives " + strconv.Itoa(jp.drives))
+			return
 		}
 		if currentWaveLen < len(workingPool) {
 			currentWaveLen = len(workingPool)
 		}
 		for _, val := range forwardSearch[i] {
-			//fmt.Println("Compare: " + val + " with " + jp.end)
 			if val == jp.end {
-				//	fmt.Println("Forward Search:", forwardSearch[i])
-				//	fmt.Println("Stop Forward Search Here")
 				break fSearch
 			}
 		}
-		fmt.Println("Plot Imposible")
+
 	}
-	fmt.Println("Plot Posible")
+	fmt.Println("ok")
+	fmt.Print("Calculating Path.")
 rSearch:
 	for i := 0; i < 99; i++ {
-		fmt.Println("Reverse path", i)
-		//lastWaveR = i
+		fmt.Print(".")
 		reverseSearch[i] = workingPoolR
-
 		workingPoolR = addCoordsInRange(workingPoolR, jp.drives)
-		//fmt.Println("i =", lastWaveR, "wlr =", currentWaveLenR, "wpr =", len(workingPoolR))
 		if currentWaveLenR == len(workingPoolR) {
-			//	fmt.Println("Jump Pool Filled Reverse")
 			break
 		}
 		if currentWaveLenR < len(workingPoolR) {
@@ -487,42 +333,15 @@ rSearch:
 		}
 		for _, val := range reverseSearch[i] {
 			if val == jp.start {
-				//fmt.Println("Stop Reverse Search Here")
 				break rSearch
 			}
 		}
 	}
-	//addCoordsInRange(pointsPool, jp.drives)
-	//fmt.Println("test result:")
-	//for i := 0; i < 30; i++ {
-	//fmt.Println("Fpool", i, forwardSearch[i])
-	//fmt.Println("Rpool", i, reverseSearch[i])
-	//commonPool := commonInSlices(forwardSearch[i], reverseSearch[i])
-
-	//	fmt.Println(i, "commonPool", len(commonPool), commonPool)
-
-	//}
-	// fmt.Println(0, "FPool", forwardSearch[0])
-	// fmt.Println(1, "FPool", forwardSearch[1])
-	// fmt.Println(2, "commonPool", commonInSlices(forwardSearch[2], reverseSearch[2]))
-	// fmt.Println(3, "RPool", reverseSearch[1])
-	// fmt.Println(3, "commonPool", commonInSlices(forwardSearch[3], reverseSearch[1]))
-	// fmt.Println(4, "RPool", reverseSearch[0])
-	// fmt.Println(4, "commonPool", commonInSlices(forwardSearch[4], reverseSearch[0]))
-	//fmt.Println("---")
+	fmt.Println("ok")
 	max := utils.Max(len(forwardSearch), len(reverseSearch))
 	for i := 0; i < max; i++ {
-		// fmt.Println("------------")
-		// fmt.Println("Jump", i)
-		// fmt.Println("Common:", commonInSlices(forwardSearch[i], reverseSearch[len(reverseSearch)-i-1]))
-		// fmt.Println("Fov:", forwardSearch[i])
-		// fmt.Println("Rev:", reverseSearch[len(reverseSearch)-i-1])
-		//for _, val := range commonInSlices(forwardSearch[i], reverseSearch[len(reverseSearch)-i-1]) {
 		jp.pMap[i] = commonInSlices(forwardSearch[i], reverseSearch[len(reverseSearch)-i-1])
-		//}
-		//strings.TrimSuffix(jp.jumpMap[i], " ")
 	}
-	return pointsPool
 }
 
 func addCoordsInRange(cPool []string, jRange int) []string {
@@ -531,7 +350,6 @@ func addCoordsInRange(cPool []string, jRange int) []string {
 		pick := cPool[p]
 		for _, suggest := range JumpCoordinatesFrom(pick, jRange) {
 			if havePlanet(suggest) {
-				//fmt.Println("Dist:", pick, suggest, JumpDistance(pick, suggest), jRange)
 				newCoords = utils.AppendUniqueStr(newCoords, suggest)
 			}
 		}

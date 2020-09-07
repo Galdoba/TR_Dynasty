@@ -60,8 +60,6 @@ func StartRoutine() {
 	helloWorld()
 	printSlow("TAS information terminal greets you, Traveller!\n")
 	printSlow("Gathering data...\n")
-	//printSlow("Input current date: \n")
-	//currentDate = userInputStr()
 	userInputDate()
 	clrScrn()
 	dp = dice.New(utils.SeedFromString(formatDate(day, year)))
@@ -70,26 +68,11 @@ func StartRoutine() {
 	clrScrn()
 	printSlow("Select your destination world: \n")
 	targetWorld = pickWorld()
-
 	distance = Astrogation.JumpDistance(sourceWorld.Hex(), targetWorld.Hex())
 	ptValue = passengerTrafficValue(sourceWorld, targetWorld)
 	ftValue = freightTrafficValue(sourceWorld, targetWorld)
 	clrScrn()
-	jumpRoute = []int{distance}
-	if distance > 2 {
-		routeValid := false
-		for !routeValid {
-			jumpRouteTest, err := userInputJumpRoute()
-			//jumpRouteTest, err :=
-			if err != nil {
-				printSlow(err.Error())
-				continue
-			}
-			jumpRoute = jumpRouteTest
-			routeValid = true
-		}
-
-	}
+	jumpRoute, _ = inputJumpRoute()
 	clrScrn()
 	printOptions()
 	selectOperation()
@@ -261,7 +244,7 @@ func loadWorld(key string) (world.World, error) {
 	return w, nil
 }
 
-func userInputJumpRoute() ([]int, error) {
+func inputJumpRoute() ([]int, error) {
 
 	//route := userInputStr("Enter route sequence (format: 'XXYY XXYY ... XXYY'): ")
 	route, err := Astrogation.PlotCourse(sourceWorld.Hex(), targetWorld.Hex(), getJumpDrive())
