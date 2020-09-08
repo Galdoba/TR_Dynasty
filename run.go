@@ -1,9 +1,11 @@
 package main
 
-import "github.com/Galdoba/TR_Dynasty/hyperjump"
+import (
+	"github.com/Galdoba/TR_Dynasty/hyperjump"
+)
 
 func main() {
-	hyperjump.Test()
+	hyperjump.StartJumpEvent()
 }
 
 //OB Ia Ia Ia II II II II
