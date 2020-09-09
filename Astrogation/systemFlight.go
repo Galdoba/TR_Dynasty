@@ -3,6 +3,7 @@ package Astrogation
 import (
 	"fmt"
 	"math"
+	"strconv"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/world"
@@ -76,4 +77,28 @@ func TravelTimeAU(au float64, thrust float64) (travelHours float64) {
 	travelHours = math.Sqrt(distance / thrust / 32.4) // SQRT(Distance (MegaMeters) / Acceleration (G or Trust) / 32.4) -- result Time (Hours) -- 32400 - это вес при 1G
 	travelHours = utils.RoundFloat64(travelHours, 1)
 	return travelHours
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//TravelTimeOrbitalArrival - возвращает колличество часов требуемое для фиксации орбиты с произвольного расстояния
+func TravelTimeOrbitalArrival(planetSizeCode string, diameters int, trust float64) float64 {
+	planetTravelDistance := float64(TrvCore.EhexToDigit(planetSizeCode)*(diameters-10)) * 1.6
+	if planetTravelDistance == 0 {
+		planetTravelDistance = 400 * 1.6 * float64(diameters-10)
+	}
+	planetTravelDistance = utils.RoundFloat64(planetTravelDistance, 1)
+	return TravelTime(planetTravelDistance, trust)
+}
+
+func hoursToTimeStr(hours float64) string {
+	dd := int(hours) / 24
+	hh := int(hours) % 24
+	mm := int((hours - utils.RoundFloat64(hours, 0)) * 60)
+	fmt.Println(hours, utils.RoundFloat64(hours, 0))
+	if mm < 0 {
+		//hh++
+		mm += 60
+	}
+	return strconv.Itoa(dd) + " days	" + strconv.Itoa(hh) + " hours	" + strconv.Itoa(mm) + " minutes"
 }

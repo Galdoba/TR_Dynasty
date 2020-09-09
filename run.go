@@ -1,11 +1,21 @@
 package main
 
 import (
+	"fmt"
+
+	"github.com/Galdoba/TR_Dynasty/Astrogation"
 	"github.com/Galdoba/TR_Dynasty/hyperjump"
+	"github.com/Galdoba/devtools/cli/user"
 )
 
 func main() {
 	hyperjump.StartJumpEvent()
+	fmt.Print("Diameter: ")
+
+	dist, _ := user.InputInt()
+	fmt.Print("\n")
+	orbRange := Astrogation.TravelTimeOrbitalArrival("5", dist, 1)
+	fmt.Println(orbRange)
 }
 
 //OB Ia Ia Ia II II II II
