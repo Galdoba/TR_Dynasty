@@ -1,13 +1,19 @@
 package law
 
 import (
+	"strconv"
 	"strings"
+
+	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/utils"
 
 	"github.com/Galdoba/TR_Dynasty/constant"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/world"
 )
+
+var dicepool *dice.Dicepool
 
 //Security - obj for describing state of security Forces of the World
 type Security struct {
@@ -46,6 +52,7 @@ func tl(w *world.World) int {
 //NewSecurity - creates random obj to draw info from using World data
 func NewSecurity(world *world.World) *Security {
 	sp := &Security{}
+	dicepool = dice.New(utils.SeedFromString(world.UWP()))
 	if pops(world) == 0 {
 		return sp
 	}
@@ -60,6 +67,11 @@ func NewSecurity(world *world.World) *Security {
 	sp.securityCodes = assignSecurityCodes(world, sp.planetaryPresence)
 	sp.formProfile(world)
 	return sp
+}
+
+func NewSecurityFromUWP(uwp string) *Security {
+	w := world.FromUWP(uwp)
+	return NewSecurity(&w)
 }
 
 //NewSecurityFromProfile - creates fixed obj using data from profile
@@ -127,7 +139,8 @@ func calculatePlanetaryPresence(world *world.World) int {
 	if match(world.TradeCodes(), "Hi") {
 		dm -= 2
 	}
-	roll := TrvCore.Roll2D(dm) + laws(world) - 7
+	//roll := TrvCore.Roll2D(dm) + laws(world) - 7
+	roll := dicepool.RollNext("2d6").DM(dm).Sum() + laws(world) - 7
 	if roll < 0 {
 		roll = 0
 	}
@@ -187,7 +200,8 @@ func calculateOrbitalPresence(world *world.World) int {
 	if match(world.Bases(), "N") {
 		dm++
 	}
-	roll := TrvCore.Roll2D(dm) + laws(world) - 7
+	//roll := TrvCore.Roll2D(dm) + laws(world) - 7
+	roll := dicepool.RollNext("2d6").DM(dm).Sum() + laws(world) - 7
 	if roll < 0 {
 		roll = 0
 	}
@@ -230,7 +244,8 @@ func calculateSystemPresence(world *world.World, orbPrez int) int {
 	if match(string(pbg[2]), "0") {
 		dm -= 2
 	}
-	roll := TrvCore.Roll2D(dm) + orbPrez - 7
+	//roll := TrvCore.Roll2D(dm) + orbPrez - 7
+	roll := dicepool.RollNext("2d6").DM(dm).Sum() + orbPrez - 7
 	if roll < 0 {
 		roll = 0
 	}
@@ -269,7 +284,11 @@ func calculateStanse(world *world.World) int {
 	if match(world.TradeCodes(), "Lt") {
 		dm++
 	}
-	roll := TrvCore.Roll2D(dm) + laws(world)
+	//roll := TrvCore.Roll2D(dm) + laws(world)
+	roll := dicepool.RollNext("2d6").DM(dm).Sum() + laws(world) - 7
+	if roll < 0 {
+		roll = 0
+	}
 	return roll
 }
 
@@ -302,20 +321,20 @@ func assignSecurityCodes(world *world.World, plpres int) (codes []string) {
 		pops(world) >= 4 &&
 		match(world.TradeCodes(), "Po", "Ri") &&
 		match(plpres, 1, 2, 3, 4, 5) &&
-		TrvCore.Roll2D() == 12 {
+		dicepool.RollNext("2d6").Sum() == 12 {
 		codes = append(codes, "Cr")
 	}
 	if match(govr(world), 1, 3, 6, 8, 9, 11, 13, 14, 15) &&
 		pops(world) >= 6 &&
 		match(plpres, 1, 2, 3, 4, 5) &&
-		TrvCore.Roll2D() >= 10 {
+		dicepool.RollNext("2d6").Sum() >= 10 {
 		codes = append(codes, "Co")
 	}
 	if match(govr(world), 4, 5, 6, 9, 11, 12, 13, 14, 15) &&
 		pops(world) >= 5 &&
 		//match(world.TradeCodes(), "Po", "Ri") &&
 		plpres >= 5 &&
-		TrvCore.Roll2D() >= 10 {
+		dicepool.RollNext("2d6").Sum() >= 10 {
 		codes = append(codes, "Fa")
 	}
 	if match(govr(world), 1, 6, 9, 10, 11, 12, 13, 14, 15) &&
@@ -331,13 +350,13 @@ func assignSecurityCodes(world *world.World, plpres int) (codes []string) {
 		if govr(world) == 9 {
 			tn = 5
 		}
-		if TrvCore.Roll2D() >= tn {
+		if dicepool.RollNext("2d6").Sum() >= tn {
 			codes = append(codes, "Ip")
 		}
 	}
 	if match(govr(world), 3, 5, 6, 7, 11, 15) &&
 		pops(world) >= 4 &&
-		TrvCore.Roll2D() >= 10 {
+		dicepool.RollNext("2d6").Sum() >= 10 {
 		codes = append(codes, "Mi")
 	}
 	if match(govr(world), 1, 5, 6, 8, 9, 11, 13, 14, 15) &&
@@ -350,7 +369,7 @@ func assignSecurityCodes(world *world.World, plpres int) (codes []string) {
 	}
 	if match(govr(world), 2, 4, 7, 10, 12) &&
 		match(pops(world), 1, 2) &&
-		TrvCore.Roll2D() >= 5 {
+		dicepool.RollNext("2d6").Sum() >= 5 {
 		codes = append(codes, "Vo")
 	}
 
@@ -370,5 +389,48 @@ func (sp *Security) formProfile(world *world.World) {
 	for i := range sp.securityCodes {
 		sp.profile += " "
 		sp.profile += sp.securityCodes[i]
+	}
+}
+
+func (sp *Security) String() string {
+	str := "World Security Profile: " + sp.Profile() + "\n"
+	str += "-----------------------\n"
+	str += "Planetary presence: " + strconv.Itoa(sp.planetaryPresence) + "\n"
+	str += "  Orbital presence: " + strconv.Itoa(sp.orbitalPresence) + "\n"
+	str += "   System presence: " + strconv.Itoa(sp.systemPresence) + "\n"
+	str += "   Security Stance: " + strconv.Itoa(sp.stance) + "\n"
+	str += "-----------------------\n"
+	str += "Codes:\n"
+	if len(sp.securityCodes) == 0 {
+		str += "NONE\n"
+	}
+	for i := range sp.securityCodes {
+		str += fullNameCode(sp.securityCodes[i]) + "\n"
+	}
+	return str
+}
+
+func fullNameCode(code string) string {
+	switch code {
+	default:
+		return "Unknown"
+	case "Cr":
+		return "Corrupt: \nGraft, bribery, and self-interest are extremely common in the ranks of the security officers. Travellers should expect fair treatment only if it benefits the officers – or if they can pay for it."
+	case "Co":
+		return "Covert: \nWhilst most worlds have small covert security forces, this world’s security is predominantly hidden and consists of extensive surveillance, and in some societies a network of citizen informants."
+	case "Fa":
+		return "Factionalised: \nSecurity forces are numerous and often hold very specific mandates. This can lead to inefficiency and bureaucratic infighting that can inconvenience (or be exploited by) the Travellers."
+	case "Fo":
+		return "Focussed: \nThe strongest security and enforcement is found around key locations and people, with the rest of the world or system having much less. High Presence values with the Focussed code can mean extensive passive monitoring, with significant resources available when needed."
+	case "Ip":
+		return "Impersonal: \nThe security forces are less concerned with individual rights and justice, and more with the laws themselves and public order. A Difficult (10+) Advocate check can reverse the negative DM on sentencing rolls on these worlds, as Travellers use the letter of the law to their favour."
+	case "Mi":
+		return "Militarised: \nAll key security forces are military in nature. Typically more heavily armed and armoured than civilian security forces, they will normally be granted significant latitude by the government."
+	case "Pe":
+		return "Pervasive: \nSecurity apparatus is wide-ranging and common. This can vary from constant data-mining of computer networks, to a panopticon of cameras and gunshot sensors, to guards on every door, depending on the Tech Level. Pervasive security may be limited to the planet alone, or reach beyond it."
+	case "Te":
+		return "Technological: \nMain security functions are automated, or heavily reliant on hardware and software. Fewer officers will be present, but cameras, drones, and other devices will be very common. "
+	case "Vo":
+		return "Volunteer: \nSecurity forces are made up of volunteers, perhaps led by one or two paid full-time officer(s). They will typically be less well-trained but are dedicated to their community."
 	}
 }

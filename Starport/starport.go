@@ -70,6 +70,7 @@ type Starport struct {
 	governor  string
 	berthing  string
 	sai       int //The number of vessels in the region of the port - Shipping Activity Indicator (SAI). Based on the Population score of system and starport type
+	sec       *law.Security
 }
 
 /*
@@ -85,15 +86,15 @@ type Starport struct {
 
 //From - создает старпорт и детали от планеты
 func From(uwpStr string) (Starport, error) {
-	uwpStr = "B566A77-E"
+	uwpStr = "B867564-6"
 	sp := Starport{}
 	uwp, err := profile.NewUWP(uwpStr)
 	if err != nil {
 		return sp, err
 	}
-	w := world.FromUWP(uwpStr)
-	sec := law.NewSecurity(&w)
-	fmt.Println("sec:", sec)
+
+	sp.sec = law.NewSecurityFromUWP(uwpStr)
+
 	spCode := uwp.Starport()
 	sp.sType = spCode
 	sp.tl = TrvCore.EhexToDigit(uwp.TL())
@@ -250,6 +251,7 @@ func (sp Starport) Info() string {
 	str += "            TL : " + strconv.Itoa(sp.tl) + "\n"
 	// bases    []string
 	str += "  Berting cost : " + sp.berthing + "\n"
+	str += sp.sec.String() + "\n"
 
 	return str
 }
