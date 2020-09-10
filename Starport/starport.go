@@ -1,10 +1,13 @@
 package starport
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/Galdoba/utils"
 
+	law "github.com/Galdoba/TR_Dynasty/Law"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/profile"
@@ -65,6 +68,8 @@ type Starport struct {
 	modules   map[string]bool
 	serviceDM [5]int
 	governor  string
+	berthing  string
+	sai       int //The number of vessels in the region of the port - Shipping Activity Indicator (SAI). Based on the Population score of system and starport type
 }
 
 /*
@@ -78,29 +83,31 @@ type Starport struct {
 6. Создание отличительной черты для Космопорта 	 (Perma).
 */
 
-//Planet - Штука которая может получить UWP
-type Planet interface {
-	Bases() []string
-	UWP() string
-	Name() string
-}
-
 //From - создает старпорт и детали от планеты
-func From(planet Planet) Starport {
+func From(uwpStr string) (Starport, error) {
+	uwpStr = "B566A77-E"
 	sp := Starport{}
-	uwp, err := profile.NewUWP(planet.UWP())
+	uwp, err := profile.NewUWP(uwpStr)
 	if err != nil {
-		panic(err.Error())
+		return sp, err
 	}
+	w := world.FromUWP(uwpStr)
+	sec := law.NewSecurity(&w)
+	fmt.Println("sec:", sec)
 	spCode := uwp.Starport()
 	sp.sType = spCode
 	sp.tl = TrvCore.EhexToDigit(uwp.TL())
 	//sp.tl = TrvCore.EhexToDigit(uwp.DataType(dtTechLevel))
 	popsCode := uwp.Pops()
-	sp.dice = dice.New(utils.SeedFromString(planet.Name() + planet.UWP()))
+	sp.dice = dice.New(utils.SeedFromString(uwpStr))
+	pops := TrvCore.EhexToDigit(uwp.Pops())
+	imp := importanceInt(uwpStr)
+	saiDice := utils.Max(1, pops+imp-3)
+	perDieDm := 0
 	switch spCode {
 	default:
 		sp.serviceDM = [5]int{-1, 0, 1, 1, 0}
+		saiDice = -1
 	case "A":
 		sp.quality = qualityExellent
 		sp.yards = yardStarships
@@ -110,6 +117,8 @@ func From(planet Planet) Starport {
 			sp.highport = highportYes
 		}
 		sp.serviceDM = [5]int{-5, -3, -3, -2, -3}
+		saiDice = saiDice * 3
+		sp.berthing = strconv.Itoa(sp.dice.RollNext("1d6").Sum()*1000) + " / 500 Cr"
 	case "B":
 		sp.quality = qualityGood
 		sp.yards = yardSpacecraft
@@ -119,6 +128,8 @@ func From(planet Planet) Starport {
 			sp.highport = highportYes
 		}
 		sp.serviceDM = [5]int{-4, -3, -2, -2, -3}
+		saiDice = saiDice * 2
+		sp.berthing = strconv.Itoa(sp.dice.RollNext("1d6").Sum()*500) + " / 200 Cr"
 	case "C":
 		sp.quality = qualityRoutine
 		sp.repairs = repairsMajor
@@ -127,18 +138,98 @@ func From(planet Planet) Starport {
 			sp.highport = highportYes
 		}
 		sp.serviceDM = [5]int{-3, -2, -2, -1, -2}
+		sp.berthing = strconv.Itoa(sp.dice.RollNext("1d6").Sum()*100) + " / 100 Cr"
 	case "D":
 		sp.quality = qualityPoor
 		sp.repairs = repairsMinor
 		sp.downport = downportYes
 		sp.serviceDM = [5]int{-2, -2, -1, -1, -2}
+		saiDice = saiDice - 2
+		perDieDm = -1
+		sp.berthing = strconv.Itoa(sp.dice.RollNext("1d6").Sum()*10) + " / 10 Cr"
 	case "E":
 		sp.quality = qualityFrontier
 		sp.downport = downportBeacon
 		sp.serviceDM = [5]int{-2, -1, 0, 0, -1}
+		saiDice = saiDice - 2
+		perDieDm = -2
+		sp.berthing = strconv.Itoa(sp.dice.RollNext("1d6").Sum()*10) + " / 10 Cr"
 	}
 	sp.rollGovernor()
-	return sp
+	dp := strconv.Itoa(saiDice)
+	fmt.Println("imp:", imp)
+	fmt.Println("SAI:", saiDice)
+	ships := dice.Roll(dp + "d6").ModPerDie(perDieDm).Sum()
+	if ships < 0 {
+		ships = 0
+	}
+	fmt.Println("Ships in Port:", ships)
+	fmt.Println("Ships in Port By type:", defineShips(ships, spCode))
+	return sp, nil
+}
+
+func defineShips(shipsNum int, spCode string) []int {
+	ships := []int{0, 0, 0, 0, 0}
+	for i := 0; i < shipsNum; i++ {
+		switch rollShipSize(spCode) {
+		case "Bulk":
+			ships[0]++
+		case "Large":
+			ships[1]++
+		case "Medium":
+			ships[2]++
+		case "Small":
+			ships[3]++
+		case "Minor":
+			ships[4]++
+		}
+	}
+	return ships
+}
+
+func rollShipSize(spCode string) string {
+	r := dice.Roll("1d100").Sum()
+	grade := []int{0, 0, 0, 0}
+	switch spCode {
+	case "A":
+		grade = []int{35, 65, 85, 95}
+	case "B":
+		grade = []int{65, 85, 95, 1000}
+	case "C":
+		grade = []int{85, 95, 1000, 1000}
+	case "D":
+		grade = []int{85, 95, 1000, 1000}
+	case "E":
+		grade = []int{95, 1000, 1000, 1000}
+	}
+	shiptype := "Minor"
+	if r > grade[0] {
+		shiptype = "Small"
+	}
+	if r > grade[1] {
+		shiptype = "Medium"
+	}
+	if r > grade[2] {
+		shiptype = "Large"
+	}
+	if r > grade[3] {
+		shiptype = "Bulk"
+	}
+	return shiptype
+}
+
+func importanceInt(uwpStr string) int {
+	w := world.FromUWP(uwpStr)
+	wimpEx := w.ImportanceEx()
+	wimpEx = strings.TrimSuffix(wimpEx, "}")
+	wimpEx = strings.TrimPrefix(wimpEx, "{")
+	wimpEx = strings.TrimPrefix(wimpEx, " ")
+	dig, err := strconv.Atoi(wimpEx)
+	if err != nil {
+		panic(err)
+	}
+	//dig = dig / 2
+	return dig
 }
 
 func (sp Starport) Info() string {
@@ -158,6 +249,7 @@ func (sp Starport) Info() string {
 	// tl       int
 	str += "            TL : " + strconv.Itoa(sp.tl) + "\n"
 	// bases    []string
+	str += "  Berting cost : " + sp.berthing + "\n"
 
 	return str
 }
@@ -302,7 +394,6 @@ func lawInteractionCheck(law string) bool {
 	return false
 }
 
-
 func StartRoutine(sp Starport) {
-	
+
 }

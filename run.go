@@ -3,19 +3,17 @@ package main
 import (
 	"fmt"
 
-	"github.com/Galdoba/TR_Dynasty/Astrogation"
-	"github.com/Galdoba/TR_Dynasty/hyperjump"
-	"github.com/Galdoba/devtools/cli/user"
+	starport "github.com/Galdoba/TR_Dynasty/Starport"
+	"github.com/Galdoba/TR_Dynasty/profile"
 )
 
 func main() {
-	hyperjump.StartJumpEvent()
-	fmt.Print("Diameter: ")
+	uwp := profile.RandomUWP()
+	sp, err := starport.From(uwp)
+	//fmt.Println(sp, err)
+	fmt.Println(uwp, err)
+	fmt.Println(sp.Info())
 
-	dist, _ := user.InputInt()
-	fmt.Print("\n")
-	orbRange := Astrogation.TravelTimeOrbitalArrival("5", dist, 1)
-	fmt.Println(orbRange)
 }
 
 //OB Ia Ia Ia II II II II
