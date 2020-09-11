@@ -5,11 +5,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
 
 	law "github.com/Galdoba/TR_Dynasty/Law"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/profile"
 	"github.com/Galdoba/TR_Dynasty/world"
 )
@@ -86,7 +88,7 @@ type Starport struct {
 
 //From - создает старпорт и детали от планеты
 func From(uwpStr string) (Starport, error) {
-	uwpStr = "B867564-6"
+	//uwpStr = "B867564-6"
 	sp := Starport{}
 	uwp, err := profile.NewUWP(uwpStr)
 	if err != nil {
@@ -396,6 +398,46 @@ func lawInteractionCheck(law string) bool {
 	return false
 }
 
-func StartRoutine(sp Starport) {
+func FullInfo() {
+	w := pickWorld()
+	sp, err := From(w.UWP())
+	fmt.Println(err)
+	fmt.Println(w.Name(), w.UWP(), w.TradeCodes())
+	fmt.Println(w.SecondSurvey())
+	fmt.Println(sp.Info())
+}
 
+func pickWorld() world.World {
+	dataFound := false
+	for !dataFound {
+		input := userInputStr("Enter world's Name, Hex or UWP: ")
+		otuData, err := otu.GetDataOn(input)
+		if err != nil {
+			fmt.Print("WARNING: " + err.Error() + "\n")
+			continue
+		}
+		w, err := world.FromOTUdata(otuData.Info)
+		if err != nil {
+			fmt.Print(err.Error() + "\n")
+			continue
+		}
+		//output := "Data retrived: " + w.Name() + " (" + w.UWP() + ")\n"
+		//printSlow(output)
+		return w
+
+	}
+	fmt.Println("This must not happen!")
+	return world.World{}
+}
+
+func userInputStr(msg ...string) string {
+	for i := range msg {
+		fmt.Print(msg[i])
+	}
+	str, err := user.InputStr()
+	if err != nil {
+		fmt.Print(err.Error())
+		return err.Error()
+	}
+	return str
 }

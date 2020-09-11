@@ -26,7 +26,9 @@ const (
 	planetStatPopDigit = "PopDigit"
 	planetStatBelt     = "Belts"
 	planetStatGasG     = "GG"
-	eXImportance       = "Imp"
+	importanceEx       = "Importance"
+	economicEx         = "Econimy"
+	culturalEx         = "Culture"
 	statDensity        = "Planet Density"
 	eXResources        = "Resources"
 	eXLabor            = "Labor"
@@ -110,17 +112,17 @@ type World struct {
 	//temperature  string            // увести в карту
 	name string //
 	//uwp          string            // увести в карту или вообще избавиться
-	tradeCodes   []string          //
-	importanceEx string            // увести в карту или сделать интом
-	economyEx    string            // увести в карту
-	cultureEx    string            // увести в карту
-	nobility     string            // увести в карту
-	bases        []string          //
-	travelCode   string            // увести в карту
-	pbg          string            // увести в карту
-	worlds       string            // это вообще что?
-	stellar      map[string]string // технически должно быть в другом структе
-	dice         *dice.Dicepool
+	tradeCodes []string //
+	//importanceEx string            // увести в карту или сделать интом
+	//economicEx   string
+	//cultureEx    string
+	nobility string
+	bases    []string //
+	//travelCode string            // увести в карту
+	pbg     string            // увести в карту
+	worlds  string            // это вообще что?
+	stellar map[string]string // технически должно быть в другом структе
+	dice    *dice.Dicepool
 	//esscStSyst   *esscStarSystem
 }
 
@@ -270,12 +272,12 @@ func (w *World) DebugInfo() {
 	fmt.Println("name        =", w.name)
 	fmt.Println("uwp         =", w.UWP())
 	fmt.Println("tradeCodes  =", w.tradeCodes)
-	fmt.Println("importanceEx=", w.importanceEx)
-	fmt.Println("economyEx   =", w.economyEx)
-	fmt.Println("cultureEx   =", w.cultureEx)
+	fmt.Println("importanceEx=", w.data[importanceEx])
+	fmt.Println("economicEx   =", w.data[economicEx])
+	fmt.Println("cultureEx   =", w.data[culturalEx])
 	fmt.Println("nobility    =", w.nobility)
 	fmt.Println("bases       =", w.bases)
-	fmt.Println("travelCode  =", w.travelCode)
+	fmt.Println("travelCode  =", w.data["Z"])
 	fmt.Println("pbg         =", w.pbg)
 	fmt.Println("worlds      =", w.worlds)
 	fmt.Println("stellar     =", w.stellar)
@@ -340,7 +342,7 @@ func (w *World) SecondSurvey() string {
 	w.UpdateTradeClassifications()
 	w.Nobility()
 	w.Bases()
-	w.UpdateTravelZone()
+	w.TravelZone()
 	w.NIL()
 	w.SystemStars()
 	w.Factions()
@@ -351,9 +353,9 @@ func (w *World) SecondSurvey() string {
 
 	var survey string
 	survey = w.Hex()
-	survey = survey + "	" + w.Name()
-	survey = survey + "	" + w.UWP()
-	survey = survey + "	"
+	survey = survey + "  " + w.Name()
+	survey = survey + "  " + w.UWP()
+	survey = survey + "  "
 	tcodes := w.TradeCodes()
 	for i := range tcodes {
 		if i != 0 {
@@ -361,40 +363,45 @@ func (w *World) SecondSurvey() string {
 		}
 		survey = survey + tcodes[i]
 	}
-	survey = survey + "	" + w.importanceEx
-	survey = survey + "	" + w.economyEx
-	survey = survey + "	" + w.cultureEx
-	survey = survey + "	" + w.nobility
-	survey = survey + "	"
+	survey = survey + "  " + w.data[importanceEx]
+	survey = survey + "  " + w.data[economicEx]
+	survey = survey + "  " + w.data[culturalEx]
+	survey = survey + "  " + w.nobility
+	survey = survey + "  "
+	bases := ""
 	for i := range w.bases {
-		if i == 0 {
-			continue
-		}
-		if i != 1 {
-			survey = survey + " "
-		}
-		survey = survey + w.bases[i]
+		bases = w.bases[i] + " "
 	}
-	survey = survey + "	" + w.travelCode
-	survey = survey + "	" + w.pbg
-	survey = survey + "	" + w.worlds
-	survey = survey + "	"
-	for _, st := range []string{"P", "Pc", "C", "Cc", "N", "Nc", "F", "Fc"} {
-		if val, ok := w.stellar[st]; ok {
-			survey = survey + " " + val
-		}
-		//survey = survey + w.stellar[i]
-	}
+	bases = strings.TrimSuffix(bases, " ")
+	survey = survey + "  " + bases
+	survey = survey + "  " + w.data["Z"]
+	survey = survey + "  " + w.pbg
+	survey = survey + "  " + w.data["W"]
+	survey = survey + "  " + w.data["Stellar"]
+	// for _, st := range []string{"P", "Pc", "C", "Cc", "N", "Nc", "F", "Fc"} {
+	// 	if val, ok := w.data[st]; ok {
+	// 		survey = survey + " " + val
+	// 	}
+	// 	//survey = survey + w.data[i]
+	// }
 
 	return survey
 }
 
 func (w *World) Star() string {
-	if val, ok := w.stellar["P"]; ok {
+	if val, ok := w.data["P"]; ok {
 		return val
 	}
 	w.SystemStars()
-	return w.stellar["P"]
+	return w.data["P"]
+}
+
+func (w *World) Star2() string {
+	if val, ok := w.data["P"]; ok {
+		return val
+	}
+	w.SystemStars()
+	return w.data["P"]
 }
 
 //PopulationDigit -
@@ -458,13 +465,13 @@ func createGGCode() string {
 
 //PlaceWorlds - broken
 func (w *World) PlaceWorlds() {
-	mWorldOrbit := calculateHZ(w.stellar["P"]) + convert.StoI(w.data["HZVariance"])
+	mWorldOrbit := calculateHZ(w.data["P"]) + convert.StoI(w.data["HZVariance"])
 	ggSl := strings.Split(w.PBG(), "")
 	freeGG := convert.StoI(ggSl[2])
-	w.stellar[convert.ItoS(mWorldOrbit)] = "MainWorld"
+	w.data[convert.ItoS(mWorldOrbit)] = "MainWorld"
 	if w.data["PlanetType"] != "Planet" {
 		if freeGG > 0 {
-			w.stellar[convert.ItoS(mWorldOrbit)] = createGGCode()
+			w.data[convert.ItoS(mWorldOrbit)] = createGGCode()
 		}
 	}
 
@@ -519,85 +526,85 @@ func (w *World) NIL() string {
 
 //SystemStars -
 func (w *World) SystemStars() string {
-	if ststrs, ok := w.data["System Stars"]; ok {
+	if ststrs, ok := w.data["Stellar"]; ok {
 		return ststrs
 	}
 	ststrs := "P"
 	w.stellar = make(map[string]string)
-	//w.stellar["P"] = rollSpectTypeAndSize(0)
-	w.stellar["P"] = w.HomeStar()
+	//w.data["P"] = rollSpectTypeAndSize(0)
+	w.data["P"] = w.HomeStar()
 	if TrvCore.Flux() > 2 {
 		ststrs = ststrs + "c"
-		w.stellar["Pc"] = rollSpectTypeAndSize(utils.RollDice("d6", -1))
+		w.data["Pc"] = rollSpectTypeAndSize(utils.RollDice("d6", -1))
 	}
 	if TrvCore.Flux() > 2 {
 		ststrs = ststrs + " C"
-		w.stellar["C"] = rollSpectTypeAndSize(utils.RollDice("d6", 2))
+		w.data["C"] = rollSpectTypeAndSize(utils.RollDice("d6", 2))
 		if TrvCore.Flux() > 2 {
 			ststrs = ststrs + "c"
-			w.stellar["Cc"] = rollSpectTypeAndSize(utils.RollDice("d6", -1))
+			w.data["Cc"] = rollSpectTypeAndSize(utils.RollDice("d6", -1))
 		}
 	}
 	if TrvCore.Flux() > 2 {
 		ststrs = ststrs + " N"
-		w.stellar["N"] = rollSpectTypeAndSize(utils.RollDice("d6", 2))
+		w.data["N"] = rollSpectTypeAndSize(utils.RollDice("d6", 2))
 
 		if TrvCore.Flux() > 2 {
 			ststrs = ststrs + "c"
-			w.stellar["Nc"] = rollSpectTypeAndSize(utils.RollDice("d6", -1))
+			w.data["Nc"] = rollSpectTypeAndSize(utils.RollDice("d6", -1))
 		}
 	}
 	if TrvCore.Flux() > 2 {
 		ststrs = ststrs + " F"
-		w.stellar["F"] = rollSpectTypeAndSize(utils.RollDice("d6", 2))
+		w.data["F"] = rollSpectTypeAndSize(utils.RollDice("d6", 2))
 		if TrvCore.Flux() > 2 {
 			ststrs = ststrs + "c"
-			w.stellar["Fc"] = rollSpectTypeAndSize(utils.RollDice("d6", -1))
+			w.data["Fc"] = rollSpectTypeAndSize(utils.RollDice("d6", -1))
 		}
 	}
 
-	w.data["System Stars"] = ststrs
-	return w.data["System Stars"]
+	w.data["Stellar"] = ststrs
+	return w.data["Stellar"]
 
 }
 
 func (w *World) CalculateStarOrbits() {
-	//systemModel := w.data["System Stars"]
-	if val, ok := w.stellar["P"]; ok {
+	//systemModel := w.data["Stellar"]
+	if val, ok := w.data["P"]; ok {
 		//fmt.Println("System Center:", val)
-		w.stellar["P"] = val
+		w.data["P"] = val
 	}
 	orb := 0
-	if val, ok := w.stellar["Pc"]; ok {
-		w.stellar[strconv.Itoa(orb)] = val
+	if val, ok := w.data["Pc"]; ok {
+		w.data[strconv.Itoa(orb)] = val
 	}
 	orb = utils.RollDice("d6", -1)
-	if val, ok := w.stellar["C"]; ok {
-		w.stellar[strconv.Itoa(orb)] = val
+	if val, ok := w.data["C"]; ok {
+		w.data[strconv.Itoa(orb)] = val
 	}
-	if val, ok := w.stellar["Cc"]; ok {
-		w.stellar[strconv.Itoa(orb)+"_"] = val
+	if val, ok := w.data["Cc"]; ok {
+		w.data[strconv.Itoa(orb)+"_"] = val
 	}
 	orb = utils.RollDice("d6", 5)
-	if val, ok := w.stellar["N"]; ok {
-		w.stellar[strconv.Itoa(orb)] = val
+	if val, ok := w.data["N"]; ok {
+		w.data[strconv.Itoa(orb)] = val
 	}
-	if val, ok := w.stellar["Nc"]; ok {
-		w.stellar[strconv.Itoa(orb)+"_"] = val
+	if val, ok := w.data["Nc"]; ok {
+		w.data[strconv.Itoa(orb)+"_"] = val
 	}
 	orb = utils.RollDice("d6", 11)
-	if val, ok := w.stellar["F"]; ok {
-		w.stellar[strconv.Itoa(orb)] = val
+	if val, ok := w.data["F"]; ok {
+		w.data[strconv.Itoa(orb)] = val
 	}
-	if val, ok := w.stellar["Fc"]; ok {
-		w.stellar[strconv.Itoa(orb)+"_"] = val
+	if val, ok := w.data["Fc"]; ok {
+		w.data[strconv.Itoa(orb)+"_"] = val
 	}
 	//fmt.Println(w.stellar)
 }
 
 func (w *World) ImportanceEx() string {
-	if w.importanceEx != "" {
-		return w.importanceEx
+	if w.data[importanceEx] != "" {
+		return w.data[importanceEx]
 	}
 	imp := 0
 	if w.data[constant.PrStarport] == "A" || w.data[constant.PrStarport] == "B" {
@@ -643,15 +650,15 @@ func (w *World) ImportanceEx() string {
 	if imp > 0 {
 		tag = "+"
 	}
-	//w.data[eXImportance] = dEHex(imp)
-	w.data[eXImportance] = "{" + tag + convert.ItoS(imp) + "}"
-	w.importanceEx = "{" + tag + convert.ItoS(imp) + "}"
-	return w.importanceEx
+	//w.data[importanceEx] = dEHex(imp)
+	w.data[importanceEx] = "{" + tag + convert.ItoS(imp) + "}"
+	w.data[importanceEx] = "{" + tag + convert.ItoS(imp) + "}"
+	return w.data[importanceEx]
 }
 
 func (w *World) EconomicEx() string {
-	if w.economyEx != "" {
-		return w.economyEx
+	if w.data[economicEx] != "" {
+		return w.data[economicEx]
 	}
 	w.PBG() // удоставеряемяся что данные в планете есть
 	//resourses := utils.RollDice("2d6")
@@ -663,7 +670,7 @@ func (w *World) EconomicEx() string {
 	labor := w.Stat(constant.PrPops) - 1
 	labor = utils.BoundInt(labor, 0, 999)
 	infrastructure := 0
-	if _, ok := w.data[eXImportance]; !ok { // удоставеряемяся что данные в планете есть Importance
+	if _, ok := w.data[importanceEx]; !ok { // удоставеряемяся что данные в планете есть Importance
 		w.ImportanceEx()
 	}
 	pops := w.Stat(constant.PrPops)
@@ -671,13 +678,13 @@ func (w *World) EconomicEx() string {
 		infrastructure = 0
 	}
 	if utils.InRange(pops, 1, 3) {
-		infrastructure = w.Stat(eXImportance)
+		infrastructure = w.Stat(importanceEx)
 	}
 	if utils.InRange(pops, 4, 6) {
-		infrastructure = w.Stat(eXImportance) + utils.RollDice("d6")
+		infrastructure = w.Stat(importanceEx) + utils.RollDice("d6")
 	}
 	if pops > 6 {
-		infrastructure = w.Stat(eXImportance) + utils.RollDice("2d6")
+		infrastructure = w.Stat(importanceEx) + utils.RollDice("2d6")
 	}
 	infrastructure = utils.BoundInt(infrastructure, 0, 999)
 	efficiency := TrvCore.Flux()
@@ -691,26 +698,29 @@ func (w *World) EconomicEx() string {
 	} else {
 		effCode = convert.ItoS(efficiency)
 	}
-	w.economyEx = "(" + dEHex(resourses) + dEHex(labor) + dEHex(infrastructure) + sigil + effCode + ")"
+	w.data[economicEx] = "(" + dEHex(resourses) + dEHex(labor) + dEHex(infrastructure) + sigil + effCode + ")"
 	eff := efficiency
 	if eff == 0 {
 		eff = 1
 	}
-	ru := utils.BoundInt(resourses, 1, 999) * utils.BoundInt(labor, 1, 999) * utils.BoundInt(infrastructure, 1, 999) * eff
-	w.data["RU"] = strconv.Itoa(ru)
-	return w.economyEx
+	if _, ok := w.data["RU"]; !ok {
+		ru := utils.BoundInt(resourses, 1, 999) * utils.BoundInt(labor, 1, 999) * utils.BoundInt(infrastructure, 1, 999) * eff
+		w.data["RU"] = strconv.Itoa(ru)
+	}
+
+	return w.data[economicEx]
 }
 
 func (w *World) CulturalEx() string {
-	if w.cultureEx != "" {
-		return w.cultureEx
+	if w.data[culturalEx] != "" {
+		return w.data[culturalEx]
 	}
 	pops := w.Stat(constant.PrPops)
-	if _, ok := w.data[eXImportance]; !ok {
+	if _, ok := w.data[importanceEx]; !ok {
 		w.ImportanceEx()
 	}
 	heterogenity := pops + TrvCore.Flux()
-	acceptence := pops + w.Stat(eXImportance)
+	acceptence := pops + w.Stat(importanceEx)
 	strangeness := TrvCore.Flux() + 5
 	symbols := TrvCore.Flux() + w.Stat(constant.PrTL)
 	data := append([]int{}, heterogenity, acceptence, strangeness, symbols)
@@ -722,15 +732,15 @@ func (w *World) CulturalEx() string {
 			data[i] = 0
 		}
 	}
-	w.cultureEx = "[" + dEHex(data[0]) + dEHex(data[1]) + dEHex(data[2]) + dEHex(data[3]) + "]"
-	return w.cultureEx
+	w.data[culturalEx] = "[" + dEHex(data[0]) + dEHex(data[1]) + dEHex(data[2]) + dEHex(data[3]) + "]"
+	return w.data[culturalEx]
 }
 
 func (w *World) Nobility() string {
 	if w.nobility != "" {
 		return w.nobility
 	}
-	if _, ok := w.data[eXImportance]; !ok {
+	if _, ok := w.data[importanceEx]; !ok {
 		w.ImportanceEx()
 	}
 	nob := "B"
@@ -749,7 +759,7 @@ func (w *World) Nobility() string {
 	if w.matchTradeClassification(tradeClassificationIndustrial) || w.matchTradeClassification(tradeClassificationHighPopulation) {
 		nob += "E"
 	}
-	if w.Stat(eXImportance) > 3 && (!w.matchTradeClassification(tradeClassificationSubsectorCapital) && !w.matchTradeClassification(tradeClassificationSectorCapital)) {
+	if w.Stat(importanceEx) > 3 && (!w.matchTradeClassification(tradeClassificationSubsectorCapital) && !w.matchTradeClassification(tradeClassificationSectorCapital)) {
 		nob += "f"
 	}
 	if w.matchTradeClassification(tradeClassificationSubsectorCapital) || w.matchTradeClassification(tradeClassificationSectorCapital) {
@@ -1837,20 +1847,20 @@ func TradeCodeViableT5(w *World, tc string) bool {
 		}
 	case tradeClassificationForbidden:
 		if matchTradeClassificationRequirements(w, "-- -- -- -- -- --") {
-			if w.travelCode == "Red Zone" {
+			if w.data["Z"] == "Red Zone" {
 				return true
 			}
 
 		}
 	case tradeClassificationPuzzle:
 		if matchTradeClassificationRequirements(w, "-- -- -- 789ABCDEF -- --") {
-			if w.travelCode == "Amber Zone" {
+			if w.data["Z"] == "Amber Zone" {
 				return true
 			}
 		}
 	case tradeClassificationDangerous:
 		if matchTradeClassificationRequirements(w, "-- -- -- 0123456 -- --") {
-			if w.travelCode == "Amber Zone" {
+			if w.data["Z"] == "Amber Zone" {
 				return true
 			}
 		}
@@ -1960,7 +1970,7 @@ func TradeCodeViableT5(w *World, tc string) bool {
 // 		}
 
 // 	}
-// 	w.travelCode = travellcode
+// 	w.data["Z"] = travellcode
 // 	return travellcode
 // }
 
@@ -2119,20 +2129,24 @@ func (w *World) IsMainWorld(mw bool) {
 }
 
 func (w *World) UpdateTravelZone() {
-	w.travelCode = "Green Zone"
+	w.data["Z"] = ""
 	if w.Stat(constant.PrGovr)+w.Stat(constant.PrLaws) >= 20 {
-		w.travelCode = "Amber Zone"
+		w.data["Z"] = "A"
 	}
 	if w.Stat(constant.PrGovr)+w.Stat(constant.PrLaws) >= 22 {
-		w.travelCode = "Red Zone"
+		w.data["Z"] = "R"
 	}
 }
 
 func (w *World) TravelZone() string {
-	// if w.travelCode == "" {
+	if val, ok := w.data["Z"]; ok {
+		return val
+	}
+	w.UpdateTravelZone()
+	// if w.data["Z"] == "" {
 	// 	w.UpdateTravelZone()
 	// }
-	return w.travelCode
+	return w.data["Z"]
 }
 
 /*
@@ -2505,15 +2519,15 @@ func FromOTUdata(otuData string) (World, error) {
 	w.bases = otu.Info{otuData}.Bases()
 	w.tradeCodes = otu.Info{otuData}.Remarks()
 	w.checkLtHtTradeCodes()
-	w.travelCode = otu.Info{otuData}.Zone()
+	w.data["Z"] = otu.Info{otuData}.Zone()
 	w.pbg = otu.Info{otuData}.PBG()
 	w.data["Allegiance"] = otu.Info{otuData}.Allegiance()
-	w.data["Stars"] = otu.Info{otuData}.Stars()
-	w.data["Ix"] = otu.Info{otuData}.Iextention()
-	w.data["Ex"] = otu.Info{otuData}.Eextention()
-	w.data["Cx"] = otu.Info{otuData}.Cextention()
+	w.data["Stellar"] = otu.Info{otuData}.Stars()
+	w.data[importanceEx] = otu.Info{otuData}.Iextention()
+	w.data[economicEx] = otu.Info{otuData}.Eextention()
+	w.data[culturalEx] = otu.Info{otuData}.Cextention()
 	w.data["Nobility"] = otu.Info{otuData}.Nobility()
-	w.data["Worlds"] = otu.Info{otuData}.Worlds()
+	w.data["W"] = otu.Info{otuData}.Worlds()
 	w.data["RU"] = otu.Info{otuData}.RU()
 
 	return w, nil

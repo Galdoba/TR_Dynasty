@@ -1,19 +1,16 @@
 package main
 
 import (
-	"fmt"
-
 	starport "github.com/Galdoba/TR_Dynasty/Starport"
-	"github.com/Galdoba/TR_Dynasty/profile"
 )
 
 func main() {
-	uwp := profile.RandomUWP()
-	sp, err := starport.From(uwp)
-	//fmt.Println(sp, err)
-	fmt.Println(uwp, err)
-	fmt.Println(sp.Info())
-
+	// uwp := profile.RandomUWP()
+	// sp, err := starport.From(uwp)
+	// //fmt.Println(sp, err)
+	// fmt.Println(uwp, err)
+	// fmt.Println(sp.Info())
+	starport.FullInfo()
 }
 
 //OB Ia Ia Ia II II II II
