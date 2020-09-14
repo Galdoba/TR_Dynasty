@@ -66,7 +66,7 @@ type Starport struct {
 	highport  int
 	tl        int
 	bases     []string
-	dice      *dice.Dicepool //а нужен ли?
+	dice      *dice.Dicepool
 	modules   map[string]bool
 	serviceDM [5]int
 	governor  string

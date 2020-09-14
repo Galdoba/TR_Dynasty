@@ -1,121 +1,128 @@
 package law
 
 import (
-	"fmt"
-	"strconv"
+	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/profile"
+	"github.com/Galdoba/utils"
 )
 
 const (
-	lawCheck       = "Check"
-	lawInvestigate = "Investigate"
-	lawApprehend   = "Apprehend"
-	lawSentence    = "Sentence"
+	lawOverall     = "Overall"
+	lawWeapon      = "Weapons"
+	lawDrugs       = "Drugs"
+	lawInformation = "Information"
+	lawTechnology  = "Technology"
+	lawTravellers  = "Travellers"
+	lawPsionics    = "Psionics"
+	goverment      = "Goverment"
 )
 
-//RelationsMgt2Core - каркас из корника второй части
-type RelationsMgt2Core struct {
-	localUWP string
-	status   int
-	crimes   []crime // или int
-	dm       int
+type LawReport struct {
+	dp         *dice.Dicepool
+	ulp        string //L5-444444 [Wp Dr In Te Tr Ps]
+	levelOf    map[string]int
+	contraband [6]int
 }
 
-type crime struct {
-	situation string
-	dm        int
-	responce  string
+func New(uwpStr string) (LawReport, error) {
+	lr := LawReport{}
+	uwp, err := profile.NewUWP(uwpStr)
+	if err != nil {
+		return lr, err
+	}
+	lr.dp = dice.New(utils.SeedFromString(uwpStr))
+	lr.levelOf = make(map[string]int)
+	//lr.contraband = [6]int{2, 2, 2, 2, 2, 2}
+	lr.levelOf[lawOverall] = TrvCore.EhexToDigit(uwp.Laws())
+	lr.levelOf[goverment] = TrvCore.EhexToDigit(uwp.Govr())
+	lr.levelOf[lawWeapon] = utils.BoundInt(lr.levelOf[lawOverall]+TrvCore.Flux(), 0, 30)
+	lr.levelOf[lawDrugs] = utils.BoundInt(lr.levelOf[lawOverall]+TrvCore.Flux(), 0, 30)
+	lr.levelOf[lawInformation] = utils.BoundInt(lr.levelOf[lawOverall]+TrvCore.Flux(), 0, 30)
+	lr.levelOf[lawTechnology] = utils.BoundInt(lr.levelOf[lawOverall]+TrvCore.Flux(), 0, 30)
+	lr.levelOf[lawTravellers] = utils.BoundInt(lr.levelOf[lawOverall]+TrvCore.Flux(), 0, 30)
+	lr.levelOf[lawPsionics] = utils.BoundInt(lr.levelOf[lawOverall]+TrvCore.Flux(), 0, 30)
+	lr.determineContraband()
+
+	return lr, nil
 }
 
-func newCrime(sit, resp string, dm int) crime {
-	c := crime{}
-	c.situation = sit
-	c.dm = dm
-	c.responce = resp
-	return c
-}
-
-func Sentense(uwp string, cr crime) {
-	fmt.Println("law TN", lawTN(uwp))
-	s := sent(dice.Roll("2d6").DM(cr.dm).Sum())
-	fmt.Println(s)
-
-}
-
-func sent(i int) string {
-	sent := ""
-	switch i {
+func (lr *LawReport) determineContraband() {
+	contrSl := [6]int{}
+	switch lr.levelOf[goverment] {
+	case 0:
+		contrSl = [6]int{0, 0, 0, 0, 0, 0}
+	case 1:
+		contrSl = [6]int{1, 1, 0, 0, 1, 0}
+	case 2:
+		contrSl = [6]int{0, 1, 0, 0, 0, 0}
+	case 3:
+		contrSl = [6]int{1, 0, 0, 1, 1, 0}
+	case 4:
+		contrSl = [6]int{1, 1, 0, 0, 0, 1}
+	case 5:
+		contrSl = [6]int{1, 0, 1, 1, 0, 0}
+	case 6:
+		contrSl = [6]int{1, 0, 0, 1, 1, 0}
+	case 7:
+		contrSl = [6]int{2, 2, 2, 2, 2, 2}
+	case 8:
+		contrSl = [6]int{1, 1, 0, 0, 0, 0}
+	case 9:
+		contrSl = [6]int{1, 1, 0, 1, 1, 1}
+	case 10:
+		contrSl = [6]int{0, 0, 0, 0, 0, 0}
+	case 11:
+		contrSl = [6]int{1, 0, 1, 1, 0, 0}
+	case 12:
+		contrSl = [6]int{1, 0, 0, 0, 0, 0}
 	default:
-		if i <= 0 {
-			sent = "Dismissed or trivial"
+		contrSl = [6]int{2, 2, 2, 2, 2, 2}
+	}
+	for i := range contrSl {
+		if contrSl[i] != 0 && contrSl[i] != 1 {
+			r := lr.dp.RollNext("1d2").DM(-1).Sum()
+			contrSl[i] = r
 		}
-		if i >= 15 {
-			sent = "Death"
-		}
-	case 1, 2:
-		sent = "Fine of " + strconv.Itoa(dice.Roll1D()*1000) + " (per ton of cargo)"
-	case 3, 4:
-		sent = "Fine of " + strconv.Itoa(dice.Roll2D()*5000) + " (per ton of cargo)"
-	case 5, 6:
-		sent = "Exile or a fine of " + strconv.Itoa(dice.Roll2D()*10000) + " (per ton of cargo)"
-	case 7, 8:
-		sent = "Imprisonment for " + dice.Roll("1d6").SumStr() + " months or exile or fine of " + strconv.Itoa(dice.Roll2D()*20000) + " (per ton of cargo)"
-	case 9, 10:
-		sent = "Imprisonment for " + dice.Roll("1d6").SumStr() + " years or exile"
-	case 11, 12:
-		sent = "Imprisonment for " + dice.Roll("2d6").SumStr() + " years or exile"
-	case 13, 14:
-		sent = "Life imprisonment"
-
 	}
-	return sent
+	lr.contraband = contrSl
 }
 
-//Lawer - оператор
-type Lawer interface {
-	Interact() string
-}
-
-//NewRelations - новый каркас
-func NewRelations(uwp string) RelationsMgt2Core {
-	lr := RelationsMgt2Core{}
-	lr.localUWP = uwp
-	lr = lr.Accuse(newCrime("First Aproach", lawCheck, 0))
-	return lr
-}
-
-func (lr RelationsMgt2Core) сhangeDM(add int) RelationsMgt2Core {
-	lr.dm = lr.dm + add
-	return lr
-}
-
-//Accuse - добавляет к новое Преступление для обработки
-func (lr RelationsMgt2Core) Accuse(c crime) RelationsMgt2Core {
-	lr.crimes = append(lr.crimes, c)
-	return lr
-}
-
-//helpers
-func localLaw(uwp string) string {
-	return string([]byte(uwp)[6])
-}
-
-func lawTN(uwp string) int {
-	return TrvCore.EhexToDigit(localLaw(uwp))
-}
-
-func (lr RelationsMgt2Core) Check(dm ...int) bool {
-	fullDm := 0
-	for i := range dm {
-		fullDm += dm[i]
+func (lr LawReport) ULP() string {
+	ulp := "L"
+	ulp += TrvCore.DigitToEhex(lr.levelOf[lawOverall]) + "-"
+	ulp += TrvCore.DigitToEhex(lr.levelOf[lawWeapon])
+	ulp += TrvCore.DigitToEhex(lr.levelOf[lawDrugs])
+	ulp += TrvCore.DigitToEhex(lr.levelOf[lawInformation])
+	ulp += TrvCore.DigitToEhex(lr.levelOf[lawTechnology])
+	ulp += TrvCore.DigitToEhex(lr.levelOf[lawTravellers])
+	ulp += TrvCore.DigitToEhex(lr.levelOf[lawPsionics]) + " "
+	//L5-444444 [Wp Dr In Te Tr Ps]
+	if lr.contraband[0] == 1 {
+		ulp += "Wp "
 	}
-	r := dice.Roll2D()
-	lawTN := lawTN(lr.localUWP)
-	if r <= lawTN {
-		fmt.Println("Check Successfull: Beat Admin or Streetwise challenge with tn =", 6+(lawTN-r), "to avoid Investigation")
-		return true
+	if lr.contraband[1] == 1 {
+		ulp += "Dr "
 	}
-	return false
+	if lr.contraband[2] == 1 {
+		ulp += "In "
+	}
+	if lr.contraband[3] == 1 {
+		ulp += "Te "
+	}
+	if lr.contraband[4] == 1 {
+		ulp += "Tr "
+	}
+	if lr.contraband[5] == 1 {
+		ulp += "Ps "
+	}
+	ulp = strings.TrimSuffix(ulp, " ")
+	return ulp
+}
+
+func (lr LawReport) Report() string {
+	str := "" + lr.ULP()
+	return str
 }

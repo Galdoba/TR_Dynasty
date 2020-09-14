@@ -122,7 +122,7 @@ type World struct {
 	pbg     string            // увести в карту
 	worlds  string            // это вообще что?
 	stellar map[string]string // технически должно быть в другом структе
-	dice    *dice.Dicepool
+	dp      *dice.Dicepool
 	//esscStSyst   *esscStarSystem
 }
 
@@ -133,7 +133,7 @@ func NewWorld(name string) World {
 	world.stat = make(map[string]int)
 	world.data = make(map[string]string)
 	seed := utils.SeedFromString(name)
-	world.dice = dice.New(seed)
+	world.dp = dice.New(seed)
 
 	// if !uwpValid(uwp) {
 	// 	uwp = "RANDOM"
@@ -657,12 +657,12 @@ func (w *World) ImportanceEx() string {
 }
 
 func (w *World) EconomicEx() string {
-	if w.data[economicEx] != "" {
-		return w.data[economicEx]
+	if val, ok := w.data[economicEx]; ok {
+		return val
 	}
 	w.PBG() // удоставеряемяся что данные в планете есть
 	//resourses := utils.RollDice("2d6")
-	resourses := w.dice.RollNext("2d6").Sum()
+	resourses := w.dp.RollNext("2d6").Sum()
 	if w.Stat(constant.PrTL) >= 8 {
 		resourses = resourses + w.Stat(planetStatBelt) + w.Stat(planetStatGasG)
 	}
@@ -2494,6 +2494,7 @@ func FromUWP(uwp string) World {
 	}
 	w := World{}
 	w.data = make(map[string]string)
+	w.dp = dice.New(utils.SeedFromString(uwp))
 	w.MergeUWP(uwp)
 	return w
 }
