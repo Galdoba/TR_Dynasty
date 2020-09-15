@@ -1,6 +1,7 @@
 package law
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
@@ -137,7 +138,7 @@ func describeOverall(lr LawReport) string {
 	descr := "Overall Law Level can be considered " //text \033[1mbold\033[0m text
 	switch lr.levelOf[lawOverall] {
 	default:
-		descr += "\033[1mStifling:\033[0m The epitome of legal tyranny. Nothing is accessible by the people and everything is kept under governmental control. Punishments for breaking these laws are likely the harshest possible; better to keep the populace in line with the legal regime."
+		descr += "Stifling: The epitome of legal tyranny. Nothing is accessible by the people and everything is kept under governmental control. Punishments for breaking these laws are likely the harshest possible; better to keep the populace in line with the legal regime."
 	case 0:
 		descr += "Lawless: This is the absence of legal authority. Either through anarchy, barbarism or other assorted social fractures, this culture does not keep a set of laws to govern the indicated items."
 	case 1:
@@ -157,12 +158,46 @@ func describeOverall(lr LawReport) string {
 	case 8:
 		descr += "Enforced: Total governmental control over most things; this Law Level represents most military states or areas under strict martial law."
 	}
-	return descr
+	return descr + "\n"
+}
+
+func describeWeapon(lr LawReport) string {
+	descr := ""
+	switch lr.levelOf[lawWeapon] {
+	default:
+		descr += "Nothing that can be considered a weapon in any circumstance is allowed to be carried personally. From a stone tied to a stick or a shard of broken glass carried in a menacingly manner – all implements of inflicting harm are forbidden."
+		fmt.Println(lr.levelOf[lawWeapon])
+	case 0:
+		descr += "There are no legal restrictions on Weapons."
+	case 1:
+		descr += "Weapons (and other combat-oriented technologies) that are designed for massive indiscriminate losses of life are outlawed at this level. Weapons of mass destruction, chemical or biological weapons and the sorts of things that terrorists use to wreak havoc upon civilian targets are considered contraband."
+	case 2:
+		descr += "Weapon systems that can inflict massive bodily harm upon a target and likely generate radiation on a localised level are illegal. Lasers, fusion weaponry and plasma weapons cause enough visceral damage to be considered contraband."
+	case 3:
+		descr += "Weaponry that requires special training and military access, often with a remarkable rate of fire that can injure multiple targets in one volley. Squad-level support weaponry like heavy machine guns and anti-tank rifles are too dangerous for casual citizens to use and the government tries to make sure they do not."
+	case 4:
+		descr += "Personal weaponry with high rates of automatic fire such as light assault guns and submachine guns are, at this level, thought of as too easily acquired and abused to be in the hands of the common citizen."
+	case 5:
+		descr += "Government restricts all weaponry that could be hidden on the average person, making it much harder for non-authoritarian figures to be lethally armed."
+	case 6:
+		descr += "Government restricts all manners of firearms. Only projectile weapons that are nonlethal or originally designed for hunting are permited."
+	case 7:
+		descr += "The government does not recognises the hunting applications of shotguns or low-impact black powder firearms, placing all slug throwers in the illegal category."
+	case 8:
+		descr += "All manufactured weaponry removed from the hands on non-authoritarians. Knives, primitive projectiles and even stunning equipment become restricted. Without special consideration, being armed with something designed to harm or incapacitate another is not accessible to citizens."
+	}
+	return descr + "\n"
 }
 
 func (lr LawReport) Report() string {
 	str := "Universal Law Profile: " + lr.ULP() + "\n"
-	str += describeOverall(lr) + "\n"
-	//activities := []string{lawWeapon, lawDrugs, lawInformation, lawTechnology, lawTravellers, lawPsionics}
+	str += describeOverall(lr)
+	activities := []string{lawWeapon, lawDrugs, lawInformation, lawTechnology, lawTravellers, lawPsionics}
+	for i := range activities {
+		switch activities[i] {
+		case lawWeapon:
+			str += describeWeapon(lr)
+		}
+	}
 	return str
 }
