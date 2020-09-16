@@ -4,20 +4,22 @@ import (
 	"fmt"
 
 	law "github.com/Galdoba/TR_Dynasty/Law"
-	"github.com/Galdoba/TR_Dynasty/profile"
+	"github.com/Galdoba/TR_Dynasty/entity"
+	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/world"
 )
 
 func main() {
-	uwp := profile.RandomUWP()
-	w := world.FromUWP(uwp)
-
+	entity.Test()
+	data, err := otu.GetDataOn("Paal")
+	if err != nil {
+		fmt.Println(err)
+	}
+	w, err := world.FromOTUdata(data.Info)
+	uwp := w.UWP()
 	fmt.Println(w.SecondSurvey())
-	lr, _ := law.New(uwp)
-	fmt.Println(lr)
-	fmt.Println(lr.ULP())
-	fmt.Println("")
-	fmt.Println(lr.Report())
+
+	fmt.Println(law.Describe(uwp))
 
 	// sp, err := starport.From(uwp)
 	// //fmt.Println(sp, err)
