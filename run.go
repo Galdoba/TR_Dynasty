@@ -1,25 +1,19 @@
 package main
 
-import (
-	"fmt"
-
-	law "github.com/Galdoba/TR_Dynasty/Law"
-	"github.com/Galdoba/TR_Dynasty/entity"
-	"github.com/Galdoba/TR_Dynasty/otu"
-	"github.com/Galdoba/TR_Dynasty/world"
-)
+import "github.com/Galdoba/TR_Dynasty/gui"
 
 func main() {
-	entity.Test()
-	data, err := otu.GetDataOn("Paal")
-	if err != nil {
-		fmt.Println(err)
-	}
-	w, err := world.FromOTUdata(data.Info)
-	uwp := w.UWP()
-	fmt.Println(w.SecondSurvey())
+	gui.Test()
+	// entity.Test()
+	// data, err := otu.GetDataOn("Paal")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// w, err := world.FromOTUdata(data.Info)
+	// uwp := w.UWP()
+	// fmt.Println(w.SecondSurvey())
 
-	fmt.Println(law.Describe(uwp))
+	// fmt.Println(law.Describe(uwp))
 
 	// sp, err := starport.From(uwp)
 	// //fmt.Println(sp, err)
