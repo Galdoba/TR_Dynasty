@@ -28,7 +28,7 @@ type lawReport struct {
 	contraband [6]int
 }
 
-func New(uwpStr string) (lawReport, error) {
+func NewLawReport(uwpStr string) (lawReport, error) {
 	lr := lawReport{}
 	uwp, err := profile.NewUWP(uwpStr)
 	if err != nil {
@@ -345,7 +345,7 @@ func (lr lawReport) Report() string {
 }
 
 func Describe(uwp string) string {
-	lr, err := New(uwp)
+	lr, err := NewLawReport(uwp)
 	if err != nil {
 		fmt.Println(err.Error())
 	}

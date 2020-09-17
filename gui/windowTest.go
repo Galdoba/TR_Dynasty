@@ -18,7 +18,9 @@ func mainLoop() {
 	_ = b
 	b.SetMaxItems(50)
 	b.Draw()
+
 	ui.MainLoop()
+
 }
 
 func createView() *ui.TextView {

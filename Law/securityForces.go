@@ -1,6 +1,7 @@
 package law
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -225,27 +226,39 @@ func calculateSystemPresence(world *world.World, orbPrez int) int {
 	if match(govr(world), 7) {
 		dm -= 2
 	}
+	fmt.Println("Punk------------------------------", dm)
 	if match(govr(world), 1, 9, 10, 12) {
 		dm--
 	}
+	fmt.Println("Punk------------------------------", dm)
 	if match(govr(world), 6) {
 		dm += 2
 	}
+	fmt.Println("Punk------------------------------", dm)
 	if match(world.TradeCodes(), "Lo", "Po") {
+
 		dm -= 2
 	}
+	fmt.Println("Punk------------------------------", dm)
 	if match(world.TradeCodes(), "Lt", "Ni") {
 		dm--
 	}
+	fmt.Println("Punk------------------------------", dm)
 	if match(world.TradeCodes(), "Ri") {
 		dm++
 	}
+	fmt.Println("Punk------------------------------", dm)
 	pbg := []byte(world.PBG())
 	if match(string(pbg[2]), "0") {
 		dm -= 2
 	}
+	fmt.Println("Punk------------------------------", dm)
 	//roll := TrvCore.Roll2D(dm) + orbPrez - 7
+	fmt.Println(dicepool)
+	fmt.Println("Punk------------------------------", dm)
+
 	roll := dicepool.RollNext("2d6").DM(dm).Sum() + orbPrez - 7
+	fmt.Println(dicepool)
 	if roll < 0 {
 		roll = 0
 	}
