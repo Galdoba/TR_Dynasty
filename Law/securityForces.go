@@ -70,10 +70,10 @@ func NewSecurity(world *world.World) *Security {
 	return sp
 }
 
-func NewSecurityFromUWP(uwp string) *Security {
-	w := world.FromUWP(uwp)
-	return NewSecurity(&w)
-}
+// func NewSecurityFromUWP(wrld world.World) *Security {
+// 	//w := world.FromUWP(uwp)
+// 	return NewSecurity(&wrld)
+// }
 
 //NewSecurityFromProfile - creates fixed obj using data from profile
 func NewSecurityFromProfile(profile string) *Security {

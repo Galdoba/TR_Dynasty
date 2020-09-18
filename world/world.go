@@ -278,7 +278,7 @@ func (w *World) DebugInfo() {
 	fmt.Println("nobility    =", w.nobility)
 	fmt.Println("bases       =", w.bases)
 	fmt.Println("travelCode  =", w.data["Z"])
-	fmt.Println("pbg         =", w.pbg)
+	fmt.Println("pbg         =", w.data["PBG"])
 	fmt.Println("worlds      =", w.worlds)
 	fmt.Println("stellar     =", w.stellar)
 }
@@ -329,7 +329,7 @@ func (w *World) FirstSurvey() string {
 }
 
 //SecondSurvey -
-func (w *World) SecondSurvey() string {
+func (w *World) SecondSurvey() []string {
 	rand.Seed(utils.SeedFromString(w.name))
 	w.UWP()
 	w.PBG()
@@ -351,33 +351,55 @@ func (w *World) SecondSurvey() string {
 	// w.TotalWorlds()
 	// w.PlaceWorlds()
 
-	var survey string
-	survey = w.Hex()
-	survey = survey + "  " + w.Name()
-	survey = survey + "  " + w.UWP()
-	survey = survey + "  "
-	tcodes := w.TradeCodes()
-	for i := range tcodes {
-		if i != 0 {
-			survey = survey + " "
-		}
-		survey = survey + tcodes[i]
-	}
-	survey = survey + "  " + w.data[importanceEx]
-	survey = survey + "  " + w.data[economicEx]
-	survey = survey + "  " + w.data[culturalEx]
-	survey = survey + "  " + w.nobility
-	survey = survey + "  "
-	bases := ""
-	for i := range w.bases {
-		bases = w.bases[i] + " "
-	}
-	bases = strings.TrimSuffix(bases, " ")
-	survey = survey + "  " + bases
-	survey = survey + "  " + w.data["Z"]
-	survey = survey + "  " + w.pbg
-	survey = survey + "  " + w.data["W"]
-	survey = survey + "  " + w.data["Stellar"]
+	// var survey string
+	// survey = w.Hex()
+	// survey = survey + "  " + w.Name()
+	// survey = survey + "  " + w.UWP()
+	// survey = survey + "  "
+	// tcodes := w.TradeCodes()
+	// for i := range tcodes {
+	// 	if i != 0 {
+	// 		survey = survey + " "
+	// 	}
+	// 	survey = survey + tcodes[i]
+	// }
+	// survey = survey + "  " + w.data[importanceEx]
+	// survey = survey + "  " + w.data[economicEx]
+	// survey = survey + "  " + w.data[culturalEx]
+	// survey = survey + "  " + w.nobility
+	// survey = survey + "  "
+	// bases := ""
+	// for i := range w.bases {
+	// 	bases = w.bases[i] + " "
+	// }
+	// bases = strings.TrimSuffix(bases, " ")
+	// survey = survey + "  " + bases
+	// survey = survey + "  " + w.data["Z"]
+	// survey = survey + "  " + w.data["PBG"]
+	// survey = survey + "  " + w.data["W"]
+	// survey = survey + "  " + w.data["Stellar"]
+	// // for _, st := range []string{"P", "Pc", "C", "Cc", "N", "Nc", "F", "Fc"} {
+	// // 	if val, ok := w.data[st]; ok {
+	// // 		survey = survey + " " + val
+	// // 	}
+	// // 	//survey = survey + w.data[i]
+	// // }
+	var survey []string
+	survey = append(survey, w.Hex())
+	survey = append(survey, w.Name())
+	survey = append(survey, w.UWP())
+	survey = append(survey, sliceToString(w.TradeCodes()))
+
+	survey = append(survey, w.data[importanceEx])
+	survey = append(survey, w.data[economicEx])
+	survey = append(survey, w.data[culturalEx])
+	survey = append(survey, w.nobility)
+	survey = append(survey, sliceToString(w.bases))
+
+	survey = append(survey, w.data["Z"])
+	survey = append(survey, w.data["PBG"])
+	survey = append(survey, w.data["W"])
+	survey = append(survey, w.data["Stellar"])
 	// for _, st := range []string{"P", "Pc", "C", "Cc", "N", "Nc", "F", "Fc"} {
 	// 	if val, ok := w.data[st]; ok {
 	// 		survey = survey + " " + val
@@ -386,6 +408,15 @@ func (w *World) SecondSurvey() string {
 	// }
 
 	return survey
+}
+
+func sliceToString(sl []string) string {
+	str := ""
+	for i := range sl {
+		str += sl[i] + " "
+	}
+	str = strings.TrimSuffix(str, " ")
+	return str
 }
 
 func (w *World) Star() string {
@@ -2059,11 +2090,11 @@ func (w *World) PlanetType() string {
 }
 
 func (w *World) PBG() string {
-	if w.pbg != "" {
-		return w.pbg
+	if w.data["PBG"] != "" {
+		return w.data["PBG"]
 	}
 	w.SetPBG("RANDOM")
-	return w.pbg
+	return w.data["PBG"]
 }
 
 func readPBG(pbg string) (p int, b int, g int) {
@@ -2099,7 +2130,7 @@ func (w *World) SetPBG(pbg string) {
 		w.data[planetStatBelt] = dEHex(b)
 		w.data[planetStatGasG] = dEHex(g)
 	}
-	w.pbg = pbg
+	w.data["PBG"] = pbg
 	if !pbgValid(pbg) {
 		return
 		//pbg = "RANDOM"
@@ -2521,7 +2552,7 @@ func FromOTUdata(otuData string) (World, error) {
 	w.tradeCodes = otu.Info{otuData}.Remarks()
 	w.checkLtHtTradeCodes()
 	w.data["Z"] = otu.Info{otuData}.Zone()
-	w.pbg = otu.Info{otuData}.PBG()
+	w.data["PBG"] = otu.Info{otuData}.PBG()
 	w.data["Allegiance"] = otu.Info{otuData}.Allegiance()
 	w.data["Stellar"] = otu.Info{otuData}.Stars()
 	w.data[importanceEx] = otu.Info{otuData}.Iextention()

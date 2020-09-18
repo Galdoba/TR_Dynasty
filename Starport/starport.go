@@ -87,15 +87,15 @@ type Starport struct {
 */
 
 //From - создает старпорт и детали от планеты
-func From(uwpStr string) (Starport, error) {
-	//uwpStr = "B867564-6"
+func From(wrld world.World) (Starport, error) {
+	uwpStr := wrld.UWP()
 	sp := Starport{}
-	uwp, err := profile.NewUWP(uwpStr)
+	uwp, err := profile.NewUWP(wrld.UWP())
 	if err != nil {
 		return sp, err
 	}
 
-	sp.sec = law.NewSecurityFromUWP(uwpStr)
+	sp.sec = law.NewSecurity(&wrld)
 
 	spCode := uwp.Starport()
 	sp.sType = spCode
@@ -400,7 +400,7 @@ func lawInteractionCheck(law string) bool {
 
 func FullInfo() {
 	w := pickWorld()
-	sp, err := From(w.UWP())
+	sp, err := From(w)
 	fmt.Println(err)
 	fmt.Println(w.Name(), w.UWP(), w.TradeCodes())
 	fmt.Println(w.SecondSurvey())
@@ -417,6 +417,7 @@ func pickWorld() world.World {
 			continue
 		}
 		w, err := world.FromOTUdata(otuData.Info)
+		fmt.Println("PICK WORLD", w.PBG())
 		if err != nil {
 			fmt.Print(err.Error() + "\n")
 			continue
