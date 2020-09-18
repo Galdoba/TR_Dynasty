@@ -39,7 +39,7 @@ func checkLtHtTradeCodes(w World) []string {
 		add = append(add, constant.TradeCodeLowTech)
 	}
 	if w.GetСharacteristic(constant.PrTL).Value() >= TrvCore.EhexToDigit("C") {
-		add = append(add, constant.TradeCodeLowTech)
+		add = append(add, constant.TradeCodeHighTech)
 	}
 	return add
 }

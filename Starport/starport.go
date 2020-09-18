@@ -5,15 +5,16 @@ import (
 	"strconv"
 	"strings"
 
+	law "github.com/Galdoba/TR_Dynasty/Law"
+	. "github.com/Galdoba/TR_Dynasty/constant"
+	"github.com/Galdoba/TR_Dynasty/wrld"
+
 	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
 
-	law "github.com/Galdoba/TR_Dynasty/Law"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/otu"
-	"github.com/Galdoba/TR_Dynasty/profile"
-	"github.com/Galdoba/TR_Dynasty/world"
 )
 
 const (
@@ -36,14 +37,14 @@ const (
 	downportYes     = 2
 	highportNo      = 0
 	highportYes     = 1
-	dtStarport      = world.DataTypeStarport
-	dtSize          = world.DataTypeSize
-	dtAtmosphere    = world.DataTypeAtmosphere
-	dtHydrosphere   = world.DataTypeHydrosphere
-	dtPopulation    = world.DataTypePopulation
-	dtGoverment     = world.DataTypeGoverment
-	dtLaws          = world.DataTypeLaws
-	dtTechLevel     = world.DataTypeTechLevel
+	// dtStarport      = world.DataTypeStarport
+	// dtSize          = world.DataTypeSize
+	// dtAtmosphere    = world.DataTypeAtmosphere
+	// dtHydrosphere   = world.DataTypeHydrosphere
+	// dtPopulation    = world.DataTypePopulation
+	// dtGoverment     = world.DataTypeGoverment
+	// dtLaws          = world.DataTypeLaws
+	// dtTechLevel     = world.DataTypeTechLevel
 	//ServiceBerthing -
 	ServiceBerthing = 0
 	//ServiceRefuiling -
@@ -86,26 +87,22 @@ type Starport struct {
 6. Создание отличительной черты для Космопорта 	 (Perma).
 */
 
-//From - создает старпорт и детали от планеты
-func From(wrld world.World) (Starport, error) {
+func From(wrld wrld.World) (Starport, error) {
 	uwpStr := wrld.UWP()
 	sp := Starport{}
-	uwp, err := profile.NewUWP(wrld.UWP())
-	if err != nil {
-		return sp, err
-	}
 
 	sp.sec = law.NewSecurity(&wrld)
 
-	spCode := uwp.Starport()
+	spCode := wrld.GetСharacteristic(PrStarport).Glyph()
 	sp.sType = spCode
-	sp.tl = TrvCore.EhexToDigit(uwp.TL())
+	//sp.tl = TrvCore.EhexToDigit(uwp.TL())
+	sp.tl = wrld.GetСharacteristic(PrTL).Value()
 	//sp.tl = TrvCore.EhexToDigit(uwp.DataType(dtTechLevel))
-	popsCode := uwp.Pops()
+	pops := wrld.GetСharacteristic(PrPops)
 	sp.dice = dice.New(utils.SeedFromString(uwpStr))
-	pops := TrvCore.EhexToDigit(uwp.Pops())
-	imp := importanceInt(uwpStr)
-	saiDice := utils.Max(1, pops+imp-3)
+	//pops := wrld.GetСharacteristic(PrPops).Value()
+	imp := importanceInt(wrld)
+	saiDice := utils.Max(1, pops.Value()+imp-3)
 	perDieDm := 0
 	switch spCode {
 	default:
@@ -116,7 +113,7 @@ func From(wrld world.World) (Starport, error) {
 		sp.yards = yardStarships
 		sp.repairs = repairsOverhaul
 		sp.downport = downportYes
-		if TrvCore.EhexToDigit(popsCode) >= 7 {
+		if pops.Value() >= 7 {
 			sp.highport = highportYes
 		}
 		sp.serviceDM = [5]int{-5, -3, -3, -2, -3}
@@ -127,7 +124,7 @@ func From(wrld world.World) (Starport, error) {
 		sp.yards = yardSpacecraft
 		sp.repairs = repairsOverhaul
 		sp.downport = downportYes
-		if TrvCore.EhexToDigit(popsCode) >= 8 {
+		if pops.Value() >= 8 {
 			sp.highport = highportYes
 		}
 		sp.serviceDM = [5]int{-4, -3, -2, -2, -3}
@@ -137,7 +134,7 @@ func From(wrld world.World) (Starport, error) {
 		sp.quality = qualityRoutine
 		sp.repairs = repairsMajor
 		sp.downport = downportYes
-		if TrvCore.EhexToDigit(popsCode) >= 9 {
+		if pops.Value() >= 9 {
 			sp.highport = highportYes
 		}
 		sp.serviceDM = [5]int{-3, -2, -2, -1, -2}
@@ -160,14 +157,14 @@ func From(wrld world.World) (Starport, error) {
 	}
 	sp.rollGovernor()
 	dp := strconv.Itoa(saiDice)
-	fmt.Println("imp:", imp)
-	fmt.Println("SAI:", saiDice)
+	//fmt.Println("imp:", imp)
+	//fmt.Println("SAI:", saiDice)
 	ships := dice.Roll(dp + "d6").ModPerDie(perDieDm).Sum()
 	if ships < 0 {
 		ships = 0
 	}
-	fmt.Println("Ships in Port:", ships)
-	fmt.Println("Ships in Port By type:", defineShips(ships, spCode))
+	//fmt.Println("Ships in Port:", ships)
+	//fmt.Println("Ships in Port By type:", defineShips(ships, spCode))
 	return sp, nil
 }
 
@@ -221,10 +218,11 @@ func rollShipSize(spCode string) string {
 	return shiptype
 }
 
-func importanceInt(uwpStr string) int {
-	w := world.FromUWP(uwpStr)
+func importanceInt(w wrld.World) int {
+	//w := world.FromUWP(uwpStr)
 	wimpEx := w.ImportanceEx()
 	wimpEx = strings.TrimSuffix(wimpEx, "}")
+	wimpEx = strings.TrimSuffix(wimpEx, " ")
 	wimpEx = strings.TrimPrefix(wimpEx, "{")
 	wimpEx = strings.TrimPrefix(wimpEx, " ")
 	dig, err := strconv.Atoi(wimpEx)
@@ -405,30 +403,27 @@ func FullInfo() {
 	fmt.Println(w.Name(), w.UWP(), w.TradeCodes())
 	fmt.Println(w.SecondSurvey())
 	fmt.Println(sp.Info())
+	fmt.Println(law.Describe(w.UWP()))
 }
 
-func pickWorld() world.World {
+func pickWorld() wrld.World {
 	dataFound := false
 	for !dataFound {
 		input := userInputStr("Enter world's Name, Hex or UWP: ")
-		otuData, err := otu.GetDataOn(input)
+		data, err := otu.GetDataOn(input)
 		if err != nil {
 			fmt.Print("WARNING: " + err.Error() + "\n")
 			continue
 		}
-		w, err := world.FromOTUdata(otuData.Info)
-		fmt.Println("PICK WORLD", w.PBG())
+		w, err := wrld.FromOTUdata(data)
 		if err != nil {
 			fmt.Print(err.Error() + "\n")
 			continue
 		}
-		//output := "Data retrived: " + w.Name() + " (" + w.UWP() + ")\n"
-		//printSlow(output)
 		return w
-
 	}
 	fmt.Println("This must not happen!")
-	return world.World{}
+	return wrld.World{}
 }
 
 func userInputStr(msg ...string) string {

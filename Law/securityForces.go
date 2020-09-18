@@ -1,17 +1,15 @@
 package law
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
+	. "github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/utils"
 
-	"github.com/Galdoba/TR_Dynasty/constant"
-
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
-	"github.com/Galdoba/TR_Dynasty/world"
 )
 
 var dicepool *dice.Dicepool
@@ -26,38 +24,37 @@ type Security struct {
 	securityCodes     []string
 }
 
-func pops(w *world.World) int {
-	return TrvCore.EhexToDigit(w.PlanetaryData(constant.PrPops))
-}
+var starport string
+var size int
+var atmo int
+var pops int
+var govr int
+var laws int
+var tl int
 
-func govr(w *world.World) int {
-	return TrvCore.EhexToDigit(w.PlanetaryData(constant.PrGovr))
-}
+func defineStats(world wrld.World) {
+	size = world.GetСharacteristic(PrSize).Value()
+	atmo = world.GetСharacteristic(PrAtmo).Value()
+	pops = world.GetСharacteristic(PrPops).Value()
+	govr = world.GetСharacteristic(PrGovr).Value()
+	laws = world.GetСharacteristic(PrLaws).Value()
+	tl = world.GetСharacteristic(PrTL).Value()
 
-func laws(w *world.World) int {
-	return TrvCore.EhexToDigit(w.PlanetaryData(constant.PrLaws))
-}
-
-func size(w *world.World) int {
-	return TrvCore.EhexToDigit(w.PlanetaryData(constant.PrSize))
-}
-
-func atmo(w *world.World) int {
-	return TrvCore.EhexToDigit(w.PlanetaryData(constant.PrAtmo))
-}
-
-func tl(w *world.World) int {
-	return TrvCore.EhexToDigit(w.PlanetaryData(constant.PrTL))
+	starport = world.GetСharacteristic(PrStarport).Glyph()
 }
 
 //NewSecurity - creates random obj to draw info from using World data
-func NewSecurity(world *world.World) *Security {
+func NewSecurity(world *wrld.World) *Security {
 	sp := &Security{}
 	dicepool = dice.New(utils.SeedFromString(world.UWP()))
-	if pops(world) == 0 {
+	pops := world.GetСharacteristic(PrPops).Value()
+	defineStats(*world)
+
+	if pops == 0 {
 		return sp
 	}
-	if govr(world) == 0 && laws(world) == 0 {
+
+	if govr == 0 && laws == 0 {
 		sp.profile = "S000-0"
 		return sp
 	}
@@ -108,27 +105,27 @@ func (sp *Security) Profile() string {
 	return sp.profile
 }
 
-func calculatePlanetaryPresence(world *world.World) int {
+func calculatePlanetaryPresence(world *wrld.World) int {
 	dm := 0
-	if match(size(world), 0, 1) {
+	if match(size, 0, 1) {
 		dm += 2
 	}
-	if match(size(world), 2, 3) {
+	if match(size, 2, 3) {
 		dm++
 	}
-	if match(size(world), 9, 10) {
+	if match(size, 9, 10) {
 		dm--
 	}
-	if match(govr(world), 6, 13, 14, 15) {
+	if match(govr, 6, 13, 14, 15) {
 		dm += 2
 	}
-	if match(govr(world), 1, 5, 11) {
+	if match(govr, 1, 5, 11) {
 		dm++
 	}
-	if match(govr(world), 7, 10) {
+	if match(govr, 7, 10) {
 		dm--
 	}
-	if match(govr(world), 2, 12) {
+	if match(govr, 2, 12) {
 		dm -= 2
 	}
 	if match(world.TradeCodes(), "Ht", "Ri") {
@@ -141,49 +138,50 @@ func calculatePlanetaryPresence(world *world.World) int {
 		dm -= 2
 	}
 	//roll := TrvCore.Roll2D(dm) + laws(world) - 7
-	roll := dicepool.RollNext("2d6").DM(dm).Sum() + laws(world) - 7
+	roll := dicepool.RollNext("2d6").DM(dm).Sum() + laws - 7
 	if roll < 0 {
 		roll = 0
 	}
 	return roll
 }
 
-func calculateOrbitalPresence(world *world.World) int {
-	if match(world.StarPort(), "X") {
+func calculateOrbitalPresence(world *wrld.World) int {
+
+	if match(starport, "X") {
 		return 0
 	}
 	dm := 0
-	if match(world.StarPort(), "E") {
+	if match(starport, "E") {
 		dm -= 2
 	}
-	if match(world.StarPort(), "D") {
+	if match(starport, "D") {
 		dm--
 	}
-	if match(world.StarPort(), "B") {
+	if match(starport, "B") {
 		dm++
 	}
-	if match(world.StarPort(), "A") {
+	if match(starport, "A") {
 		dm += 2
 	}
-	if match(size(world), 10, 11, 12) {
+	if match(size, 10, 11, 12) {
 		dm--
 	}
-	if match(size(world), 3, 4) {
+	if match(size, 3, 4) {
 		dm++
 	}
-	if match(size(world), 0, 1, 2) {
+	if match(size, 0, 1, 2) {
 		dm += 2
 	}
-	if match(govr(world), 2, 7, 12) {
+	if match(govr, 2, 7, 12) {
 		dm -= 2
 	}
-	if match(govr(world), 10) {
+	if match(govr, 10) {
 		dm--
 	}
-	if match(govr(world), 1, 5, 11) {
+	if match(govr, 1, 5, 11) {
 		dm++
 	}
-	if match(govr(world), 6, 13, 14, 15) {
+	if match(govr, 6, 13, 14, 15) {
 		dm += 2
 	}
 	if match(world.TradeCodes(), "Lo", "Lt") {
@@ -202,90 +200,79 @@ func calculateOrbitalPresence(world *world.World) int {
 		dm++
 	}
 	//roll := TrvCore.Roll2D(dm) + laws(world) - 7
-	roll := dicepool.RollNext("2d6").DM(dm).Sum() + laws(world) - 7
+	roll := dicepool.RollNext("2d6").DM(dm).Sum() + laws - 7
 	if roll < 0 {
 		roll = 0
 	}
 	return roll
 }
 
-func calculateSystemPresence(world *world.World, orbPrez int) int {
-	if match(world.StarPort(), "X") {
+func calculateSystemPresence(world *wrld.World, orbPrez int) int {
+	if match(starport, "X") {
 		return 0
 	}
 	dm := 0
-	if match(world.StarPort(), "E") {
+	if match(starport, "E") {
 		dm -= 2
 	}
-	if match(world.StarPort(), "C", "D") {
+	if match(starport, "C", "D") {
 		dm--
 	}
-	if match(world.StarPort(), "A") {
+	if match(starport, "A") {
 		dm++
 	}
-	if match(govr(world), 7) {
+	if match(govr, 7) {
 		dm -= 2
 	}
-	fmt.Println("Punk------------------------------", dm)
-	if match(govr(world), 1, 9, 10, 12) {
+	if match(govr, 1, 9, 10, 12) {
 		dm--
 	}
-	fmt.Println("Punk------------------------------", dm)
-	if match(govr(world), 6) {
+	if match(govr, 6) {
 		dm += 2
 	}
-	fmt.Println("Punk------------------------------", dm)
 	if match(world.TradeCodes(), "Lo", "Po") {
 
 		dm -= 2
 	}
-	fmt.Println("Punk------------------------------", dm)
 	if match(world.TradeCodes(), "Lt", "Ni") {
 		dm--
 	}
-	fmt.Println("Punk------------------------------", dm)
 	if match(world.TradeCodes(), "Ri") {
 		dm++
 	}
-	fmt.Println("Punk------------------------------", dm)
 	pbg := []byte(world.PBG())
 	if match(string(pbg[2]), "0") {
 		dm -= 2
 	}
-	fmt.Println("Punk------------------------------", dm)
 	//roll := TrvCore.Roll2D(dm) + orbPrez - 7
-	fmt.Println(dicepool)
-	fmt.Println("Punk------------------------------", dm)
-
 	roll := dicepool.RollNext("2d6").DM(dm).Sum() + orbPrez - 7
-	fmt.Println(dicepool)
 	if roll < 0 {
 		roll = 0
 	}
 	return roll
 }
 
-func calculateStanse(world *world.World) int {
+func calculateStanse(world *wrld.World) int {
 	dm := 0
-	if match(world.StarPort(), "X") {
+	if match(starport, "X") {
 		dm += 2
 	}
-	if match(atmo(world), 1, 10) {
+	if match(atmo, 1, 10) {
 		dm++
 	}
-	if match(atmo(world), 0, 11, 12) {
+	if match(atmo, 0, 11, 12) {
 		dm += 2
 	}
-	if match(govr(world), 2, 12) {
+	if match(govr, 2, 12) {
 		dm -= 2
 	}
-	if match(govr(world), 10) {
+	if match(govr, 10) {
 		dm--
 	}
-	if match(govr(world), 1, 5, 11) {
+	if match(govr, 1, 5, 11) {
 		dm++
 	}
-	if match(govr(world), 6, 13, 14, 15) {
+	if match(govr, 6, 13, 14, 15) {
 		dm += 2
 	}
 	if match(world.TradeCodes(), "Hi") {
@@ -298,7 +285,7 @@ func calculateStanse(world *world.World) int {
 		dm++
 	}
 	//roll := TrvCore.Roll2D(dm) + laws(world)
-	roll := dicepool.RollNext("2d6").DM(dm).Sum() + laws(world) - 7
+	roll := dicepool.RollNext("2d6").DM(dm).Sum() + laws - 7
 	if roll < 0 {
 		roll = 0
 	}
@@ -329,59 +316,59 @@ func match(val interface{}, chck ...interface{}) bool {
 	}
 }
 
-func assignSecurityCodes(world *world.World, plpres int) (codes []string) {
-	if match(govr(world), 1, 3, 5, 6, 7, 8, 9, 11, 13, 14, 15) &&
-		pops(world) >= 4 &&
+func assignSecurityCodes(world *wrld.World, plpres int) (codes []string) {
+	if match(govr, 1, 3, 5, 6, 7, 8, 9, 11, 13, 14, 15) &&
+		pops >= 4 &&
 		match(world.TradeCodes(), "Po", "Ri") &&
 		match(plpres, 1, 2, 3, 4, 5) &&
 		dicepool.RollNext("2d6").Sum() == 12 {
 		codes = append(codes, "Cr")
 	}
-	if match(govr(world), 1, 3, 6, 8, 9, 11, 13, 14, 15) &&
-		pops(world) >= 6 &&
+	if match(govr, 1, 3, 6, 8, 9, 11, 13, 14, 15) &&
+		pops >= 6 &&
 		match(plpres, 1, 2, 3, 4, 5) &&
 		dicepool.RollNext("2d6").Sum() >= 10 {
 		codes = append(codes, "Co")
 	}
-	if match(govr(world), 4, 5, 6, 9, 11, 12, 13, 14, 15) &&
-		pops(world) >= 5 &&
+	if match(govr, 4, 5, 6, 9, 11, 12, 13, 14, 15) &&
+		pops >= 5 &&
 		//match(world.TradeCodes(), "Po", "Ri") &&
 		plpres >= 5 &&
 		dicepool.RollNext("2d6").Sum() >= 10 {
 		codes = append(codes, "Fa")
 	}
-	if match(govr(world), 1, 6, 9, 10, 11, 12, 13, 14, 15) &&
-		pops(world) >= 8 &&
+	if match(govr, 1, 6, 9, 10, 11, 12, 13, 14, 15) &&
+		pops >= 8 &&
 		//match(world.TradeCodes(), "Po", "Ri") &&
 		match(plpres, 1, 2, 3, 4, 5, 6) {
 		//TrvCore.Roll2D() >= 10 {
 		codes = append(codes, "Fo")
 	}
-	if match(govr(world), 1, 3, 6, 9, 13, 14, 15) &&
-		pops(world) >= 5 {
+	if match(govr, 1, 3, 6, 9, 13, 14, 15) &&
+		pops >= 5 {
 		tn := 10
-		if govr(world) == 9 {
+		if govr == 9 {
 			tn = 5
 		}
 		if dicepool.RollNext("2d6").Sum() >= tn {
 			codes = append(codes, "Ip")
 		}
 	}
-	if match(govr(world), 3, 5, 6, 7, 11, 15) &&
-		pops(world) >= 4 &&
+	if match(govr, 3, 5, 6, 7, 11, 15) &&
+		pops >= 4 &&
 		dicepool.RollNext("2d6").Sum() >= 10 {
 		codes = append(codes, "Mi")
 	}
-	if match(govr(world), 1, 5, 6, 8, 9, 11, 13, 14, 15) &&
-		match(pops(world), 1, 2, 3, 4, 5, 6, 7, 8, 9) &&
+	if match(govr, 1, 5, 6, 8, 9, 11, 13, 14, 15) &&
+		match(pops, 1, 2, 3, 4, 5, 6, 7, 8, 9) &&
 		plpres >= 7 {
 		codes = append(codes, "Pe")
 	}
-	if tl(world) >= 12 {
+	if tl >= 12 {
 		codes = append(codes, "Te")
 	}
-	if match(govr(world), 2, 4, 7, 10, 12) &&
-		match(pops(world), 1, 2) &&
+	if match(govr, 2, 4, 7, 10, 12) &&
+		match(pops, 1, 2) &&
 		dicepool.RollNext("2d6").Sum() >= 5 {
 		codes = append(codes, "Vo")
 	}
@@ -389,14 +376,14 @@ func assignSecurityCodes(world *world.World, plpres int) (codes []string) {
 	return codes
 }
 
-func (sp *Security) formProfile(world *world.World) {
+func (sp *Security) formProfile(world *wrld.World) {
 	sp.profile = "S"
 	sp.profile += TrvCore.DigitToEhex(sp.planetaryPresence)
 	sp.profile += TrvCore.DigitToEhex(sp.orbitalPresence)
 	sp.profile += TrvCore.DigitToEhex(sp.systemPresence)
 	sp.profile += "-"
 	sp.profile += TrvCore.DigitToEhex(sp.stance)
-	if govr(world) == 7 {
+	if govr == 7 {
 		sp.profile += "B"
 	}
 	for i := range sp.securityCodes {
@@ -406,7 +393,7 @@ func (sp *Security) formProfile(world *world.World) {
 }
 
 func (sp *Security) String() string {
-	str := "World Security Profile: " + sp.Profile() + "\n"
+	str := "\nWorld Security Profile: " + sp.Profile() + "\n"
 	str += "-----------------------\n"
 	str += "Planetary presence: " + strconv.Itoa(sp.planetaryPresence) + "\n"
 	str += "  Orbital presence: " + strconv.Itoa(sp.orbitalPresence) + "\n"
