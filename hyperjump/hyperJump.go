@@ -1,10 +1,10 @@
 package hyperjump
 
 import (
-	"fmt"
 	"strconv"
 
-	"github.com/Galdoba/TR_Dynasty/TrvCore"
+	"github.com/Galdoba/TR_Dynasty/Astrogation"
+
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/utils"
 )
@@ -15,6 +15,7 @@ type hyperJump struct {
 	timevar       int
 	distvar       int
 	distance      int
+	targetDiametr int
 	hours         int
 	badJumpA      bool
 	badJumpE      bool
@@ -30,19 +31,20 @@ type HyperJump interface {
 	//Stringer
 }
 
-func Test() {
-	hj := New(TrvCore.Flux(), TrvCore.Flux())
-	fmt.Println(hj.Report())
-	fmt.Println(hj.Outcome())
-}
+// func Test() {
+// 	hj := New(TrvCore.Flux(), TrvCore.Flux())
+// 	fmt.Println(hj.Report())
+// 	fmt.Println(hj.Outcome())
+// }
 
-func New(effA, effE int) *hyperJump {
+func New(effA, effE, diameters int) *hyperJump {
 	hj := hyperJump{}
 	hj.effA = effA
 	hj.effE = effE
 	hj.misjumpEff = hj.effA + hj.effE
 	hj.jumpStatus = "Normal"
 	hj.misjumpStatus = "NO"
+	hj.targetDiametr = diameters
 	//fmt.Println(hj.effA, hj.effE)
 	hj.misjumpEffects()
 	hj.timeVariance()
@@ -65,7 +67,7 @@ func (hj hyperJump) Report() string {
 	rep += "          MisJump: " + hj.misjumpStatus + "\n"
 	rep += "--------------------------------------" + "\n"
 	if dice.Roll("2d6").Sum() >= 9 {
-		rep += "Event happened - check Campaign Guide!" + "\n"
+		rep += "Hyperjump Event happened - check Campaign Guide!" + "\n"
 		rep += "--------------------------------------" + "\n"
 	}
 	return rep
@@ -115,7 +117,26 @@ func (hj *hyperJump) distVariance() {
 		hj.precipitation = true
 	}
 	hj.distance += variance
-	hj.outcome += " at " + strconv.Itoa(hj.distance) + " diameters from intended planet.\n\n"
+	hj.outcome += " at " + strconv.Itoa(hj.distance) + " diameters from intended planet.\n"
+	mm := (float64(hj.targetDiametr) * float64(hj.distance-10)) / 1000.0
+	hj.outcome += "Distance to orbit is " + strconv.FormatFloat(mm*1000, 'f', 1, 64) + " kilometers\n"
+	tme1 := Astrogation.TravelTime(mm, 1.0)
+	hj.outcome += " It will take " + strconv.FormatFloat(tme1, 'f', 1, 64) + " hours to get to the orbit on Thrust 1g\n"
+	tme2 := Astrogation.TravelTime(mm, 2.0)
+	hj.outcome += " It will take " + strconv.FormatFloat(tme2, 'f', 1, 64) + " hours to get to the orbit on Thrust 2g\n"
+	tme3 := Astrogation.TravelTime(mm, 3.0)
+	hj.outcome += " It will take " + strconv.FormatFloat(tme3, 'f', 1, 64) + " hours to get to the orbit on Thrust 3g\n"
+	tme4 := Astrogation.TravelTime(mm, 4.0)
+	hj.outcome += " It will take " + strconv.FormatFloat(tme4, 'f', 1, 64) + " hours to get to the orbit on Thrust 4g\n"
+	tme5 := Astrogation.TravelTime(mm, 5.0)
+	hj.outcome += " It will take " + strconv.FormatFloat(tme5, 'f', 1, 64) + " hours to get to the orbit on Thrust 5g\n"
+	tme6 := Astrogation.TravelTime(mm, 6.0)
+	hj.outcome += " It will take " + strconv.FormatFloat(tme6, 'f', 1, 64) + " hours to get to the orbit on Thrust 6g\n"
+	hj.outcome += "--------------------------------------" + "\n"
+	if dice.Roll("2d6").Sum() >= 9 {
+		hj.outcome += "Space Event happened - check Campaign Guide!" + "\n"
+		hj.outcome += "--------------------------------------" + "\n"
+	}
 }
 
 func (hj *hyperJump) timeVariance() {

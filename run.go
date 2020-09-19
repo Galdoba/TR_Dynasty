@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	starport "github.com/Galdoba/TR_Dynasty/Starport"
+	"github.com/Galdoba/TR_Dynasty/hyperjump"
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/devtools/cli/user"
@@ -12,7 +13,8 @@ import (
 func main() {
 	//gui.Test()
 	//entity.Test()
-	// w := pickWorld()
+	
+	w := pickWorld()
 	// fmt.Println(w.SecondSurvey())
 	// //fmt.Println("Test:", w)
 
@@ -26,7 +28,8 @@ func main() {
 	// fmt.Println(err)
 	// // fmt.Println(uwp, err)
 	// fmt.Println(sp.Info())
-	starport.FullInfo()
+	hyperjump.StartJumpEvent(w)
+	starport.FullInfo(w)
 }
 
 func pickWorld() wrld.World {

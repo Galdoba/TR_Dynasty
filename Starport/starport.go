@@ -396,8 +396,8 @@ func lawInteractionCheck(law string) bool {
 	return false
 }
 
-func FullInfo() {
-	w := pickWorld()
+func FullInfo(w wrld.World) {
+	// w := pickWorld()
 	sp, err := From(w)
 	fmt.Println(err)
 	fmt.Println(w.Name(), w.UWP(), w.TradeCodes())
