@@ -1,17 +1,39 @@
 package entity
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/constant"
 )
 
+//Skill -
 type skill struct {
 	group       string
 	specialitie string
 	value       int
 }
+
+//SkillMap - объект на экспорт именно с ним должны работать внешние библиотеки
+type SkillMap struct {
+	skm map[string]skill
+}
+
+//NewSkillMap -
+func NewSkillMap() SkillMap {
+	sm := SkillMap{}
+	sm.skm = make(map[string]skill)
+	return sm
+}
+
+//SkillManager должен уметь:
+//-TrainSkill (string)
+//-SetSkill (string, int)
+//-RemoveSkill (string)
+//-DM() int
+//-Confirm(string, int) bool - подвопросом
 
 func (s skill) String() string {
 	output := ""
@@ -27,6 +49,35 @@ func (s skill) String() string {
 	return output
 }
 
+func (sm *SkillMap) TrainSkill(skillName string) error {
+	keys, err := parseKeys(skillName)
+	if err != nil {
+		return err
+	}
+	for _, val := range sm.skm[val] {
+
+	}
+	return nil
+
+}
+
+func parseKeys(skillName string) ([]string, error) {
+	valid := []string{}
+	if len(skillName) < 3 {
+		return valid, errors.New("skillName '" + skillName + "' is too short")
+	}
+	for key := range nullSkillMap {
+		if strings.Contains(key, skillName) {
+			valid = append(valid, key)
+		}
+	}
+	if len(valid) == 0 {
+		return valid, errors.New("skillName '" + skillName + "' not found")
+	}
+	return valid, nil
+}
+
+//NewSkill -
 func newSkill(group, specialitie string) skill {
 	s := skill{}
 	s.group = group
@@ -35,8 +86,10 @@ func newSkill(group, specialitie string) skill {
 	return s
 }
 
+//Test -
 func Test() {
 	fmt.Println("Start test")
+	fmt.Println("----")
 	fmt.Println("End test")
 }
 
@@ -195,6 +248,7 @@ func validSpecialities(skGroup string) []string {
 	valid := []string{}
 	switch skGroup {
 	default:
+		valid = append(valid, "")
 		return valid
 	case constant.SKILLgroupeAnimals:
 		valid = []string{
@@ -290,8 +344,6 @@ func validSpecialities(skGroup string) []string {
 		valid = []string{
 			constant.SKILLSpecialityBelter,
 		}
-	case constant.SKILLgroupeRecon:
-
 	case constant.SKILLgroupeScience:
 		valid = []string{
 			constant.SKILLSpecialityArchaeology,

@@ -3,33 +3,21 @@ package main
 import (
 	"fmt"
 
-	starport "github.com/Galdoba/TR_Dynasty/Starport"
-	"github.com/Galdoba/TR_Dynasty/hyperjump"
+	"github.com/Galdoba/TR_Dynasty/entity"
+	"github.com/Galdoba/TR_Dynasty/npc/npcmakerv2"
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/devtools/cli/user"
 )
 
 func main() {
-	//gui.Test()
-	//entity.Test()
-	
-	w := pickWorld()
-	// fmt.Println(w.SecondSurvey())
-	// //fmt.Println("Test:", w)
+	npcmakerv2.Test()
+	entity.Test()
 
-	// // uwp := w.UWP()
-	// // fmt.Println("WORLD", w.PBG())
-	// // fmt.Println(w.SecondSurvey())
+	// w := pickWorld()
 
-	// // fmt.Println(law.Describe(uwp))
-
-	// sp, err := starport.From(w)
-	// fmt.Println(err)
-	// // fmt.Println(uwp, err)
-	// fmt.Println(sp.Info())
-	hyperjump.StartJumpEvent(w)
-	starport.FullInfo(w)
+	// hyperjump.StartJumpEvent(w)
+	// starport.FullInfo(w)
 }
 
 func pickWorld() wrld.World {
