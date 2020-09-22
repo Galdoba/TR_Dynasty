@@ -3,15 +3,15 @@ package main
 import (
 	"fmt"
 
-	"github.com/Galdoba/TR_Dynasty/entity"
+	"github.com/Galdoba/TR_Dynasty/npc/npcmakerv2"
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/devtools/cli/user"
 )
 
 func main() {
-	//npcmakerv2.Test()
-	entity.Test()
+	npcmakerv2.Test()
+	//entity.Test()
 
 	// w := pickWorld()
 

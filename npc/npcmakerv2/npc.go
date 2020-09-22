@@ -9,12 +9,18 @@ import (
 
 func Test() {
 	fmt.Println("Start test")
+	trv := Traveller{
+		make(map[string]TrvCore.Ehex),
+		entity.NewSkillMap(),
+	}
+	trv.skills.Train("Admin")
+	//fmt.Println(trv.skills["Admin"])
 	fmt.Println("End test")
 }
 
 type Traveller struct {
 	attributes map[string]TrvCore.Ehex
-	skills     *entity.SkillMap
+	skills     entity.Skill
 }
 
 /*

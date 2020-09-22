@@ -2,101 +2,116 @@ package entity
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
 
 const (
-	skillCodeAdmin                  = "1-11-0"
-	skillCodeAdvocate               = "1-12-0"
-	skillCodeAnimalsHandling        = "1-13-1"
-	skillCodeAnimalsTraining        = "1-13-2"
-	skillCodeAnimalsVeterinary      = "1-13-3"
-	skillCodeArtHolography          = "1-14-1"
-	skillCodeArtInstrument          = "1-14-2"
-	skillCodeArtPerformer           = "1-14-3"
-	skillCodeArtVisualMedia         = "1-14-4"
-	skillCodeArtWrite               = "1-14-5"
-	skillCodeAstrogation            = "1-15-0"
-	skillCodeAthleticsDEX           = "1-16-1"
-	skillCodeAthleticsEND           = "1-16-2"
-	skillCodeAthleticsSTR           = "1-16-3"
-	skillCodeBroker                 = "1-17-0"
-	skillCodeCarouse                = "1-18-0"
-	skillCodeDeception              = "1-19-0"
-	skillCodeDiplomat               = "1-1A-0"
-	skillCodeDriveHovercraft        = "1-1B-1"
-	skillCodeDriveMole              = "1-1B-2"
-	skillCodeDriveTrack             = "1-1B-3"
-	skillCodeDriveWalker            = "1-1B-4"
-	skillCodeDriveWheel             = "1-1B-5"
-	skillCodeElectronicsComms       = "1-1C-1"
-	skillCodeElectronicsComputers   = "1-1C-2"
-	skillCodeElectronicsRemoteops   = "1-1C-3"
-	skillCodeElectronicsSensors     = "1-1C-4"
-	skillCodeEngineerJdrive         = "1-1D-1"
-	skillCodeEngineerLifesupport    = "1-1D-2"
-	skillCodeEngineerMdrive         = "1-1D-3"
-	skillCodeEngineerPower          = "1-1D-4"
-	skillCodeExplosives             = "1-1E-0"
-	skillCodeFlyerAirship           = "1-1F-1"
-	skillCodeFlyerGrav              = "1-1F-2"
-	skillCodeFlyerOrnithopter       = "1-1F-3"
-	skillCodeFlyerRotor             = "1-1F-4"
-	skillCodeFlyerWing              = "1-1F-5"
-	skillCodeGambler                = "1-1G-0"
-	skillCodeGuncombatArchaic       = "1-1J-1"
-	skillCodeGuncombatEnergy        = "1-1J-2"
-	skillCodeGuncombatSlug          = "1-1J-3"
-	skillCodeGunnerCapital          = "1-1H-1"
-	skillCodeGunnerOrtilery         = "1-1H-2"
-	skillCodeGunnerScreen           = "1-1H-3"
-	skillCodeGunnerTurret           = "1-1H-4"
-	skillCodeHeavyweaponArtilery    = "1-1K-1"
-	skillCodeHeavyweaponManportable = "1-1K-2"
-	skillCodeHeavyweaponVehicle     = "1-1K-3"
-	skillCodeInvestigate            = "1-1L-0"
-	skillCodeJackofalltrades        = "1-1M-0"
-	skillCodeLanguageAnglic         = "1-1N-1" //byRace
-	skillCodeLeadership             = "1-1P-0"
-	skillCodeMechanic               = "1-1Q-0"
-	skillCodeMedic                  = "1-1R-0"
-	skillCodeMeleeBlade             = "1-1S-1"
-	skillCodeMeleeBludgeon          = "1-1S-2"
-	skillCodeMeleeNatural           = "1-1S-3"
-	skillCodeMeleeUnarmed           = "1-1S-4"
-	skillCodeNavigation             = "1-1T-0"
-	skillCodePersuade               = "1-1U-0"
-	skillCodePilotcapitalships      = "1-1V-1"
-	skillCodePilotSmallcraft        = "1-1V-2"
-	skillCodePilotSpacecraft        = "1-1V-3"
-	skillCodeProfession             = "1-1W-1" //byType
-	skillCodeRecon                  = "1-11-0"
-	skillCodeScience                = "1-12-1" //byField
-	skillCodeSeafarerOceanships     = "1-13-1"
-	skillCodeSeafarerPersonal       = "1-13-2"
-	skillCodeSeafarerSail           = "1-13-3"
-	skillCodeSeafarerSubmarine      = "1-13-4"
-	skillCodeSteward                = "1-14-0"
-	skillCodeStreetwise             = "1-15-0"
-	skillCodeSurvival               = "1-16-0"
-	skillCodeTacticsMilitary        = "1-17-1"
-	skillCodeTacticsNavy            = "1-17-2"
-	skillCodeVaccsuit               = "1-18-0"
+	skillCodeTravellerAdmin                  = "1-11-0"
+	skillCodeTravellerAdvocate               = "1-12-0"
+	skillCodeTravellerAnimalsHandling        = "1-13-1"
+	skillCodeTravellerAnimalsTraining        = "1-13-2"
+	skillCodeTravellerAnimalsVeterinary      = "1-13-3"
+	skillCodeTravellerArtHolography          = "1-14-1"
+	skillCodeTravellerArtInstrument          = "1-14-2"
+	skillCodeTravellerArtPerformer           = "1-14-3"
+	skillCodeTravellerArtVisualMedia         = "1-14-4"
+	skillCodeTravellerArtWrite               = "1-14-5"
+	skillCodeTravellerAstrogation            = "1-15-0"
+	skillCodeTravellerAthleticsDEX           = "1-16-1"
+	skillCodeTravellerAthleticsEND           = "1-16-2"
+	skillCodeTravellerAthleticsSTR           = "1-16-3"
+	skillCodeTravellerBroker                 = "1-17-0"
+	skillCodeTravellerCarouse                = "1-18-0"
+	skillCodeTravellerDeception              = "1-19-0"
+	skillCodeTravellerDiplomat               = "1-1A-0"
+	skillCodeTravellerDriveHovercraft        = "1-1B-1"
+	skillCodeTravellerDriveMole              = "1-1B-2"
+	skillCodeTravellerDriveTrack             = "1-1B-3"
+	skillCodeTravellerDriveWalker            = "1-1B-4"
+	skillCodeTravellerDriveWheel             = "1-1B-5"
+	skillCodeTravellerElectronicsComms       = "1-1C-1"
+	skillCodeTravellerElectronicsComputers   = "1-1C-2"
+	skillCodeTravellerElectronicsRemoteops   = "1-1C-3"
+	skillCodeTravellerElectronicsSensors     = "1-1C-4"
+	skillCodeTravellerEngineerJdrive         = "1-1D-1"
+	skillCodeTravellerEngineerLifesupport    = "1-1D-2"
+	skillCodeTravellerEngineerMdrive         = "1-1D-3"
+	skillCodeTravellerEngineerPower          = "1-1D-4"
+	skillCodeTravellerExplosives             = "1-1E-0"
+	skillCodeTravellerFlyerAirship           = "1-1F-1"
+	skillCodeTravellerFlyerGrav              = "1-1F-2"
+	skillCodeTravellerFlyerOrnithopter       = "1-1F-3"
+	skillCodeTravellerFlyerRotor             = "1-1F-4"
+	skillCodeTravellerFlyerWing              = "1-1F-5"
+	skillCodeTravellerGambler                = "1-1G-0"
+	skillCodeTravellerGuncombatArchaic       = "1-1J-1"
+	skillCodeTravellerGuncombatEnergy        = "1-1J-2"
+	skillCodeTravellerGuncombatSlug          = "1-1J-3"
+	skillCodeTravellerGunnerCapital          = "1-1H-1"
+	skillCodeTravellerGunnerOrtilery         = "1-1H-2"
+	skillCodeTravellerGunnerScreen           = "1-1H-3"
+	skillCodeTravellerGunnerTurret           = "1-1H-4"
+	skillCodeTravellerHeavyweaponArtilery    = "1-1K-1"
+	skillCodeTravellerHeavyweaponManportable = "1-1K-2"
+	skillCodeTravellerHeavyweaponVehicle     = "1-1K-3"
+	skillCodeTravellerInvestigate            = "1-1L-0"
+	skillCodeTravellerJackofalltrades        = "1-1M-0"
+	skillCodeTravellerLanguageAnglic         = "1-1N-1" //byRace
+	skillCodeTravellerLeadership             = "1-1P-0"
+	skillCodeTravellerMechanic               = "1-1Q-0"
+	skillCodeTravellerMedic                  = "1-1R-0"
+	skillCodeTravellerMeleeBlade             = "1-1S-1"
+	skillCodeTravellerMeleeBludgeon          = "1-1S-2"
+	skillCodeTravellerMeleeNatural           = "1-1S-3"
+	skillCodeTravellerMeleeUnarmed           = "1-1S-4"
+	skillCodeTravellerNavigation             = "1-1T-0"
+	skillCodeTravellerPersuade               = "1-1U-0"
+	skillCodeTravellerPilotcapitalships      = "1-1V-1"
+	skillCodeTravellerPilotSmallcraft        = "1-1V-2"
+	skillCodeTravellerPilotSpacecraft        = "1-1V-3"
+	skillCodeTravellerProfession             = "1-1W-1" //byType
+	skillCodeTravellerRecon                  = "1-11-0"
+	skillCodeTravellerScience                = "1-12-1" //byField
+	skillCodeTravellerSeafarerOceanships     = "1-13-1"
+	skillCodeTravellerSeafarerPersonal       = "1-13-2"
+	skillCodeTravellerSeafarerSail           = "1-13-3"
+	skillCodeTravellerSeafarerSubmarine      = "1-13-4"
+	skillCodeTravellerSteward                = "1-14-0"
+	skillCodeTravellerStreetwise             = "1-15-0"
+	skillCodeTravellerSurvival               = "1-16-0"
+	skillCodeTravellerTacticsMilitary        = "1-17-1"
+	skillCodeTravellerTacticsNavy            = "1-17-2"
+	skillCodeTravellerVaccsuit               = "1-18-0"
 )
 
 //skill -
 type skill struct {
-	entity      string
+	entity      string //low priority
 	group       string
-	specialitie string
+	speciality  string
 	description string //low priority
 	value       int
 }
 
+func newSkill(entity, group, speciality string) skill {
+	sk := skill{}
+	sk.entity = entity
+	sk.group = group
+	sk.speciality = speciality
+	sk.value = 0
+	return sk
+}
+
+func setValue(s skill, newVal int) skill {
+	s.value = newVal
+	return s
+}
+
 type Skill interface {
-	SetSkill(string, int)
-	TrainSkill(string)
-	RemoveSkill(string)
+	Set(string, int)
+	Train(string)
+	Remove(string)
 	//DM(string) int - часть интерфейса TaskAsset
 }
 
@@ -104,6 +119,63 @@ type Skill interface {
 //носитель для интерфейса Skill
 type SkillMap struct {
 	skm map[string]skill
+}
+
+func NewSkillMap() *SkillMap {
+	sm := SkillMap{}
+	sm.skm = make(map[string]skill)
+	return &sm
+}
+
+//Set - Устанавливает значение скила равное val
+// и удостоверяется что вся группа имеет хотябы 0
+func (sm *SkillMap) Set(skillCode string, val int) {
+	ent, grp, spc, err := disassebleCode(skillCode)
+	if err != nil {
+		return
+	}
+	if _, ok := sm.skm[skillCode]; !ok {
+		newskill := newSkill(ent, grp, spc)
+		sm.skm[skillCode] = newskill
+	}
+	sm.skm[skillCode] = setValue(sm.skm[skillCode], val)
+	sm.ensureByCodeDangerous("-"+grp+"-", 0)
+}
+
+//Train - увеличивает значение скила на 1
+// и удостоверяется что вся группа имеет хотябы 0
+func (sm *SkillMap) Train(skillCode string) {
+	ent, grp, spc, err := disassebleCode(skillCode)
+	if err != nil {
+		return
+	}
+	if _, ok := sm.skm[skillCode]; !ok {
+		newskill := newSkill(ent, grp, spc)
+		sm.skm[skillCode] = newskill
+	}
+	sm.skm[skillCode] = setValue(sm.skm[skillCode], sm.skm[skillCode].value+1)
+	sm.ensureByCodeDangerous("-"+grp+"-", 0)
+}
+
+//Remove - Удаляет запись о навыке - в теории эта функция вообще не должна использоваться
+func (sm *SkillMap) Remove(skillCode string) {
+	delete(sm.skm, skillCode)
+}
+
+func (sm *SkillMap) ensureByCodeDangerous(codeSample string, val int) {
+	for _, code := range skillCodesList() {
+		if !strings.Contains(code, codeSample) {
+			continue
+		}
+		if _, ok := sm.skm[code]; !ok {
+			ent, grp, spc, _ := disassebleCode(code)
+			newskill := newSkill(ent, grp, spc)
+			sm.skm[code] = newskill
+		}
+		if sm.skm[code].value < val {
+			sm.skm[code] = setValue(sm.skm[code], val)
+		}
+	}
 }
 
 /*
@@ -122,6 +194,97 @@ func disassebleCode(skillCode string) (string, string, string, error) {
 	return data[0], data[1], data[2], nil
 }
 
-/*
+func skillCodesList() []string {
+	return []string{
+		skillCodeTravellerAdmin,
+		skillCodeTravellerAdvocate,
+		skillCodeTravellerAnimalsHandling,
+		skillCodeTravellerAnimalsTraining,
+		skillCodeTravellerAnimalsVeterinary,
+		skillCodeTravellerArtHolography,
+		skillCodeTravellerArtInstrument,
+		skillCodeTravellerArtPerformer,
+		skillCodeTravellerArtVisualMedia,
+		skillCodeTravellerArtWrite,
+		skillCodeTravellerAstrogation,
+		skillCodeTravellerAthleticsDEX,
+		skillCodeTravellerAthleticsEND,
+		skillCodeTravellerAthleticsSTR,
+		skillCodeTravellerBroker,
+		skillCodeTravellerCarouse,
+		skillCodeTravellerDeception,
+		skillCodeTravellerDiplomat,
+		skillCodeTravellerDriveHovercraft,
+		skillCodeTravellerDriveMole,
+		skillCodeTravellerDriveTrack,
+		skillCodeTravellerDriveWalker,
+		skillCodeTravellerDriveWheel,
+		skillCodeTravellerElectronicsComms,
+		skillCodeTravellerElectronicsComputers,
+		skillCodeTravellerElectronicsRemoteops,
+		skillCodeTravellerElectronicsSensors,
+		skillCodeTravellerEngineerJdrive,
+		skillCodeTravellerEngineerLifesupport,
+		skillCodeTravellerEngineerMdrive,
+		skillCodeTravellerEngineerPower,
+		skillCodeTravellerExplosives,
+		skillCodeTravellerFlyerAirship,
+		skillCodeTravellerFlyerGrav,
+		skillCodeTravellerFlyerOrnithopter,
+		skillCodeTravellerFlyerRotor,
+		skillCodeTravellerFlyerWing,
+		skillCodeTravellerGambler,
+		skillCodeTravellerGuncombatArchaic,
+		skillCodeTravellerGuncombatEnergy,
+		skillCodeTravellerGuncombatSlug,
+		skillCodeTravellerGunnerCapital,
+		skillCodeTravellerGunnerOrtilery,
+		skillCodeTravellerGunnerScreen,
+		skillCodeTravellerGunnerTurret,
+		skillCodeTravellerHeavyweaponArtilery,
+		skillCodeTravellerHeavyweaponManportable,
+		skillCodeTravellerHeavyweaponVehicle,
+		skillCodeTravellerInvestigate,
+		skillCodeTravellerJackofalltrades,
+		skillCodeTravellerLanguageAnglic,
+		skillCodeTravellerLeadership,
+		skillCodeTravellerMechanic,
+		skillCodeTravellerMedic,
+		skillCodeTravellerMeleeBlade,
+		skillCodeTravellerMeleeBludgeon,
+		skillCodeTravellerMeleeNatural,
+		skillCodeTravellerMeleeUnarmed,
+		skillCodeTravellerNavigation,
+		skillCodeTravellerPersuade,
+		skillCodeTravellerPilotcapitalships,
+		skillCodeTravellerPilotSmallcraft,
+		skillCodeTravellerPilotSpacecraft,
+		skillCodeTravellerProfession,
+		skillCodeTravellerRecon,
+		skillCodeTravellerScience,
+		skillCodeTravellerSeafarerOceanships,
+		skillCodeTravellerSeafarerPersonal,
+		skillCodeTravellerSeafarerSail,
+		skillCodeTravellerSeafarerSubmarine,
+		skillCodeTravellerSteward,
+		skillCodeTravellerStreetwise,
+		skillCodeTravellerSurvival,
+		skillCodeTravellerTacticsMilitary,
+		skillCodeTravellerTacticsNavy,
+		skillCodeTravellerVaccsuit,
+	}
+}
 
- */
+func Test() {
+	fmt.Println("Start test")
+	sklMap := NewSkillMap()
+	sklMap.Train(skillCodeTravellerGuncombatEnergy)
+	sklMap.Train(skillCodeTravellerGuncombatEnergy)
+	sklMap.Train(skillCodeTravellerGuncombatEnergy)
+	sklMap.Train(skillCodeTravellerGuncombatEnergy)
+	sklMap.Train(skillCodeTravellerGuncombatEnergy)
+	sklMap.Set(skillCodeTravellerGuncombatSlug, 1)
+	sklMap.Remove(skillCodeTravellerGuncombatSlug)
+	fmt.Println(sklMap)
+	fmt.Println("End test")
+}
