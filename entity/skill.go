@@ -3,86 +3,113 @@ package entity
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
+
+	"github.com/Galdoba/TR_Dynasty/dice"
 )
 
 const (
-	skillCodeTravellerAdmin                  = "1-11-0"
-	skillCodeTravellerAdvocate               = "1-12-0"
-	skillCodeTravellerAnimalsHandling        = "1-13-1"
-	skillCodeTravellerAnimalsTraining        = "1-13-2"
-	skillCodeTravellerAnimalsVeterinary      = "1-13-3"
-	skillCodeTravellerArtHolography          = "1-14-1"
-	skillCodeTravellerArtInstrument          = "1-14-2"
-	skillCodeTravellerArtPerformer           = "1-14-3"
-	skillCodeTravellerArtVisualMedia         = "1-14-4"
-	skillCodeTravellerArtWrite               = "1-14-5"
-	skillCodeTravellerAstrogation            = "1-15-0"
-	skillCodeTravellerAthleticsDEX           = "1-16-1"
-	skillCodeTravellerAthleticsEND           = "1-16-2"
-	skillCodeTravellerAthleticsSTR           = "1-16-3"
-	skillCodeTravellerBroker                 = "1-17-0"
-	skillCodeTravellerCarouse                = "1-18-0"
-	skillCodeTravellerDeception              = "1-19-0"
-	skillCodeTravellerDiplomat               = "1-1A-0"
-	skillCodeTravellerDriveHovercraft        = "1-1B-1"
-	skillCodeTravellerDriveMole              = "1-1B-2"
-	skillCodeTravellerDriveTrack             = "1-1B-3"
-	skillCodeTravellerDriveWalker            = "1-1B-4"
-	skillCodeTravellerDriveWheel             = "1-1B-5"
-	skillCodeTravellerElectronicsComms       = "1-1C-1"
-	skillCodeTravellerElectronicsComputers   = "1-1C-2"
-	skillCodeTravellerElectronicsRemoteops   = "1-1C-3"
-	skillCodeTravellerElectronicsSensors     = "1-1C-4"
-	skillCodeTravellerEngineerJdrive         = "1-1D-1"
-	skillCodeTravellerEngineerLifesupport    = "1-1D-2"
-	skillCodeTravellerEngineerMdrive         = "1-1D-3"
-	skillCodeTravellerEngineerPower          = "1-1D-4"
-	skillCodeTravellerExplosives             = "1-1E-0"
-	skillCodeTravellerFlyerAirship           = "1-1F-1"
-	skillCodeTravellerFlyerGrav              = "1-1F-2"
-	skillCodeTravellerFlyerOrnithopter       = "1-1F-3"
-	skillCodeTravellerFlyerRotor             = "1-1F-4"
-	skillCodeTravellerFlyerWing              = "1-1F-5"
-	skillCodeTravellerGambler                = "1-1G-0"
-	skillCodeTravellerGuncombatArchaic       = "1-1J-1"
-	skillCodeTravellerGuncombatEnergy        = "1-1J-2"
-	skillCodeTravellerGuncombatSlug          = "1-1J-3"
-	skillCodeTravellerGunnerCapital          = "1-1H-1"
-	skillCodeTravellerGunnerOrtilery         = "1-1H-2"
-	skillCodeTravellerGunnerScreen           = "1-1H-3"
-	skillCodeTravellerGunnerTurret           = "1-1H-4"
-	skillCodeTravellerHeavyweaponArtilery    = "1-1K-1"
-	skillCodeTravellerHeavyweaponManportable = "1-1K-2"
-	skillCodeTravellerHeavyweaponVehicle     = "1-1K-3"
-	skillCodeTravellerInvestigate            = "1-1L-0"
-	skillCodeTravellerJackofalltrades        = "1-1M-0"
-	skillCodeTravellerLanguageAnglic         = "1-1N-1" //byRace
-	skillCodeTravellerLeadership             = "1-1P-0"
-	skillCodeTravellerMechanic               = "1-1Q-0"
-	skillCodeTravellerMedic                  = "1-1R-0"
-	skillCodeTravellerMeleeBlade             = "1-1S-1"
-	skillCodeTravellerMeleeBludgeon          = "1-1S-2"
-	skillCodeTravellerMeleeNatural           = "1-1S-3"
-	skillCodeTravellerMeleeUnarmed           = "1-1S-4"
-	skillCodeTravellerNavigation             = "1-1T-0"
-	skillCodeTravellerPersuade               = "1-1U-0"
-	skillCodeTravellerPilotcapitalships      = "1-1V-1"
-	skillCodeTravellerPilotSmallcraft        = "1-1V-2"
-	skillCodeTravellerPilotSpacecraft        = "1-1V-3"
-	skillCodeTravellerProfession             = "1-1W-1" //byType
-	skillCodeTravellerRecon                  = "1-11-0"
-	skillCodeTravellerScience                = "1-12-1" //byField
-	skillCodeTravellerSeafarerOceanships     = "1-13-1"
-	skillCodeTravellerSeafarerPersonal       = "1-13-2"
-	skillCodeTravellerSeafarerSail           = "1-13-3"
-	skillCodeTravellerSeafarerSubmarine      = "1-13-4"
-	skillCodeTravellerSteward                = "1-14-0"
-	skillCodeTravellerStreetwise             = "1-15-0"
-	skillCodeTravellerSurvival               = "1-16-0"
-	skillCodeTravellerTacticsMilitary        = "1-17-1"
-	skillCodeTravellerTacticsNavy            = "1-17-2"
-	skillCodeTravellerVaccsuit               = "1-18-0"
+	SCEntity                    = 0
+	SCGroup                     = 1
+	SCSpeciality                = 2
+	SCDescription               = 3
+	SCTrvAdmin                  = "1=11=0=Admin"
+	SCTrvAdvocate               = "1=12=0=Advocate"
+	SCTrvAnimals                = "1=13=0=Animals"
+	SCTrvAnimalsHandling        = "1=13=1=Animals (Handling)"
+	SCTrvAnimalsTraining        = "1=13=2=Animals (Training)"
+	SCTrvAnimalsVeterinary      = "1=13=3=Animals (Veterinary)"
+	SCTrvArt                    = "1=14=0=Art"
+	SCTrvArtHolography          = "1=14=1=Art (Holography)"
+	SCTrvArtInstrument          = "1=14=2=Art (Instrument)"
+	SCTrvArtPerformer           = "1=14=3=Art (Performer)"
+	SCTrvArtVisualMedia         = "1=14=4=Art (Visual Media)"
+	SCTrvArtWrite               = "1=14=5=Art (Write)"
+	SCTrvAstrogation            = "1=15=0=Astrogation"
+	SCTrvAthletics              = "1=16=0=Athletics"
+	SCTrvAthleticsDEX           = "1=16=1=Athletics (DEX)"
+	SCTrvAthleticsEND           = "1=16=2=Athletics (END)"
+	SCTrvAthleticsSTR           = "1=16=3=Athletics (STR)"
+	SCTrvBroker                 = "1=17=0=Broker"
+	SCTrvCarouse                = "1=18=0=Carouse"
+	SCTrvDeception              = "1=19=0=Deception"
+	SCTrvDiplomat               = "1=1A=0=Diplomat"
+	SCTrvDrive                  = "1=1B=0=Drive"
+	SCTrvDriveHovercraft        = "1=1B=1=Drive (Hovercraft)"
+	SCTrvDriveMole              = "1=1B=2=Drive (Mole)"
+	SCTrvDriveTrack             = "1=1B=3=Drive (Track)"
+	SCTrvDriveWalker            = "1=1B=4=Drive (Walker)"
+	SCTrvDriveWheel             = "1=1B=5=Drive (Wheel)"
+	SCTrvElectronics            = "1=1C=0=Electronics"
+	SCTrvElectronicsComms       = "1=1C=1=Electronics (Comms)"
+	SCTrvElectronicsComputers   = "1=1C=2=Electronics (Computers)"
+	SCTrvElectronicsRemoteops   = "1=1C=3=Electronics (Remoteops)"
+	SCTrvElectronicsSensors     = "1=1C=4=Electronics (Sensors)"
+	SCTrvEngineer               = "1=1D=0=Engineer"
+	SCTrvEngineerJdrive         = "1=1D=1=Engineer (J-drive)"
+	SCTrvEngineerLifesupport    = "1=1D=2=Engineer (Life Support)"
+	SCTrvEngineerMdrive         = "1=1D=3=Engineer (M-drive)"
+	SCTrvEngineerPower          = "1=1D=4=Engineer (Power)"
+	SCTrvExplosives             = "1=1E=0=Explosives"
+	SCTrvFlyer                  = "1=1F=0=Flyer"
+	SCTrvFlyerAirship           = "1=1F=1=Flyer (Airship)"
+	SCTrvFlyerGrav              = "1=1F=2=Flyer (Grav)"
+	SCTrvFlyerOrnithopter       = "1=1F=3=Flyer (Ornithopter)"
+	SCTrvFlyerRotor             = "1=1F=4=Flyer (Rotor)"
+	SCTrvFlyerWing              = "1=1F=5=Flyer (Wing)"
+	SCTrvGambler                = "1=1G=0=Gambler"
+	SCTrvGuncombat              = "1=1J=0=Guncombat"
+	SCTrvGuncombatArchaic       = "1=1J=1=Guncombat (Archaic)"
+	SCTrvGuncombatEnergy        = "1=1J=2=Guncombat (Energy)"
+	SCTrvGuncombatSlug          = "1=1J=3=Guncombat (Slug)"
+	SCTrvGunner                 = "1=1H=0=Gunner"
+	SCTrvGunnerCapital          = "1=1H=1=Gunner (Capital)"
+	SCTrvGunnerOrtilery         = "1=1H=2=Gunner (Ortilery)"
+	SCTrvGunnerScreen           = "1=1H=3=Gunner (Screen)"
+	SCTrvGunnerTurret           = "1=1H=4=Gunner (Turret)"
+	SCTrvHeavyweapon            = "1=1K=0=Heavyweapon"
+	SCTrvHeavyweaponArtilery    = "1=1K=1=Heavyweapon (Artilery)"
+	SCTrvHeavyweaponManportable = "1=1K=2=Heavyweapon (Man Portable)"
+	SCTrvHeavyweaponVehicle     = "1=1K=3=Heavyweapon (Vehicle)"
+	SCTrvInvestigate            = "1=1L=0=Investigate"
+	SCTrvJackofalltrades        = "1=1M=0=Jack-of-all-Trades"
+	SCTrvLanguage               = "1=1N=0=Language"          //byRac-LanguageAnglic         e
+	SCTrvLanguageAnglic         = "1=1N=1=Language (Anglic)" //byRac-LanguageAnglic         e
+	SCTrvLeadership             = "1=1P=0=Leadership"
+	SCTrvMechanic               = "1=1Q=0=Mechanic"
+	SCTrvMedic                  = "1=1R=0=Medic"
+	SCTrvMelee                  = "1=1S=0=Melee"
+	SCTrvMeleeBlade             = "1=1S=1=Melee (Blade)"
+	SCTrvMeleeBludgeon          = "1=1S=2=Melee (Bludgeon)"
+	SCTrvMeleeNatural           = "1=1S=3=Melee (Natural)"
+	SCTrvMeleeUnarmed           = "1=1S=4=Melee (Unarmed)"
+	SCTrvNavigation             = "1=1T=0=Navigation"
+	SCTrvPersuade               = "1=1U=0=Persuade"
+	SCTrvPilot                  = "1=1V=0=Pilot"
+	SCTrvPilotCapitalships      = "1=1V=1=Pilot (Capital Ships)"
+	SCTrvPilotSmallcraft        = "1=1V=2=Pilot (Small craft)"
+	SCTrvPilotSpacecraft        = "1=1V=3=Pilot (Spacecraft)"
+	SCTrvProfession             = "1=1W=0=Profession" //byTyp-Profession             e
+	SCTrvProfessionAny          = "1=1W=1=Profession (Any)"
+	SCTrvRecon                  = "1=21=0=Recon"
+	SCTrvSciencePhysical        = "1=22=0=Science" //byField Science                d
+	SCTrvScienceLife            = "1=23=0=Science" //byField Science                d
+	SCTrvScienceSocial          = "1=24=0=Science" //byField Science                d
+	SCTrvScienceSpace           = "1=25=0=Science" //byField Science                d
+	SCTrvScienceAny             = "1=26=1=Science (TODO)"
+	SCTrvSeafarer               = "1=27=0=Seafarer"
+	SCTrvSeafarerOceanships     = "1=27=1=Seafarer (Ocean Ships)"
+	SCTrvSeafarerPersonal       = "1=27=2=Seafarer (Personal)"
+	SCTrvSeafarerSail           = "1=27=3=Seafarer (Sail)"
+	SCTrvSeafarerSubmarine      = "1=27=4=Seafarer (Submarine)"
+	SCTrvSteward                = "1=28=0=Steward"
+	SCTrvStreetwise             = "1=29=0=Streetwise"
+	SCTrvSurvival               = "1=2A=0=Survival"
+	SCTrvTactics                = "1=2B=0=Tactics"
+	SCTrvTacticsMilitary        = "1=2B=1=Tactics (Military)"
+	SCTrvTacticsNavy            = "1=2B=2=Tactics (Navy)"
+	SCTrvVaccsuit               = "1=2C=0=Vaccsuit"
 )
 
 //skill -
@@ -90,15 +117,16 @@ type skill struct {
 	entity      string //low priority
 	group       string
 	speciality  string
-	description string //low priority
+	description string
 	value       int
 }
 
-func newSkill(entity, group, speciality string) skill {
+func newSkill(skillCode string) skill {
 	sk := skill{}
-	sk.entity = entity
-	sk.group = group
-	sk.speciality = speciality
+	sk.entity = GetFromCode(SCEntity, skillCode)
+	sk.group = GetFromCode(SCGroup, skillCode)
+	sk.speciality = GetFromCode(SCSpeciality, skillCode)
+	sk.description = GetFromCode(SCDescription, skillCode)
 	sk.value = 0
 	return sk
 }
@@ -112,7 +140,22 @@ type Skill interface {
 	Set(string, int)
 	Train(string)
 	Remove(string)
+	Get(string) skill
 	//DM(string) int - часть интерфейса TaskAsset
+}
+
+func (s skill) String() string {
+	if s.speciality != "0" && s.value == 0 {
+		return ""
+	}
+	return s.description + " " + strconv.Itoa(s.value)
+}
+
+func (sm *SkillMap) Get(skillName string) skill {
+	if val, ok := sm.skm[skillName]; ok {
+		return val
+	}
+	return skill{}
 }
 
 //SkillMap - объект на экспорт именно с ним должны работать внешние библиотеки
@@ -130,52 +173,57 @@ func NewSkillMap() *SkillMap {
 //Set - Устанавливает значение скила равное val
 // и удостоверяется что вся группа имеет хотябы 0
 func (sm *SkillMap) Set(skillCode string, val int) {
-	ent, grp, spc, err := disassebleCode(skillCode)
-	if err != nil {
-		return
-	}
-	if _, ok := sm.skm[skillCode]; !ok {
-		newskill := newSkill(ent, grp, spc)
-		sm.skm[skillCode] = newskill
+	groupeCodes := codesByGroup(GetFromCode(SCGroup, skillCode))
+	if _, ok := sm.skm[skillCode]; !ok { //Если такого скила нет - создаем всю группу со значением 0
+		for _, code := range groupeCodes {
+			sm.skm[code] = newSkill(code)
+		}
 	}
 	sm.skm[skillCode] = setValue(sm.skm[skillCode], val)
-	sm.ensureByCodeDangerous("-"+grp+"-", 0)
 }
 
 //Train - увеличивает значение скила на 1
 // и удостоверяется что вся группа имеет хотябы 0
 func (sm *SkillMap) Train(skillCode string) {
-	ent, grp, spc, err := disassebleCode(skillCode)
-	if err != nil {
+	groupeCodes := codesByGroup(GetFromCode(SCGroup, skillCode))
+	if _, ok := sm.skm[skillCode]; !ok { //Если такого скила нет - создаем всю группу со значением 0
+		for _, code := range groupeCodes {
+			sm.skm[code] = newSkill(code)
+		}
+		return
+	} //мы точно знаем что скилл есть
+	if GetFromCode(SCSpeciality, skillCode) != "0" { //если это не общая группа,
+		sm.Set(skillCode, sm.Get(skillCode).value+1) //то просто увеличиваем на 1
 		return
 	}
-	if _, ok := sm.skm[skillCode]; !ok {
-		newskill := newSkill(ent, grp, spc)
-		sm.skm[skillCode] = newskill
+	spCode := distributeSpeciality(sm, groupeCodes)
+	sm.Set(spCode, sm.Get(spCode).value+1)
+}
+
+func distributeSpeciality(sm *SkillMap, groupeCodes []string) string {
+	if len(groupeCodes) == 1 {
+		return groupeCodes[0]
 	}
-	sm.skm[skillCode] = setValue(sm.skm[skillCode], sm.skm[skillCode].value+1)
-	sm.ensureByCodeDangerous("-"+grp+"-", 0)
+	array := []string{}
+	for i := 0; i < 5; i++ {
+		for g, code := range groupeCodes {
+			if g == 0 {
+				continue
+			}
+			skl := sm.Get(code).value
+			if skl >= i {
+				array = append(array, code)
+			}
+		}
+	}
+	l := len(array)
+	d := dice.Roll("1d" + strconv.Itoa(l)).DM(-1).Sum()
+	return array[d]
 }
 
 //Remove - Удаляет запись о навыке - в теории эта функция вообще не должна использоваться
 func (sm *SkillMap) Remove(skillCode string) {
 	delete(sm.skm, skillCode)
-}
-
-func (sm *SkillMap) ensureByCodeDangerous(codeSample string, val int) {
-	for _, code := range skillCodesList() {
-		if !strings.Contains(code, codeSample) {
-			continue
-		}
-		if _, ok := sm.skm[code]; !ok {
-			ent, grp, spc, _ := disassebleCode(code)
-			newskill := newSkill(ent, grp, spc)
-			sm.skm[code] = newskill
-		}
-		if sm.skm[code].value < val {
-			sm.skm[code] = setValue(sm.skm[code], val)
-		}
-	}
 }
 
 /*
@@ -186,105 +234,143 @@ func (sm *SkillMap) ensureByCodeDangerous(codeSample string, val int) {
 -валидный тип сущности (не уверен)
 */
 
-func disassebleCode(skillCode string) (string, string, string, error) {
-	data := strings.Split(skillCode, "-")
-	if len(data) != 3 {
-		return "", "", "", errors.New("skillCode '" + skillCode + "' unreadable")
+func disassebleCode(skillCode string) (string, string, string, string, error) {
+	data := strings.Split(skillCode, "=")
+	if len(data) != 4 {
+		return "", "", "", "", errors.New("skillCode '" + skillCode + "' unreadable")
 	}
-	return data[0], data[1], data[2], nil
+	return data[0], data[1], data[2], data[3], nil
 }
 
-func skillCodesList() []string {
+func GetFromCode(entry int, code string) string {
+	data := strings.Split(code, "=")
+	// if len(data) != 4 {
+	// 	return ""
+	// }
+	return data[entry]
+}
+
+func codesByGroup(grp string) []string {
+	groupeCodes := []string{}
+	for _, code := range SkillCodesList() {
+		if GetFromCode(SCGroup, code) == grp {
+			groupeCodes = append(groupeCodes, code)
+		}
+	}
+	return groupeCodes
+}
+
+func SkillCodesList() []string {
 	return []string{
-		skillCodeTravellerAdmin,
-		skillCodeTravellerAdvocate,
-		skillCodeTravellerAnimalsHandling,
-		skillCodeTravellerAnimalsTraining,
-		skillCodeTravellerAnimalsVeterinary,
-		skillCodeTravellerArtHolography,
-		skillCodeTravellerArtInstrument,
-		skillCodeTravellerArtPerformer,
-		skillCodeTravellerArtVisualMedia,
-		skillCodeTravellerArtWrite,
-		skillCodeTravellerAstrogation,
-		skillCodeTravellerAthleticsDEX,
-		skillCodeTravellerAthleticsEND,
-		skillCodeTravellerAthleticsSTR,
-		skillCodeTravellerBroker,
-		skillCodeTravellerCarouse,
-		skillCodeTravellerDeception,
-		skillCodeTravellerDiplomat,
-		skillCodeTravellerDriveHovercraft,
-		skillCodeTravellerDriveMole,
-		skillCodeTravellerDriveTrack,
-		skillCodeTravellerDriveWalker,
-		skillCodeTravellerDriveWheel,
-		skillCodeTravellerElectronicsComms,
-		skillCodeTravellerElectronicsComputers,
-		skillCodeTravellerElectronicsRemoteops,
-		skillCodeTravellerElectronicsSensors,
-		skillCodeTravellerEngineerJdrive,
-		skillCodeTravellerEngineerLifesupport,
-		skillCodeTravellerEngineerMdrive,
-		skillCodeTravellerEngineerPower,
-		skillCodeTravellerExplosives,
-		skillCodeTravellerFlyerAirship,
-		skillCodeTravellerFlyerGrav,
-		skillCodeTravellerFlyerOrnithopter,
-		skillCodeTravellerFlyerRotor,
-		skillCodeTravellerFlyerWing,
-		skillCodeTravellerGambler,
-		skillCodeTravellerGuncombatArchaic,
-		skillCodeTravellerGuncombatEnergy,
-		skillCodeTravellerGuncombatSlug,
-		skillCodeTravellerGunnerCapital,
-		skillCodeTravellerGunnerOrtilery,
-		skillCodeTravellerGunnerScreen,
-		skillCodeTravellerGunnerTurret,
-		skillCodeTravellerHeavyweaponArtilery,
-		skillCodeTravellerHeavyweaponManportable,
-		skillCodeTravellerHeavyweaponVehicle,
-		skillCodeTravellerInvestigate,
-		skillCodeTravellerJackofalltrades,
-		skillCodeTravellerLanguageAnglic,
-		skillCodeTravellerLeadership,
-		skillCodeTravellerMechanic,
-		skillCodeTravellerMedic,
-		skillCodeTravellerMeleeBlade,
-		skillCodeTravellerMeleeBludgeon,
-		skillCodeTravellerMeleeNatural,
-		skillCodeTravellerMeleeUnarmed,
-		skillCodeTravellerNavigation,
-		skillCodeTravellerPersuade,
-		skillCodeTravellerPilotcapitalships,
-		skillCodeTravellerPilotSmallcraft,
-		skillCodeTravellerPilotSpacecraft,
-		skillCodeTravellerProfession,
-		skillCodeTravellerRecon,
-		skillCodeTravellerScience,
-		skillCodeTravellerSeafarerOceanships,
-		skillCodeTravellerSeafarerPersonal,
-		skillCodeTravellerSeafarerSail,
-		skillCodeTravellerSeafarerSubmarine,
-		skillCodeTravellerSteward,
-		skillCodeTravellerStreetwise,
-		skillCodeTravellerSurvival,
-		skillCodeTravellerTacticsMilitary,
-		skillCodeTravellerTacticsNavy,
-		skillCodeTravellerVaccsuit,
+		SCTrvAdmin,
+		SCTrvAdvocate,
+		SCTrvAnimals,
+		SCTrvAnimalsHandling,
+		SCTrvAnimalsTraining,
+		SCTrvAnimalsVeterinary,
+		SCTrvArt,
+		SCTrvArtHolography,
+		SCTrvArtInstrument,
+		SCTrvArtPerformer,
+		SCTrvArtVisualMedia,
+		SCTrvArtWrite,
+		SCTrvAstrogation,
+		SCTrvAthletics,
+		SCTrvAthleticsDEX,
+		SCTrvAthleticsEND,
+		SCTrvAthleticsSTR,
+		SCTrvBroker,
+		SCTrvCarouse,
+		SCTrvDeception,
+		SCTrvDiplomat,
+		SCTrvDrive,
+		SCTrvDriveHovercraft,
+		SCTrvDriveMole,
+		SCTrvDriveTrack,
+		SCTrvDriveWalker,
+		SCTrvDriveWheel,
+		SCTrvElectronics,
+		SCTrvElectronicsComms,
+		SCTrvElectronicsComputers,
+		SCTrvElectronicsRemoteops,
+		SCTrvElectronicsSensors,
+		SCTrvEngineer,
+		SCTrvEngineerJdrive,
+		SCTrvEngineerLifesupport,
+		SCTrvEngineerMdrive,
+		SCTrvEngineerPower,
+		SCTrvExplosives,
+		SCTrvFlyer,
+		SCTrvFlyerAirship,
+		SCTrvFlyerGrav,
+		SCTrvFlyerOrnithopter,
+		SCTrvFlyerRotor,
+		SCTrvFlyerWing,
+		SCTrvGambler,
+		SCTrvGuncombat,
+		SCTrvGuncombatArchaic,
+		SCTrvGuncombatEnergy,
+		SCTrvGuncombatSlug,
+		SCTrvGunner,
+		SCTrvGunnerCapital,
+		SCTrvGunnerOrtilery,
+		SCTrvGunnerScreen,
+		SCTrvGunnerTurret,
+		SCTrvHeavyweapon,
+		SCTrvHeavyweaponArtilery,
+		SCTrvHeavyweaponManportable,
+		SCTrvHeavyweaponVehicle,
+		SCTrvInvestigate,
+		SCTrvJackofalltrades,
+		SCTrvLanguage,
+		SCTrvLanguageAnglic,
+		SCTrvLeadership,
+		SCTrvMechanic,
+		SCTrvMedic,
+		SCTrvMelee,
+		SCTrvMeleeBlade,
+		SCTrvMeleeBludgeon,
+		SCTrvMeleeNatural,
+		SCTrvMeleeUnarmed,
+		SCTrvNavigation,
+		SCTrvPersuade,
+		SCTrvPilot,
+		SCTrvPilotCapitalships,
+		SCTrvPilotSmallcraft,
+		SCTrvPilotSpacecraft,
+		SCTrvProfession,
+		SCTrvProfessionAny,
+		SCTrvRecon,
+		SCTrvSciencePhysical,
+		SCTrvScienceLife,
+		SCTrvScienceSocial,
+		SCTrvScienceSpace,
+		SCTrvScienceAny,
+		SCTrvSeafarer,
+		SCTrvSeafarerOceanships,
+		SCTrvSeafarerPersonal,
+		SCTrvSeafarerSail,
+		SCTrvSeafarerSubmarine,
+		SCTrvSteward,
+		SCTrvStreetwise,
+		SCTrvSurvival,
+		SCTrvTactics,
+		SCTrvTacticsMilitary,
+		SCTrvTacticsNavy,
+		SCTrvVaccsuit,
 	}
 }
 
 func Test() {
 	fmt.Println("Start test")
 	sklMap := NewSkillMap()
-	sklMap.Train(skillCodeTravellerGuncombatEnergy)
-	sklMap.Train(skillCodeTravellerGuncombatEnergy)
-	sklMap.Train(skillCodeTravellerGuncombatEnergy)
-	sklMap.Train(skillCodeTravellerGuncombatEnergy)
-	sklMap.Train(skillCodeTravellerGuncombatEnergy)
-	sklMap.Set(skillCodeTravellerGuncombatSlug, 1)
-	sklMap.Remove(skillCodeTravellerGuncombatSlug)
+	sklMap.Train(SCTrvGuncombatEnergy)
+	sklMap.Train(SCTrvGuncombatEnergy)
+	sklMap.Train(SCTrvGuncombatEnergy)
+	sklMap.Train(SCTrvGuncombatEnergy)
+	sklMap.Train(SCTrvGuncombatEnergy)
+	sklMap.Set(SCTrvGuncombatSlug, 1)
+	sklMap.Remove(SCTrvGuncombatSlug)
 	fmt.Println(sklMap)
 	fmt.Println("End test")
 }

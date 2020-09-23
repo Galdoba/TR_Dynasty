@@ -80,6 +80,7 @@ const (
 	TradeCodeDangerous        = "Da"
 	TradeCodeDataRepository   = "Ab"
 	TradeCodeAncientSite      = "An"
+	TradeCodeDeepSpace        = "Ds"
 	//////////////////////////
 
 )
