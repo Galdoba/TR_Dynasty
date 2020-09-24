@@ -21,14 +21,15 @@ func Test() {
 	w, _ := wrld.FromOTUdata(data)
 
 	trv := NewTraveller(w)
-	trv.skills.Set(entity.SCTrvDriveWheel, 3)
+	trv.career = CareerB0Agentintelligence
+	//trv.skills.Set(entity.SCTrvDriveWheel, 3)
 	for _, val := range RaceChars() {
 		trv.characteristics.Set(val, dice.Roll("2d6").Sum())
 	}
-
+	fmt.Println("--------------")
+	trv.getCareerCodes()
 	fmt.Println(trv.PrintSkills())
 	fmt.Println(trv.PrintUPP())
-	fmt.Println(trv)
 
 	fmt.Println("End test")
 }
@@ -37,6 +38,7 @@ type traveller struct {
 	originWorld     wrld.World
 	characteristics entity.Characteristic
 	skills          entity.Skill
+	career          string
 }
 
 func NewTraveller(originWorld wrld.World) traveller {

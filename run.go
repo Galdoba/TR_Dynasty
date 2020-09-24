@@ -12,10 +12,14 @@ import (
 func main() {
 
 	npcmakerv2.Test()
-	//entity.Test()
+
+	propose := npcmakerv2.SearchCareers("Corporate")
+	for i := range propose {
+		fmt.Println(propose[i])
+	}
 
 	// w := pickWorld()
-
+	//entity.Test()
 	// hyperjump.StartJumpEvent(w)
 	// starport.FullInfo(w)
 }

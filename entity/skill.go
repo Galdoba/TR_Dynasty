@@ -44,7 +44,7 @@ const (
 	SCTrvElectronics            = "1=1C=0=Electronics"
 	SCTrvElectronicsComms       = "1=1C=1=Electronics (Comms)"
 	SCTrvElectronicsComputers   = "1=1C=2=Electronics (Computers)"
-	SCTrvElectronicsRemoteops   = "1=1C=3=Electronics (Remoteops)"
+	SCTrvElectronicsRemoteops   = "1=1C=3=Electronics (Remote Ops)"
 	SCTrvElectronicsSensors     = "1=1C=4=Electronics (Sensors)"
 	SCTrvEngineer               = "1=1D=0=Engineer"
 	SCTrvEngineerJdrive         = "1=1D=1=Engineer (J-drive)"
@@ -103,13 +103,14 @@ const (
 	SCTrvSeafarerPersonal       = "1=27=2=Seafarer (Personal)"
 	SCTrvSeafarerSail           = "1=27=3=Seafarer (Sail)"
 	SCTrvSeafarerSubmarine      = "1=27=4=Seafarer (Submarine)"
-	SCTrvSteward                = "1=28=0=Steward"
-	SCTrvStreetwise             = "1=29=0=Streetwise"
-	SCTrvSurvival               = "1=2A=0=Survival"
-	SCTrvTactics                = "1=2B=0=Tactics"
-	SCTrvTacticsMilitary        = "1=2B=1=Tactics (Military)"
-	SCTrvTacticsNavy            = "1=2B=2=Tactics (Navy)"
-	SCTrvVaccsuit               = "1=2C=0=Vaccsuit"
+	SCTrvStealth                = "1=28=0=Stealth"
+	SCTrvSteward                = "1=29=0=Steward"
+	SCTrvStreetwise             = "1=2A=0=Streetwise"
+	SCTrvSurvival               = "1=2B=0=Survival"
+	SCTrvTactics                = "1=2C=0=Tactics"
+	SCTrvTacticsMilitary        = "1=2C=1=Tactics (Military)"
+	SCTrvTacticsNavy            = "1=2C=2=Tactics (Navy)"
+	SCTrvVaccsuit               = "1=2D=0=Vaccsuit"
 )
 
 //skill -
@@ -403,6 +404,7 @@ func SkillCodesList() []string {
 		SCTrvSeafarerPersonal,
 		SCTrvSeafarerSail,
 		SCTrvSeafarerSubmarine,
+		SCTrvStealth,
 		SCTrvSteward,
 		SCTrvStreetwise,
 		SCTrvSurvival,

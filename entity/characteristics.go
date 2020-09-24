@@ -105,3 +105,25 @@ func (cm *CharacteristicMap) Train(code string) {
 func (cm *CharacteristicMap) Remove(code string) {
 	delete(cm.chr, code)
 }
+
+func CharacteristicsCodesList() []string {
+	return []string{
+		CharCodeTrvC1STRENGTH,
+		CharCodeTrvC2AGILITY,
+		CharCodeTrvC2DEXTERITY,
+		CharCodeTrvC2Grace,
+		CharCodeTrvC3ENDURANCE,
+		CharCodeTrvC3STAMINA,
+		CharCodeTrvC3VIGOR,
+		CharCodeTrvC4INTELLIGENCE,
+		CharCodeTrvC5EDUCATION,
+		CharCodeTrvC5TRAINING,
+		CharCodeTrvC5INSTINCT,
+		CharCodeTrvC6SOCIAL,
+		CharCodeTrvC6CHARISMA,
+		CharCodeTrvC6CASTE,
+		CharCodeTrvC6NOBILITY,
+		CharCodeTrvC6TERRITORY,
+		CharCodeTrvCSSANITY,
+	}
+}
