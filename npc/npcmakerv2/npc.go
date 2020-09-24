@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/constant"
+	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/entity"
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/wrld"
@@ -18,59 +20,64 @@ func Test() {
 	}
 	w, _ := wrld.FromOTUdata(data)
 
-	trv := newTraveller(w)
-	trv.skills.Train(entity.SCTrvEngineer)
-	trv.skills.Train(entity.SCTrvEngineerLifesupport)
-	trv.skills.Train(entity.SCTrvEngineerLifesupport)
-	trv.skills.Train(entity.SCTrvEngineerLifesupport)
-	trv.skills.Train(entity.SCTrvEngineer)
-	trv.skills.Train(entity.SCTrvAdmin)
-	trv.skills.Train(entity.SCTrvAdmin)
-	trv.skills.Train(entity.SCTrvDriveWheel)
-	fmt.Println(showSkill(trv.skills))
-	//fmt.Println(trv.skills)
-	fmt.Println(entity.GetFromCode(3, entity.CharCodeTrvC3ENDURANCE))
+	trv := NewTraveller(w)
+	trv.skills.Set(entity.SCTrvDriveWheel, 3)
+	for _, val := range RaceChars() {
+		trv.characteristics.Set(val, dice.Roll("2d6").Sum())
+	}
+
+	fmt.Println(trv.PrintSkills())
+	fmt.Println(trv.PrintUPP())
+	fmt.Println(trv)
+
 	fmt.Println("End test")
 }
 
 type traveller struct {
-	originWorld wrld.World
-	//characteristics entity.Characteristic
-	skills entity.Skill
+	originWorld     wrld.World
+	characteristics entity.Characteristic
+	skills          entity.Skill
 }
 
-func newTraveller(originWorld wrld.World) traveller {
+func NewTraveller(originWorld wrld.World) traveller {
 	trv := traveller{}
-	//trv.attributes = entity.NewCharactiristicMap()
 	trv.skills = entity.NewSkillMap()
+	trv.characteristics = entity.NewCharacteristicMap()
 	trv.originWorld = originWorld //TODO: сделать мир опциональным
-	trv.TrainBackgroundSkills()
+	trv.trainBackgroundSkills()
 	return trv
 }
 
-func showSkill(skmap entity.Skill) string {
+func (trv traveller) PrintSkills() string {
 	skills := ""
-	//ТУДУ: попробывать удалить все нулевые скилы если специализация не равна 0
 	for _, skillCode := range entity.SkillCodesList() {
-		propose := skmap.Get(skillCode).String()
+		if entity.GetFromCode(entity.SCSpeciality, skillCode) != "0" {
+			continue
+		}
+		propose := trv.skills.FPrintSkillGroupS(skillCode)
 		if propose != "" {
-			skills += skmap.Get(skillCode).String() + ", "
+			skills += propose + ", "
 		}
 	}
 	skills = strings.TrimSuffix(skills, ", ")
 	return skills
 }
 
-func (trv *traveller) TrainBackgroundSkills() {
-	// data, err := otu.GetDataOn(trv.originWorld)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
+func (trv traveller) PrintUPP() string {
+	upp := ""
+	for _, chrc := range RaceChars() {
+		val, err := trv.characteristics.GetValue(chrc)
+		if err != nil {
+			trv.characteristics.Set(chrc, 2)
+		}
+		upp += TrvCore.DigitToEhex(val)
+	}
+	return upp
+}
+
+func (trv *traveller) trainBackgroundSkills() {
 	backgrounsTC := []string{}
-	//if trv.originWorld != nil {
 	backgrounsTC = trv.originWorld.TradeCodes()
-	//}
 	for _, tc := range backgrounsTC {
 		switch tc {
 		case constant.TradeCodeAgricultural:
@@ -146,9 +153,18 @@ func (trv *traveller) TrainBackgroundSkills() {
 		case constant.TradeCodeHighTech:
 			trv.skills.Train(entity.SCTrvElectronicsComputers)
 		default:
-
 		}
+	}
+}
 
+func RaceChars() []string {
+	return []string{
+		entity.CharCodeTrvC1STRENGTH,
+		entity.CharCodeTrvC2DEXTERITY,
+		entity.CharCodeTrvC3ENDURANCE,
+		entity.CharCodeTrvC4INTELLIGENCE,
+		entity.CharCodeTrvC5EDUCATION,
+		entity.CharCodeTrvC6SOCIAL,
 	}
 }
 

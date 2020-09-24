@@ -1,5 +1,10 @@
 package entity
 
+import (
+	"errors"
+	"fmt"
+)
+
 const (
 	CharCodeEntity            = 0
 	CharCodeType              = 1
@@ -28,12 +33,75 @@ const (
 //skill -
 type characteristic struct {
 	entity      string //Ненужно?
-	group       string //Ненужно?
-	speciality  string //Ненужно?
+	cType       string //Ненужно?
 	description string //Ненужно?
 	value       int
 }
 
-// type Characteristic interface {
-// 	Set()
-// }
+func newCharacteristic(charCode string) characteristic {
+	chr := characteristic{}
+	chr.entity = GetFromCode(CharCodeEntity, charCode)
+	chr.cType = GetFromCode(CharCodeType, charCode)
+	chr.description = GetFromCode(CharCodeFullName, charCode)
+	return chr
+}
+
+func (chr *characteristic) setValue(newVal int) {
+	chr.value = newVal
+}
+
+type Characteristic interface {
+	Parameter
+}
+
+//SkillMap - объект на экспорт именно с ним должны работать внешние библиотеки
+//носитель для интерфейса Skill
+type CharacteristicMap struct {
+	chr map[string]characteristic
+}
+
+func NewCharacteristicMap() *CharacteristicMap {
+	cm := CharacteristicMap{}
+	cm.chr = make(map[string]characteristic)
+	return &cm
+}
+
+/*Set(string, int)
+GetValue(string) (int, error)
+Train(string)
+Remove(string)*/
+
+//Set - Устанавливает значение х-ки равное val
+func (cm *CharacteristicMap) Set(charCode string, val int) {
+	if _, ok := cm.chr[charCode]; !ok { //Если такого х-ки нет - создаем всю группу со значением 0
+		cm.chr[charCode] = newCharacteristic(charCode)
+	}
+	skl := newCharacteristic(charCode)
+	skl.setValue(val)
+	cm.chr[charCode] = skl
+}
+
+//GetValue - возвращает значение Х-ки
+func (cm *CharacteristicMap) GetValue(code string) (int, error) {
+	if val, ok := cm.chr[code]; ok {
+		return val.value, nil
+	}
+	return 0, errors.New("No Value for '" + code + "'")
+}
+
+//Train - увеличивает значение х-ки на 1
+func (cm *CharacteristicMap) Train(code string) {
+	if _, ok := cm.chr[code]; !ok {
+		cm.Set(code, 0)
+	} //мы точно знаем что х-ка есть
+	val, err := cm.GetValue(code)
+	if err != nil {
+		fmt.Println(err)
+	}
+	cm.Set(code, val+1)
+}
+
+//Remove - Удаляет запись о навыке - в теории эта функция вообще не должна использоваться
+func (cm *CharacteristicMap) Remove(code string) {
+	delete(cm.chr, code)
+}

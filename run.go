@@ -3,20 +3,15 @@ package main
 import (
 	"fmt"
 
-	"github.com/Galdoba/TR_Dynasty/creation/absfactory"
+	"github.com/Galdoba/TR_Dynasty/npc/npcmakerv2"
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/devtools/cli/user"
 )
 
 func main() {
-	afac, err := absfactory.BuildFactory(1)
-	fmt.Println(afac, err)
-	prod, err2 := afac.Build(2)
-	fmt.Println(prod, err2)
-	fmt.Println(prod.NumWheels())
 
-	//npcmakerv2.Test()
+	npcmakerv2.Test()
 	//entity.Test()
 
 	// w := pickWorld()

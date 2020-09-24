@@ -131,16 +131,26 @@ func newSkill(skillCode string) skill {
 	return sk
 }
 
-func setValue(s skill, newVal int) skill {
+// func setValue(s skill, newVal int) skill {
+// 	s.value = newVal
+// 	return s
+// }
+
+func (s *skill) setValue(newVal int) {
 	s.value = newVal
-	return s
+}
+
+type Parameter interface {
+	Set(string, int)
+	GetValue(string) (int, error)
+	Train(string)
+	Remove(string)
 }
 
 type Skill interface {
-	Set(string, int)
-	Train(string)
-	Remove(string)
+	Parameter
 	Get(string) skill
+	FPrintSkillGroupS(string) string
 	//DM(string) int - часть интерфейса TaskAsset
 }
 
@@ -156,6 +166,39 @@ func (sm *SkillMap) Get(skillName string) skill {
 		return val
 	}
 	return skill{}
+}
+
+func (sm *SkillMap) FPrintSkillGroupS(skillName string) string {
+	if GetFromCode(SCSpeciality, skillName) != "0" {
+		descr := GetFromCode(SCDescription, skillName)
+		str := ""
+		if val, ok := sm.skm[skillName]; ok {
+			if val.value > 0 {
+				str += descr + " " + strconv.Itoa(val.value)
+			}
+		}
+		return str
+	}
+	str := ""
+	grp := GetFromCode(SCGroup, skillName)
+	codes := codesByGroup(grp)
+	rem := ""
+	for i, cCode := range codes {
+		spc := GetFromCode(SCSpeciality, cCode)
+		if val, ok := sm.skm[codes[i]]; ok {
+			if spc == "0" {
+				rem = val.description
+				str += GetFromCode(SCDescription, codes[i]) + " " + strconv.Itoa(val.value) + ", "
+			}
+			if val.value > 0 && spc != "0" {
+				str += GetFromCode(SCDescription, codes[i]) + " " + strconv.Itoa(val.value) + ", "
+			}
+
+		}
+	}
+	str = strings.TrimSuffix(str, ", ")
+	str = strings.TrimPrefix(str, rem+" 0, ")
+	return str
 }
 
 //SkillMap - объект на экспорт именно с ним должны работать внешние библиотеки
@@ -179,7 +222,16 @@ func (sm *SkillMap) Set(skillCode string, val int) {
 			sm.skm[code] = newSkill(code)
 		}
 	}
-	sm.skm[skillCode] = setValue(sm.skm[skillCode], val)
+	skl := newSkill(skillCode)
+	skl.setValue(val)
+	sm.skm[skillCode] = skl
+}
+
+func (sm *SkillMap) GetValue(code string) (int, error) {
+	if val, ok := sm.skm[code]; ok {
+		return val.value, nil
+	}
+	return 0, errors.New("No Value for '" + code + "'")
 }
 
 //Train - увеличивает значение скила на 1
