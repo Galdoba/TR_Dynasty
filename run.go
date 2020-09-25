@@ -13,10 +13,10 @@ func main() {
 
 	npcmakerv2.Test()
 
-	propose := npcmakerv2.SearchCareers("Corporate")
-	for i := range propose {
-		fmt.Println(propose[i])
-	}
+	// propose := npcmakerv2.SearchCareers("Agent")
+	// for i := range propose {
+	// 	fmt.Println(propose[i])
+	// }
 
 	// w := pickWorld()
 	//entity.Test()

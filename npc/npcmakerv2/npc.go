@@ -2,55 +2,79 @@ package npcmakerv2
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/entity"
+	"github.com/Galdoba/TR_Dynasty/name"
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/wrld"
+	"github.com/Galdoba/utils"
 )
 
 func Test() {
 	fmt.Println("Start test")
-	data, err := otu.GetDataOn("Paal")
+	data, err := otu.GetDataOn("Staha")
 	if err != nil {
 		fmt.Println(err)
 	}
 	w, _ := wrld.FromOTUdata(data)
+	utils.RandomSeed()
+	trv := NewTraveller(w, utils.RandomFromList(ListCareers()))
 
-	trv := NewTraveller(w)
-	trv.career = CareerB0Agentintelligence
 	//trv.skills.Set(entity.SCTrvDriveWheel, 3)
-	for _, val := range RaceChars() {
-		trv.characteristics.Set(val, dice.Roll("2d6").Sum())
-	}
-	fmt.Println("--------------")
-	trv.getCareerCodes()
-	fmt.Println(trv.PrintSkills())
-	fmt.Println(trv.PrintUPP())
 
+	fmt.Println("--------------")
+
+	fmt.Println(&trv)
+	fmt.Println("--------------")
 	fmt.Println("End test")
 }
 
-type traveller struct {
+type Traveller struct {
+	name            string
 	originWorld     wrld.World
 	characteristics entity.Characteristic
 	skills          entity.Skill
 	career          string
+	rank            int
+	term            int
 }
 
-func NewTraveller(originWorld wrld.World) traveller {
-	trv := traveller{}
+func NewTraveller(originWorld wrld.World, career string) Traveller {
+	trv := Traveller{}
+	trv.name = name.RandomNew()
+	trv.career = career
 	trv.skills = entity.NewSkillMap()
 	trv.characteristics = entity.NewCharacteristicMap()
 	trv.originWorld = originWorld //TODO: сделать мир опциональным
+	trv.term = 2 + TrvCore.FluxGood()
+	trv.rank = 0
+	for _, val := range RaceChars() {
+		trv.characteristics.Set(val, dice.Roll("2d6").Sum())
+	}
 	trv.trainBackgroundSkills()
+	trv.getCareerCodes()
+	//fmt.Println("===")
 	return trv
 }
 
-func (trv traveller) PrintSkills() string {
+func (trv *Traveller) String() string {
+	str := ""
+	str += "   Name: " + trv.name
+	str += "\n Origin: " + trv.originWorld.Name() + " [" + trv.originWorld.UWP() + "]"
+	str += "\n    UPP: " + trv.PrintUPP()
+	str += "\n    Age: " + strconv.Itoa(trv.term*4+18)
+	str += "\n Career: " + entity.GetFromCode(4, trv.career)
+	str += "\n   Rank: " + strconv.Itoa(trv.rank) + "/" + strconv.Itoa(trv.term)
+	str += "\n Skills: " + trv.PrintSkills()
+	return str
+}
+
+func (trv Traveller) PrintSkills() string {
 	skills := ""
 	for _, skillCode := range entity.SkillCodesList() {
 		if entity.GetFromCode(entity.SCSpeciality, skillCode) != "0" {
@@ -65,7 +89,7 @@ func (trv traveller) PrintSkills() string {
 	return skills
 }
 
-func (trv traveller) PrintUPP() string {
+func (trv Traveller) PrintUPP() string {
 	upp := ""
 	for _, chrc := range RaceChars() {
 		val, err := trv.characteristics.GetValue(chrc)
@@ -77,7 +101,7 @@ func (trv traveller) PrintUPP() string {
 	return upp
 }
 
-func (trv *traveller) trainBackgroundSkills() {
+func (trv *Traveller) trainBackgroundSkills() {
 	backgrounsTC := []string{}
 	backgrounsTC = trv.originWorld.TradeCodes()
 	for _, tc := range backgrounsTC {

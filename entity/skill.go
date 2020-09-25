@@ -59,19 +59,19 @@ const (
 	SCTrvFlyerRotor             = "1=1F=4=Flyer (Rotor)"
 	SCTrvFlyerWing              = "1=1F=5=Flyer (Wing)"
 	SCTrvGambler                = "1=1G=0=Gambler"
-	SCTrvGuncombat              = "1=1J=0=Guncombat"
-	SCTrvGuncombatArchaic       = "1=1J=1=Guncombat (Archaic)"
-	SCTrvGuncombatEnergy        = "1=1J=2=Guncombat (Energy)"
-	SCTrvGuncombatSlug          = "1=1J=3=Guncombat (Slug)"
+	SCTrvGuncombat              = "1=1J=0=Gun Combat"
+	SCTrvGuncombatArchaic       = "1=1J=1=Gun Combat (Archaic)"
+	SCTrvGuncombatEnergy        = "1=1J=2=Gun Combat (Energy)"
+	SCTrvGuncombatSlug          = "1=1J=3=Gun Combat (Slug)"
 	SCTrvGunner                 = "1=1H=0=Gunner"
 	SCTrvGunnerCapital          = "1=1H=1=Gunner (Capital)"
 	SCTrvGunnerOrtilery         = "1=1H=2=Gunner (Ortilery)"
 	SCTrvGunnerScreen           = "1=1H=3=Gunner (Screen)"
 	SCTrvGunnerTurret           = "1=1H=4=Gunner (Turret)"
-	SCTrvHeavyweapon            = "1=1K=0=Heavyweapon"
-	SCTrvHeavyweaponArtilery    = "1=1K=1=Heavyweapon (Artilery)"
-	SCTrvHeavyweaponManportable = "1=1K=2=Heavyweapon (Man Portable)"
-	SCTrvHeavyweaponVehicle     = "1=1K=3=Heavyweapon (Vehicle)"
+	SCTrvHeavyweapon            = "1=1K=0=Heavy Weapon"
+	SCTrvHeavyweaponArtilery    = "1=1K=1=Heavy Weapon (Artilery)"
+	SCTrvHeavyweaponManportable = "1=1K=2=Heavy Weapon (Man Portable)"
+	SCTrvHeavyweaponVehicle     = "1=1K=3=Heavy Weapon (Vehicle)"
 	SCTrvInvestigate            = "1=1L=0=Investigate"
 	SCTrvJackofalltrades        = "1=1M=0=Jack-of-all-Trades"
 	SCTrvLanguage               = "1=1N=0=Language"          //byRac-LanguageAnglic         e
@@ -97,7 +97,8 @@ const (
 	SCTrvScienceLife            = "1=23=0=Science" //byField Science                d
 	SCTrvScienceSocial          = "1=24=0=Science" //byField Science                d
 	SCTrvScienceSpace           = "1=25=0=Science" //byField Science                d
-	SCTrvScienceAny             = "1=26=1=Science (TODO)"
+	SCTrvScience                = "1=26=0=Science"
+	SCTrvScienceAny             = "1=26=1=Science (ANY)"
 	SCTrvSeafarer               = "1=27=0=Seafarer"
 	SCTrvSeafarerOceanships     = "1=27=1=Seafarer (Ocean Ships)"
 	SCTrvSeafarerPersonal       = "1=27=2=Seafarer (Personal)"
@@ -110,7 +111,7 @@ const (
 	SCTrvTactics                = "1=2C=0=Tactics"
 	SCTrvTacticsMilitary        = "1=2C=1=Tactics (Military)"
 	SCTrvTacticsNavy            = "1=2C=2=Tactics (Navy)"
-	SCTrvVaccsuit               = "1=2D=0=Vaccsuit"
+	SCTrvVaccsuit               = "1=2D=0=Vacc Suit"
 )
 
 //skill -
