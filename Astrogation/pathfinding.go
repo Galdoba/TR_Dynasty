@@ -174,13 +174,13 @@ func (jp jumpPlot) connectDots() {
 	}
 	route := 0
 	jp.jumpMap[route] = projectCourse(jp.pMap, currentRoad, jp.end)
-	fmt.Println("j", jp.jumpMap[route])
+	//fmt.Println("j", jp.jumpMap[route])
 	for !roadIsEqual(routeMapMax, currentRoad) {
-		fmt.Println("c", currentRoad)
+		//	fmt.Println("c", currentRoad)
 		route++
 		currentRoad = pushCloser(currentRoad, routeMapMax)
 		jp.jumpMap[route] = projectCourse(jp.pMap, currentRoad, jp.end)
-		fmt.Println("j", jp.jumpMap[route])
+		//	fmt.Println("j", jp.jumpMap[route])
 	}
 
 	//return roadMap

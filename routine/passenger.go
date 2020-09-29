@@ -5,7 +5,8 @@ import (
 	"strconv"
 
 	"github.com/Galdoba/TR_Dynasty/constant"
-	"github.com/Galdoba/TR_Dynasty/world"
+	"github.com/Galdoba/TR_Dynasty/profile"
+	"github.com/Galdoba/TR_Dynasty/wrld"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 )
@@ -51,8 +52,10 @@ func PassengerRoutine() {
 //EFGH
 //IJKL
 //MNOP
-func passengerTrafficValue(sourceWorld, targetWorld world.World) int {
-	dm := TrvCore.EhexToDigit(sourceWorld.PlanetaryData(constant.PrPops))
+func passengerTrafficValue(sourceWorld, targetWorld wrld.World) int {
+	//dm := TrvCore.EhexToDigit(sourceWorld.PlanetaryData(constant.PrPops))
+	uwp, _ := profile.NewUWP(sourceWorld.UWP())
+	dm := TrvCore.EhexToDigit(uwp.Pops())
 	for _, val := range sourceWorld.TradeCodes() {
 		switch val {
 		default:

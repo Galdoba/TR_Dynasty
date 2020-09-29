@@ -3,8 +3,11 @@ package wrld
 import (
 	"strings"
 
+	"github.com/Galdoba/TR_Dynasty/TrvCore"
+	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/otu"
+	"github.com/Galdoba/TR_Dynasty/profile"
 	"github.com/Galdoba/utils"
 )
 
@@ -57,6 +60,30 @@ func (w *World) Name() string {
 func (w *World) UWP() string {
 	if val, ok := w.data[worldUWP]; ok {
 		return val
+	}
+	return "--NO DATA--"
+}
+
+//CodePops - return UWP data
+func (w *World) CodePops() string {
+	if val, ok := w.data[worldUWP]; ok {
+		uwp, err := profile.NewUWP(val)
+		if err != nil {
+			return err.Error()
+		}
+		return uwp.Pops()
+	}
+	return "--NO DATA--"
+}
+
+//CodeTL - return UWP data
+func (w *World) CodeTL() string {
+	if val, ok := w.data[worldUWP]; ok {
+		uwp, err := profile.NewUWP(val)
+		if err != nil {
+			return err.Error()
+		}
+		return uwp.TL()
 	}
 	return "--NO DATA--"
 }
@@ -188,6 +215,7 @@ func FromOTUdata(otuData otu.Info) (World, error) {
 	w.data[worldUWP] = otuData.UWP()
 	w.data[worldBases] = slToStr(otuData.Bases())
 	w.data[worldTradeClassifications] = slToStr(otuData.Remarks())
+	w.checkLtHtTradeCodes()
 	w.data[worldTravelZone] = otuData.Zone()
 	w.data[worldPBG] = otuData.PBG()
 	w.data[worldAllegiance] = otuData.Allegiance()
@@ -205,6 +233,10 @@ func FromOTUdata(otuData otu.Info) (World, error) {
 func slToStr(sl []string) string {
 	str := ""
 	for _, val := range sl {
+		if strings.Contains(val, "O:") {
+			continue //Пока исключаем по эстетическим причинам
+			//потом решить что делать с ремарками типа "O:2324"
+		}
 		str += val + " "
 	}
 	str = strings.TrimSuffix(str, " ")
@@ -229,4 +261,14 @@ func (w World) SecondSurvey() []string {
 	survey = append(survey, w.NumOfWorlds())
 	survey = append(survey, w.Stellar())
 	return survey
+}
+
+func (w *World) checkLtHtTradeCodes() {
+	if TrvCore.EhexToDigit(w.data[constant.PrTL]) <= TrvCore.EhexToDigit("5") {
+		w.data[worldTradeClassifications] += " Lt "
+	}
+	if TrvCore.EhexToDigit(w.data[constant.PrTL]) >= TrvCore.EhexToDigit("C") {
+		w.data[worldTradeClassifications] += " Ht "
+	}
+	w.data[worldTradeClassifications] = strings.TrimSuffix(w.data[worldTradeClassifications], " ")
 }

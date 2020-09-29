@@ -3,16 +3,14 @@ package main
 import (
 	"fmt"
 
-	"github.com/Galdoba/TR_Dynasty/npc/npcmakerv2"
 	"github.com/Galdoba/TR_Dynasty/otu"
+	"github.com/Galdoba/TR_Dynasty/routine"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/devtools/cli/user"
 )
 
 func main() {
-
-	npcmakerv2.Test()
-
+	routine.StartRoutine()
 	// propose := npcmakerv2.SearchCareers("Agent")
 	// for i := range propose {
 	// 	fmt.Println(propose[i])

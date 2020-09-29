@@ -256,6 +256,17 @@ func (sp Starport) Info() string {
 	return str
 }
 
+func (sp Starport) ShortInfo() string {
+	str := ""
+	str += " Berting cost:  " + sp.berthing
+
+	return str
+}
+
+func (sp Starport) Security() law.Security {
+	return *sp.sec
+}
+
 //Quality -
 func (sp *Starport) Quality() string {
 	q := ""

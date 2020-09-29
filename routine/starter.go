@@ -1,7 +1,6 @@
 package routine
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -11,11 +10,13 @@ import (
 	"time"
 
 	"github.com/Galdoba/TR_Dynasty/Astrogation"
+	law "github.com/Galdoba/TR_Dynasty/Law"
+	starport "github.com/Galdoba/TR_Dynasty/Starport"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
-	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/world"
+	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/utils"
 
 	"github.com/Galdoba/devtools/cli/features"
@@ -28,8 +29,9 @@ const (
 
 var delay time.Duration
 var emmersiveMode bool
-var sourceWorld world.World
-var targetWorld world.World
+var sourceWorld wrld.World
+var targetWorld wrld.World
+var sec law.Security
 var distance int
 var dp *dice.Dicepool
 var ptValue int
@@ -39,6 +41,8 @@ var day int
 var year int
 var autoMod bool
 var gmMode bool
+var menuPosition string
+var quit bool
 
 func init() {
 	printSlow("Initialisation...\n")
@@ -47,14 +51,13 @@ func init() {
 		fmt.Println(err.Error())
 	}
 	delay = del
-	emmersiveMode = true
+
 	gmMode = true
 	freightBase = 500
 	localBroker = broker{0, 0.0}
 }
 
 func StartRoutine() {
-
 	clrScrn()
 	printSlow("Start...\n")
 	helloWorld()
@@ -66,13 +69,23 @@ func StartRoutine() {
 	printSlow("Select your current world: \n")
 	sourceWorld = pickWorld()
 	clrScrn()
+	for !quit {
+		enterMenu(menuPosition)
+	}
+
+	return
 	printSlow("Select your destination world: \n")
 	targetWorld = pickWorld()
 	distance = Astrogation.JumpDistance(sourceWorld.Hex(), targetWorld.Hex())
 	ptValue = passengerTrafficValue(sourceWorld, targetWorld)
 	ftValue = freightTrafficValue(sourceWorld, targetWorld)
 	clrScrn()
-	jumpRoute, _ = inputJumpRoute()
+	jumpRoutelocal, err := inputJumpRoute()
+	if err != nil {
+		fmt.Println(err.Error())
+		panic(err.Error())
+	}
+	jumpRoute = jumpRoutelocal
 	clrScrn()
 	printOptions()
 	selectOperation()
@@ -160,6 +173,37 @@ func selectOperation() {
 	}
 }
 
+func menu(question string, options ...string) (int, string) {
+	fmt.Println(question)
+	for i := range options {
+		prefix := " [" + strconv.Itoa(i) + "] - "
+		fmt.Println(prefix + options[i])
+	}
+	answerGl := 0
+	gotIt := false
+	for !gotIt {
+		answer, err := user.InputInt()
+		if err != nil {
+			fmt.Println("\033[FError: " + err.Error())
+			fmt.Println(question)
+			continue
+		}
+		if answer >= len(options) || answer < 0 {
+			fmt.Println("\033[FError: Option", answer, "is invalid")
+			fmt.Println(question)
+			continue
+		}
+
+		if answer < len(options) {
+			gotIt = true
+			answerGl = answer
+		}
+	}
+	//fmt.Println(answerGl, options[answerGl])
+	return answerGl, options[answerGl]
+	//return a, text
+}
+
 /*
 Automatic Campaign Flowc hart
 1. Job Hunting (Planetside Events, page 7)
@@ -209,7 +253,7 @@ func userInputInt(msg ...string) int {
 	return i
 }
 
-func pickWorld() world.World {
+func pickWorld() wrld.World {
 	dataFound := false
 	for !dataFound {
 		input := userInputStr("Enter world's Name, Hex or UWP: ")
@@ -218,7 +262,7 @@ func pickWorld() world.World {
 			printSlow("WARNING: " + err.Error() + "\n")
 			continue
 		}
-		w, err := world.FromOTUdata(otuData.Info)
+		w, err := wrld.FromOTUdata(otuData)
 		if err != nil {
 			printSlow(err.Error() + "\n")
 			continue
@@ -229,7 +273,7 @@ func pickWorld() world.World {
 
 	}
 	fmt.Println("This must not happen!")
-	return world.World{}
+	return wrld.World{}
 }
 
 func loadWorld(key string) (world.World, error) {
@@ -255,22 +299,24 @@ func inputJumpRoute() ([]int, error) {
 		panic(0)
 		//return []int{}, err
 	}
+	fmt.Println(route)
+
 	var routeSl []int
 	jumpPoints := strings.Split(route, " ")
 	for i := 1; i < len(jumpPoints); i++ {
 		locDist := Astrogation.JumpDistance(jumpPoints[i], jumpPoints[i-1])
-		if locDist > getJumpDrive() {
-			fmt.Println(routeSl)
-			return routeSl, errors.New("Jump route invalid: Distance > JumpDrive")
-		}
+		// if locDist > getJumpDrive() {
+		// 	fmt.Println(routeSl)
+		// 	return routeSl, errors.New("Jump route invalid: Distance > JumpDrive")
+		// }
 		routeSl = append(routeSl, locDist)
 	}
 	return routeSl, nil
 }
 
 func techDifferenceDM() int {
-	tl1 := TrvCore.EhexToDigit(sourceWorld.PlanetaryData(constant.PrTL))
-	tl2 := TrvCore.EhexToDigit(targetWorld.PlanetaryData(constant.PrTL))
+	tl1 := TrvCore.EhexToDigit(sourceWorld.CodeTL())
+	tl2 := TrvCore.EhexToDigit(targetWorld.CodeTL())
 	tlDiff := utils.Max(tl1, tl2) - utils.Min(tl1, tl2)
 	if tlDiff > 5 {
 		tlDiff = 5
@@ -309,15 +355,25 @@ func helloWorld() {
 
 func printHead() {
 	fmt.Println("         Date: ", formatDate(day, year))
-	fmt.Println("Current World: ", sourceWorld.Hex()+" - "+sourceWorld.Name()+" ("+sourceWorld.UWP()+") "+sourceWorld.TradeCodesString()+" "+sourceWorld.TravelZone())
-	fmt.Println("  Destination: ", targetWorld.Hex()+" - "+targetWorld.Name()+" ("+targetWorld.UWP()+") "+targetWorld.TradeCodesString()+" "+targetWorld.TravelZone())
-	fmt.Println("Passenger Traffic Value:", ptValue)
-	fmt.Println("  Freight Traffic Value:", ftValue)
-	fmt.Println("     Local Broker's Cut:", localBroker.cut, "%")
-	fmt.Println("-----------------------------------------------------")
-	fmt.Println("Expected Jump Sequence: ", jumpRoute)
-	fmt.Println("        Total Distance: ", distance)
-	fmt.Println("                   ETA: ", formatDate(day+(len(jumpRoute)*7), year))
+	fmt.Println("Current World: ", sourceWorld.Hex()+" - "+sourceWorld.Name()+"  ("+sourceWorld.UWP()+")  "+sourceWorld.TradeClassifications()+"  "+sourceWorld.TravelZone())
+	if sourceWorld.CodeTL() != "--NO DATA--" {
+		sp, _ := starport.From(sourceWorld)
+		sec = sp.Security()
+		fmt.Println(sp.ShortInfo())
+		fmt.Println(" Securty Code: " + sec.Profile())
+
+	}
+	if targetWorld.CodeTL() != "--NO DATA--" {
+		fmt.Println("  Destination: ", targetWorld.Hex()+" - "+targetWorld.Name()+"  ("+targetWorld.UWP()+")  "+targetWorld.TradeClassifications()+"  "+targetWorld.TravelZone())
+		fmt.Println("Passenger Traffic Value:", ptValue)
+		fmt.Println("  Freight Traffic Value:", ftValue)
+		fmt.Println("     Local Broker's Cut:", localBroker.cut, "%")
+		fmt.Println("-----------------------------------------------------")
+		fmt.Println("Expected Jump Sequence: ", jumpRoute)
+		fmt.Println("        Total Distance: ", distance)
+		fmt.Println("                   ETA: ", formatDate(day+(len(jumpRoute)*7), year))
+
+	}
 	fmt.Println("-----------------------------------------------------")
 }
 
