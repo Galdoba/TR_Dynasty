@@ -145,7 +145,7 @@ func freightTrafficValue(sourceWorld, targetWorld wrld.World) int {
 	uwp, _ := profile.NewUWP(targetWorld.UWP())
 	dm += TrvCore.EhexToDigit(uwp.Pops())
 	for _, val := range targetWorld.TradeCodes() {
-		fmt.Println("check", val)
+		//fmt.Println("check", val)
 		switch val {
 		default:
 		case constant.TradeCodeAgricultural:
