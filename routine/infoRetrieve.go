@@ -101,3 +101,15 @@ func mutateTestResultsByTime(effect, time, timeLimit int) (int, int, bool) {
 	}
 	return effect, time, abort
 }
+
+func getCargo() []string {
+	lines := utils.LinesFromTXT("mgt2_traffic.config")
+	lineNums := utils.InFileContainsN("mgt2_traffic.config", "CARGOENTRY")
+	cargo := []string{}
+	for _, i := range lineNums {
+		currentLine := lines[i]
+		data := strings.Split(currentLine, ":")
+		cargo = append(cargo, data[1])
+	}
+	return cargo
+}

@@ -59,12 +59,11 @@ func init() {
 }
 
 func StartRoutine() {
-	// integerToEhex(1)
-	// integerToEhex(10)
-	// integerToEhex(42)
-	// integerToEhex(4650)
-	// integerToEhex(4750)
 
+	for i, val := range getCargo() {
+		fmt.Println(i, val)
+	}
+	return
 	clrScrn()
 	printSlow("Start...\n")
 	helloWorld()

@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
-	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/profile"
@@ -264,11 +263,21 @@ func (w World) SecondSurvey() []string {
 }
 
 func (w *World) checkLtHtTradeCodes() {
-	if TrvCore.EhexToDigit(w.data[constant.PrTL]) <= TrvCore.EhexToDigit("5") {
+
+	if TrvCore.EhexToDigit(w.CodeTL()) <= 5 {
 		w.data[worldTradeClassifications] += " Lt "
 	}
-	if TrvCore.EhexToDigit(w.data[constant.PrTL]) >= TrvCore.EhexToDigit("C") {
+	if TrvCore.EhexToDigit(w.CodeTL()) >= 12 {
 		w.data[worldTradeClassifications] += " Ht "
 	}
+	// if TrvCore.EhexToDigit(w.data[constant.PrTL]) <= TrvCore.EhexToDigit("5") {
+	// 	fmt.Println(TrvCore.EhexToDigit(w.data[constant.PrTL]))
+	// 	fmt.Println(w.data[constant.PrTL])
+	// 	panic(1)
+	// 	w.data[worldTradeClassifications] += " Lt "
+	// }
+	// if TrvCore.EhexToDigit(w.data[constant.PrTL]) >= TrvCore.EhexToDigit("C") {
+	// 	w.data[worldTradeClassifications] += " Ht "
+	// }
 	w.data[worldTradeClassifications] = strings.TrimSuffix(w.data[worldTradeClassifications], " ")
 }
