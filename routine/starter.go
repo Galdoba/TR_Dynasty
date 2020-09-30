@@ -1,6 +1,7 @@
 package routine
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -289,17 +290,27 @@ func loadWorld(key string) (world.World, error) {
 }
 
 func inputJumpRoute() ([]int, error) {
-
+	err := errors.New("No calculations made")
+	route := ""
 	//route := userInputStr("Enter route sequence (format: 'XXYY XXYY ... XXYY'): ")
-	route, err := Astrogation.PlotCourse(sourceWorld.Hex(), targetWorld.Hex(), getJumpDrive())
+	drive := 1
+	for err != nil {
+		fmt.Println("Constructing Plot with jump drive", drive)
+		route, err = Astrogation.PlotCourse(sourceWorld.Hex(), targetWorld.Hex(), drive)
 
-	if err != nil {
+		if err != nil {
 
-		printSlow(err.Error())
-		panic(0)
-		//return []int{}, err
+			printSlow(err.Error())
+			//panic(6)
+			//return []int{}, err
+			drive++
+			if drive > 6 {
+				return []int{}, err
+			}
+		}
+		fmt.Println(route)
+
 	}
-	fmt.Println(route)
 
 	var routeSl []int
 	jumpPoints := strings.Split(route, " ")
@@ -307,6 +318,7 @@ func inputJumpRoute() ([]int, error) {
 		locDist := Astrogation.JumpDistance(jumpPoints[i], jumpPoints[i-1])
 		// if locDist > getJumpDrive() {
 		// 	fmt.Println(routeSl)
+		// 	fmt.Println(jumpPoints[i], jumpPoints[i-1], Astrogation.JumpDistance(jumpPoints[i], jumpPoints[i-1]))
 		// 	return routeSl, errors.New("Jump route invalid: Distance > JumpDrive")
 		// }
 		routeSl = append(routeSl, locDist)

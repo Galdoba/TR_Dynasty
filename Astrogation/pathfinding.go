@@ -67,27 +67,41 @@ func PlotCourse(start, end string, drive int) (string, error) {
 		}
 		break
 	}
-	return chooseBest(plot.jumpMap), plot.err
+	return chooseBest(plot.jumpMap, plot.drives), plot.err
 }
 
-func chooseBest(crsmap map[int]string) string {
+func chooseBest(crsmap map[int]string, drives int) string {
 	minSum := 1000000
 	candidate := 0
+mapCycle:
 	for k, val := range crsmap {
+		//fmt.Println("Test:", k, "of", len(crsmap))
 		points := strings.Split(val, " ")
+		//fmt.Println("POINTS", points)
 		sum := 0
+		minJump := 0
 		for r := range points {
-			last := r
+			last := r - 1
 			if r == 0 {
 				last = 0
 			}
+			if JumpDistance(points[last], points[r]) > drives {
+				//	fmt.Println("Exclude:", crsmap[k])
+				continue mapCycle
+			}
 			sum += JumpDistance(points[last], points[r])
+			if minJump < JumpDistance(points[last], points[r]) {
+				minJump = JumpDistance(points[last], points[r])
+			}
 		}
+		//fmt.Println("Check:", crsmap[k], minSum, sum, minJump)
 		if sum < minSum {
 			minSum = sum
 			candidate = k
+			//fmt.Println("SET CANDIDATE:", k)
 		}
 	}
+	//fmt.Println("Chosen:", crsmap[candidate], drives)
 	return crsmap[candidate]
 }
 
@@ -272,6 +286,7 @@ func (jp *jumpPlot) removeImpossibleRoads() {
 				p2 = jp.end
 			}
 			if JumpDistance(p1, p2) > jp.drives {
+				fmt.Println("WTF?", p1, p2)
 				invalid++
 				delete(jp.jumpMap, key)
 				break
