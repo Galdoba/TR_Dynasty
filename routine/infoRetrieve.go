@@ -73,3 +73,31 @@ func getCrewNavyScoutMerchantRank() int {
 	}
 	return vol
 }
+
+func mutateTestResultsByTime(effect, time, timeLimit int) (int, int, bool) {
+	time -= effect / 2
+	abort := false
+	if timeLimit < 1 {
+		timeLimit = 99999999
+	}
+	if time > timeLimit {
+		i, _ := menu("Time limits is "+strconv.Itoa(timeLimit)+" days, but operation will take more...", "Do not rush and take your time", "Give result as is", "Abort action")
+		switch i {
+		case 0:
+			timeLimit = time
+		case 1:
+			dif := time - timeLimit
+			effect = effect - (dif * 2)
+			time = timeLimit
+		case 2:
+			effect = 0
+			time = timeLimit / 2
+			abort = true
+		}
+
+	}
+	if time < 1 || autoMod == true {
+		time = 1
+	}
+	return effect, time, abort
+}

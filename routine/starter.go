@@ -75,21 +75,21 @@ func StartRoutine() {
 	}
 
 	return
-	printSlow("Select your destination world: \n")
-	targetWorld = pickWorld()
-	distance = Astrogation.JumpDistance(sourceWorld.Hex(), targetWorld.Hex())
-	ptValue = passengerTrafficValue(sourceWorld, targetWorld)
-	ftValue = freightTrafficValue(sourceWorld, targetWorld)
-	clrScrn()
-	jumpRoutelocal, err := inputJumpRoute()
-	if err != nil {
-		fmt.Println(err.Error())
-		panic(err.Error())
-	}
-	jumpRoute = jumpRoutelocal
-	clrScrn()
-	printOptions()
-	selectOperation()
+	// printSlow("Select your destination world: \n")
+	// targetWorld = pickWorld()
+	// distance = Astrogation.JumpDistance(sourceWorld.Hex(), targetWorld.Hex())
+	// ptValue = passengerTrafficValue(sourceWorld, targetWorld)
+	// ftValue = freightTrafficValue(sourceWorld, targetWorld)
+	// clrScrn()
+	// jumpRoutelocal, err := inputJumpRoute()
+	// if err != nil {
+	// 	fmt.Println(err.Error())
+	// 	panic(err.Error())
+	// }
+	// jumpRoute = jumpRoutelocal
+	// clrScrn()
+	// printOptions()
+	// selectOperation()
 }
 
 func userInputDate() string {
@@ -254,6 +254,27 @@ func userInputInt(msg ...string) int {
 	return i
 }
 
+func userInputIntSlice(msg ...string) []int {
+	err := errors.New("No Operation made")
+	num := 0
+	arr := []int{}
+	for err != nil {
+		str := userInputStr(msg...)
+		data := strings.Split(str, "/")
+		for _, val := range data {
+			val = strings.TrimSuffix(val, " ")
+			val = strings.TrimPrefix(val, " ")
+			num, err = strconv.Atoi(val)
+			if err != nil {
+				fmt.Println(err.Error())
+				continue
+			}
+			arr = append(arr, num)
+		}
+	}
+	return arr
+}
+
 func pickWorld() wrld.World {
 	dataFound := false
 	for !dataFound {
@@ -356,6 +377,7 @@ func clrScrn() {
 		panic("Your platform is unsupported! I can't clear terminal screen :(")
 	}
 	printHead()
+	fmt.Println("Menu position: MAIN >", menuPosition)
 }
 
 func helloWorld() {
@@ -407,14 +429,17 @@ func formatDate(day, year int) string {
 	return date
 }
 
-func spendTime() {
-	if localBroker.cut == 0 {
-		dTook := dp.RollNext("1d6").Sum()
-		printSlow("This operation took " + strconv.Itoa(dTook) + " days...\n")
-	} else {
-		printSlow("This operation took few hours...\n")
-	}
-}
+// func spendTime(effect, timeLimit int) {
+// 	if localBroker.cut == 0 {
+// 		dTook := dp.RollNext("1d6").Sum() - effect/2
+// 		if dTook < 1 {
+// 			dTook = 1
+// 		}
+// 		printSlow("This operation took " + strconv.Itoa(dTook) + " days...\n")
+// 	} else {
+// 		printSlow("This operation took few hours...\n")
+// 	}
+// }
 
 func autoFlux() int {
 	d1 := dp.RollNext("1d6").Sum()
@@ -424,4 +449,17 @@ func autoFlux() int {
 		fl = fl * -1
 	}
 	return fl
+}
+
+func pickDestinationWorld() {
+	targetWorld = pickWorld()
+	distance = Astrogation.JumpDistance(sourceWorld.Hex(), targetWorld.Hex())
+	ptValue = passengerTrafficValue(sourceWorld, targetWorld)
+	ftValue = freightTrafficValue(sourceWorld, targetWorld)
+	jumpRoutelocal, err := inputJumpRoute()
+	if err != nil {
+		fmt.Println(err.Error())
+		panic(err.Error())
+	}
+	jumpRoute = jumpRoutelocal
 }

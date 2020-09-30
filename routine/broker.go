@@ -52,6 +52,7 @@ func (br broker) DM() int {
 }
 
 func chooseBroker() {
+	printSlow("\033[F----------------------\n")
 	printSlow("Please, choose your Broker:\n")
 	printSlow(" [0] - DM: +0	Percentage: 0.5 %	Name: " + name.RandomNew() + "\n")
 	printSlow(" [1] - DM: +1	Percentage:   1 %	Name: " + name.RandomNew() + "\n")
@@ -70,6 +71,7 @@ func chooseBroker() {
 			valid = true
 			if skill == 7 {
 				printSlow("Services refused\n")
+				localBroker = broker{}
 			} else {
 				printSlow("Local broker hired\n")
 			}

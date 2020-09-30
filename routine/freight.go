@@ -7,6 +7,7 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/constant"
+	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/profile"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/utils"
@@ -16,20 +17,36 @@ var freightBase int
 
 func FreightRoutine() {
 	printSlow("Searching for Freight...\n")
-	spendTime()
+
 	//diff := freightDiff(ftValue)
 	//playerEffect2 := userInputInt("Enter Effect of Diplomat(" + strconv.Itoa(diff) + "), Investigate(" + strconv.Itoa(diff) + ") or Streetwise(" + strconv.Itoa(diff) + ") check: ")
 	//playerEffect2 := userInputInt("Enter Effect of Diplomat(8), Investigate(8) or Streetwise(8) check: ")
+	timeLimit := 0
 	playerEffect2 := 0
 	switch autoMod {
 	case false:
-		playerEffect2 = userInputInt("Enter Effect of Diplomat(8), Investigate(8) or Streetwise(8) check: ")
+		//playerEffect2 = userInputStr("Enter Effect of Diplomat(8), Investigate(8) or Streetwise(8) check: ")
+		input := userInputIntSlice("Enter Effect of Diplomat(8), Investigate(8) or Streetwise(8) check (and time limit in days after ' ' if nesessary): ")
+		if len(input) > 0 {
+			playerEffect2 = input[0]
+		}
+		if len(input) > 1 {
+			timeLimit = input[1]
+		}
+
 	case true:
 		playerEffect2 = autoFlux()
+
 	}
-	if gmMode {
-		fmt.Println("GM TIP: Freight Roll:", ftValue, playerEffect2, localBroker.DM(), "|", ftValue+playerEffect2+localBroker.DM())
+	playerEffect2, time, abort := mutateTestResultsByTime(playerEffect2, dice.Roll("1d6").Sum(), timeLimit)
+	if abort {
+		fmt.Println("Search aborted after", time, "days...")
 	}
+	fmt.Println("Search took", time, "days...")
+	//spendTime(playerEffect2, timeLimit)
+	// if gmMode {
+	// 	fmt.Println("GM TIP: Freight Roll:", ftValue, playerEffect2, localBroker.DM(), "|", ftValue+playerEffect2+localBroker.DM())
+	// }
 	inLot, mnLot, mjLot := availableFreight(ftValue + playerEffect2 + localBroker.DM())
 	//fmt.Println(inLot, mnLot, mjLot)
 	frList := freightListed(inLot, mnLot, mjLot)

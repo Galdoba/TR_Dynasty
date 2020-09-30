@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/Galdoba/TR_Dynasty/constant"
+	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/profile"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 
@@ -15,17 +16,29 @@ import (
 func PassengerRoutine() {
 
 	printSlow("Searching for Passengers...\n")
-	spendTime()
+	timeLimit := 0
 	playerEffect1 := 0
 	switch autoMod {
 	case false:
-		playerEffect1 = userInputInt("Enter Effect of Carouse(8) or Streetwise(8) check: ")
+		//playerEffect1 = userInputInt("Enter Effect of Carouse(8) or Streetwise(8) check: ")
+		input := userInputIntSlice("Enter Effect of Carouse(8) or Streetwise(8) check (and time limit in days after ' ' if nesessary): ")
+		if len(input) > 0 {
+			playerEffect1 = input[0]
+		}
+		if len(input) > 1 {
+			timeLimit = input[1]
+		}
 	case true:
 		playerEffect1 = autoFlux()
 	}
-	if gmMode {
-		fmt.Println("GM TIP: Passenger Roll:", ptValue, playerEffect1, localBroker.DM(), "|", ptValue+playerEffect1+localBroker.DM())
+	playerEffect1, time, abort := mutateTestResultsByTime(playerEffect1, dice.Roll("1d6").Sum(), timeLimit)
+	if abort {
+		fmt.Println("Search aborted after", time, "days...")
 	}
+	fmt.Println("Search took", time, "days...")
+	// if gmMode {
+	// 	fmt.Println("GM TIP: Passenger Roll:", ptValue, playerEffect1, localBroker.DM(), "|", ptValue+playerEffect1+localBroker.DM())
+	// }
 
 	low, basic, middle, high := availablePassengers(ptValue + playerEffect1 + localBroker.DM())
 	printSlow("Active passenger requests: " + strconv.Itoa(low+basic+middle+high) + "\n")
