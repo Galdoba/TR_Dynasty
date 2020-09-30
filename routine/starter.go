@@ -59,6 +59,12 @@ func init() {
 }
 
 func StartRoutine() {
+	// integerToEhex(1)
+	// integerToEhex(10)
+	// integerToEhex(42)
+	// integerToEhex(4650)
+	// integerToEhex(4750)
+
 	clrScrn()
 	printSlow("Start...\n")
 	helloWorld()
@@ -462,4 +468,39 @@ func pickDestinationWorld() {
 		panic(err.Error())
 	}
 	jumpRoute = jumpRoutelocal
+}
+
+func integerToEhex(i int) {
+	// fmt.Println(30 * 1)
+	// fmt.Println(30*30, 2)
+	// fmt.Println(30 * 30 * 30)
+	// fmt.Println(30*30*30*30, 4)
+	// fmt.Println(30 * 30 * 30 * 30 * 30)
+	// fmt.Println(30*30*30*30*30*30, 6)
+	// fmt.Println(30 * 30 * 30 * 30 * 30 * 30 * 30)
+	// fmt.Println(30*30*30*30*30*30*30*30, 8)
+	// fmt.Println(30 * 30 * 30 * 30 * 30 * 30 * 30 * 30 * 30)
+	// fmt.Println(30*30*30*30*30*30*30*30*30*30, 10)
+	// fmt.Println(30 * 30 * 30 * 30 * 30 * 30 * 30 * 30 * 30 * 30 * 30)
+	// fmt.Println(30*30*30*30*30*30*30*30*30*30*30*30, 12)
+	// fmt.Println(30 * 30 * 30 * 30 * 30 * 30 * 30 * 30 * 30 * 30 * 30 * 30 * 17)
+	//fmt.Println("integerToEhex", i)
+	d := i
+
+	str := ""
+	if i < 0 {
+		i = i * -1
+		str += "^"
+	}
+	for i/30 >= 0 {
+		//fmt.Println(i/30, i%30)
+		str += TrvCore.DigitToEhex(i % 30)
+		if i/30 == 0 {
+			//	fmt.Println(i % 30)
+			//str += TrvCore.DigitToEhex(i % 30)
+			break
+		}
+		i = i / 30
+	}
+	fmt.Print("\r" + str + "   " + strconv.Itoa(d))
 }
