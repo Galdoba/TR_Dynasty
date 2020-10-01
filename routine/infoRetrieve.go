@@ -1,6 +1,8 @@
 package routine
 
 import (
+	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -103,12 +105,20 @@ func mutateTestResultsByTime(effect, time, timeLimit int) (int, int, bool) {
 }
 
 func getCargo() []string {
-	lines := utils.LinesFromTXT("mgt2_traffic.config")
+
+	lines := utils.LinesFromTXT(exPath + "mgt2_traffic.config")
 	lineNums := utils.InFileContainsN("mgt2_traffic.config", "CARGOENTRY")
 	cargo := []string{}
 	for _, i := range lineNums {
 		currentLine := lines[i]
 		data := strings.Split(currentLine, ":")
+		dataParts := strings.Split(data[1], "_")
+		if len(dataParts) != 13 {
+			for e := 0; e < len(dataParts); e++ {
+				fmt.Println(e, dataParts[e])
+			}
+			panic(errors.New("Data Corrupted: " + data[1]))
+		}
 		cargo = append(cargo, data[1])
 	}
 	return cargo

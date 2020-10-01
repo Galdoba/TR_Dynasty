@@ -19,7 +19,7 @@ func init() {
 type InfoRetriver interface {
 	Sector() string
 	SubSector() string
-	HexData() string
+	Hex() string
 	Name() string
 	UWP() string
 	Bases() []string
