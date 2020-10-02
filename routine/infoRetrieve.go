@@ -113,7 +113,7 @@ func getCargo() []string {
 		currentLine := lines[i]
 		data := strings.Split(currentLine, ":")
 		dataParts := strings.Split(data[1], "_")
-		if len(dataParts) != 13 {
+		if len(dataParts) != 14 {
 			for e := 0; e < len(dataParts); e++ {
 				fmt.Println(e, dataParts[e])
 			}

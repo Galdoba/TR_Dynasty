@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Galdoba/utils"
 
@@ -34,11 +35,12 @@ type cargoLot struct {
 	insurance        int
 	suplierType      string
 	comment          string
+	id               int
 }
 
 func newCargoLot() cargoLot {
 	cl := cargoLot{}
-
+	cl.id = int(time.Now().UnixNano())
 	return cl
 }
 
@@ -69,6 +71,10 @@ func (cl *cargoLot) LeachData(rawData string) error {
 	cl.insurance, err = strconv.Atoi(data[10])
 	cl.suplierType = data[11]
 	cl.comment = data[12]
+	cl.id, err = strconv.Atoi(data[13])
+	if cl.id == 0 {
+		cl.id = int(time.Now().UnixNano())
+	}
 	return err
 }
 
@@ -176,6 +182,14 @@ func (cl *cargoLot) GetComment() string {
 	return cl.comment
 }
 
+func (cl *cargoLot) SetID(newval int) {
+	cl.id = newval
+}
+
+func (cl *cargoLot) GetID() int {
+	return cl.id
+}
+
 func newCargoManifest() cargoManifest {
 	cm := cargoManifest{}
 	rawData := getCargo()
@@ -197,7 +211,7 @@ func TestCargo() {
 	cl := newCargoLot()
 	cl.SetTGCode("164")
 	cl.SetDescr(trade.GetDescription("164"))
-	cl.SetVolume(325)
+	cl.SetVolume(326)
 	cl.SetComment("Test Entry")
 	fmt.Println(cl)
 	cm.entry = append(cm.entry, cl)
@@ -214,7 +228,7 @@ entry:
 	for i := range cm.entry {
 		fmt.Println("Go Entry", i)
 		for l, val := range lines {
-			if strings.Contains(val, cm.entry[i].GetComment()) {
+			if strings.Contains(val, strconv.Itoa(cm.entry[i].GetID())) {
 				fmt.Println("Edit line", l, "entry", cm.entry[i])
 				utils.EditLineInFile(exPath+cargoFile, l, cm.entry[i].SeedData())
 
@@ -233,7 +247,7 @@ func (cl *cargoLot) SeedData() string {
 	//CARGOENTRY:148_Workable Alloys_16_Drinax_4600_-6_0_TRUE_Asim_118-1106_50_1_Freight
 	str += cl.GetTGCode() + "_" + cl.GetDescr() + "_" + strconv.Itoa(cl.GetVolume()) + "_" + cl.GetOrigin() + "_" + strconv.Itoa(cl.GetCost()) +
 		"_" + strconv.Itoa(cl.GetDangerDM()) + "_" + strconv.Itoa(cl.GetRiskDM()) + "_" + strconv.FormatBool(cl.GetLegality()) + "_" + cl.GetDestination() + "_" + cl.GetETA() + "_" +
-		strconv.Itoa(cl.GetInsurance()) + "_" + cl.GetSupplierType() + "_" + cl.GetComment()
+		strconv.Itoa(cl.GetInsurance()) + "_" + cl.GetSupplierType() + "_" + cl.GetComment() + "_" + strconv.Itoa(cl.GetID())
 	return str
 }
 
