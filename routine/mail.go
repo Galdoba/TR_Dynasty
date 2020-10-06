@@ -5,25 +5,31 @@ import (
 	"strconv"
 )
 
+var mailOffer string
+
 func MailRoutine() {
+	fmt.Println("Mail hauling offer:")
+	if mailOffer != "" {
+		fmt.Println(mailOffer)
+		fmt.Println("-----------------------------------------------------")
+		return
+	}
 	mailDice := dp.RollNext("2d6").DM(mailDM()).Sum()
 	if mailDice >= 12 {
 		qty := dp.RollNext("1d6").Sum()
-		printSlow("Mail hauling offer:\n")
-		printSlow(strconv.Itoa(qty*5) + " tons of Universal mail containers are ready to pick up.\n")
 		fee := 0
 		if autoMod {
 			fee = qty*25000 - localBroker.CutFrom(qty*25000)
 		} else {
 			fee = qty * 25000
 		}
-		printSlow("Hauling fee: " + strconv.Itoa(fee) + " Cr\n")
-		fmt.Println("-----------------------------------------------------")
-	} else {
-		printSlow("No mail available\n")
-		fmt.Println("-----------------------------------------------------")
-	}
+		mailOffer = strconv.Itoa(qty*5) + " tons of Universal mail containers are ready to pick up.\n" + "Hauling fee: " + strconv.Itoa(fee) + " Cr"
 
+	} else {
+		mailOffer = "No mail available"
+	}
+	fmt.Println(mailOffer)
+	fmt.Println("-----------------------------------------------------")
 }
 
 func mailDM() int {

@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strconv"
 
+	trade "github.com/Galdoba/TR_Dynasty/Trade"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/dice"
@@ -50,18 +51,28 @@ func FreightRoutine() {
 	inLot, mnLot, mjLot := availableFreight(ftValue + playerEffect2 + localBroker.DM())
 	//fmt.Println(inLot, mnLot, mjLot)
 	frList := freightListed(inLot, mnLot, mjLot)
-	//fmt.Println(frList)
+	fmt.Println(frList)
+	//TODO: Create lots here
 	if len(frList) < 1 {
 		printSlow("No freight lots available\n")
 	}
 	for i := range frList {
 		base := 500
-
 		fee := frList[i]*freightCostPerTon(base) - localBroker.CutFrom(frList[i]*freightCostPerTon(base))
-		printSlow("Freight lot " + strconv.Itoa(i+1) + " 		" + strconv.Itoa(frList[i]) + " tons		Hauling fee: " + strconv.Itoa(fee) + " Cr\n")
+		lot := newCargoLot()
+		lot.detailsFreight(determineLot(), frList[i], fee)
+		portCargo = append(portCargo, lot)
+		//fmt.Println(lot)
+		//printSlow("Freight lot " + strconv.Itoa(i+1) + " 		" + strconv.Itoa(frList[i]) + " tons		Hauling fee: " + strconv.Itoa(fee) + " Cr\n")
+		fmt.Println("Lot", i, "	"+lot.GetTGCode()+"	", lot.GetVolume(), "tons  	", lot.GetComment()+"	", lot.GetDescr())
 	}
 	fmt.Println("-----------------------------------------------------")
 
+}
+
+func determineLot() string {
+	randomLot := trade.RandomTGCategory(sourceWorld) + dice.Roll("2d6").SumStr()
+	return randomLot
 }
 
 func freightDiff(ftValue int) int {

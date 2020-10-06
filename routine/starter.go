@@ -66,9 +66,9 @@ func init() {
 
 func StartRoutine() {
 
-	TestCargo()
+	//TestCargo()
 
-	return
+	//return
 	clrScrn()
 	printSlow("Start...\n")
 	helloWorld()

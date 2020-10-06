@@ -10,6 +10,8 @@ import (
 
 	trade "github.com/Galdoba/TR_Dynasty/Trade"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
+	"github.com/Galdoba/TR_Dynasty/constant"
+	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/otu"
 )
 
@@ -18,7 +20,8 @@ const (
 )
 
 type cargoManifest struct {
-	entry []cargoLot
+	entry        []cargoLot
+	maximumTonns int
 }
 
 type cargoLot struct {
@@ -37,6 +40,8 @@ type cargoLot struct {
 	comment          string
 	id               int
 }
+
+var portCargo []cargoLot
 
 func newCargoLot() cargoLot {
 	cl := cargoLot{}
@@ -190,8 +195,9 @@ func (cl *cargoLot) GetID() int {
 	return cl.id
 }
 
-func newCargoManifest() cargoManifest {
+func loadCargoManifest() cargoManifest {
 	cm := cargoManifest{}
+	cm.maximumTonns = getShipData("SHIP_CARGO_VOLUME")
 	rawData := getCargo()
 	for i := range rawData {
 		lot := newCargoLot()
@@ -204,7 +210,7 @@ func newCargoManifest() cargoManifest {
 }
 
 func TestCargo() {
-	cm := newCargoManifest()
+	cm := loadCargoManifest()
 	for i := range cm.entry {
 		fmt.Println(i, cm.entry[i])
 	}
@@ -215,14 +221,15 @@ func TestCargo() {
 	cl.SetComment("Test Entry")
 	fmt.Println(cl)
 	cm.entry = append(cm.entry, cl)
-	saveCargo(cm)
+	fmt.Println(cm)
+	saveCargoManifest(cm)
 }
 
 func (cm *cargoManifest) addCargo(cl cargoLot) {
 	cm.entry = append(cm.entry, cl)
 }
 
-func saveCargo(cm cargoManifest) {
+func saveCargoManifest(cm cargoManifest) {
 	lines := utils.LinesFromTXT(exPath + cargoFile)
 entry:
 	for i := range cm.entry {
@@ -311,4 +318,20 @@ func isDate(str string) bool {
 		}
 	}
 	return true
+}
+
+func (cl *cargoLot) detailsFreight(code string, volume int, fee int) {
+	cl.SetTGCode(code)
+	cl.SetDestination(targetWorld.Hex())
+	cl.SetLegality(true)
+	cl.SetOrigin(sourceWorld.Hex())
+	cl.SetSupplierType(constant.MerchantTypeTrade)
+	cl.SetETA(formatDate(day+(len(jumpRoute)*7), year))
+	cl.SetDescr(trade.GetDescription(code))
+	cl.SetInsurance(dice.Roll("1d10").Sum() * 10)
+	cl.SetComment("Freight fee: " + strconv.Itoa(fee) + " Cr")
+	cl.SetVolume(volume)
+	cl.SetID(int(time.Now().UnixNano()))
+	cl.SetCost(0)
+
 }

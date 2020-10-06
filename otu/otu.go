@@ -236,15 +236,16 @@ func GetDataOn(input string) (Info, error) {
 	if val, ok := MapDataByHex(sectorData)[input]; ok {
 		return Info{val}, nil
 	}
-	if val, ok := MapDataByHex(sectorData)[hex5ToHex4(input)]; ok {
-		return Info{val}, nil
-	}
+
 	nameInput := formatName(input)
 	if val, ok := MapDataByName(sectorData)[nameInput]; ok {
 		return Info{val}, nil
 	}
 	uwpInput := strings.ToUpper(input)
 	if val, ok := MapDataByUWP(sectorData)[uwpInput]; ok {
+		return Info{val}, nil
+	}
+	if val, ok := MapDataByHex(sectorData)[hex5ToHex4(input)]; ok {
 		return Info{val}, nil
 	}
 	return Info{}, errors.New("No Data on '" + input + "'")

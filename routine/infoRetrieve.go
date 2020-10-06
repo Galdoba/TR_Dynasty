@@ -9,9 +9,9 @@ import (
 	"github.com/Galdoba/utils"
 )
 
-func getJumpDrive() int {
+func getShipData(query string) int {
 	lines := utils.LinesFromTXT("mgt2_traffic.config")
-	l := utils.InFileContains("mgt2_traffic.config", "JUMP_DRIVE")
+	l := utils.InFileContains("mgt2_traffic.config", query)
 	data := strings.Split(lines[l], ":")
 	jd, err := strconv.Atoi(data[1])
 	if err != nil {
@@ -20,16 +20,38 @@ func getJumpDrive() int {
 	return jd
 }
 
-func getShipVolume() int {
-	lines := utils.LinesFromTXT("mgt2_traffic.config")
-	l := utils.InFileContains("mgt2_traffic.config", "SHIP_VOLUME")
-	data := strings.Split(lines[l], ":")
-	vol, err := strconv.Atoi(data[1])
-	if err != nil {
-		return -999
-	}
-	return vol
-}
+// func getJumpDrive() int {
+// 	lines := utils.LinesFromTXT("mgt2_traffic.config")
+// 	l := utils.InFileContains("mgt2_traffic.config", "JUMP_DRIVE")
+// 	data := strings.Split(lines[l], ":")
+// 	jd, err := strconv.Atoi(data[1])
+// 	if err != nil {
+// 		return -999
+// 	}
+// 	return jd
+// }
+
+// func getShipVolume() int {
+// 	lines := utils.LinesFromTXT("mgt2_traffic.config")
+// 	l := utils.InFileContains("mgt2_traffic.config", "SHIP_VOLUME")
+// 	data := strings.Split(lines[l], ":")
+// 	vol, err := strconv.Atoi(data[1])
+// 	if err != nil {
+// 		return -999
+// 	}
+// 	return vol
+// }
+
+// func getShipCargoVolume() int {
+// 	lines := utils.LinesFromTXT("mgt2_traffic.config")
+// 	l := utils.InFileContains("mgt2_traffic.config", "SHIP_CARGO_VOLUME")
+// 	data := strings.Split(lines[l], ":")
+// 	vol, err := strconv.Atoi(data[1])
+// 	if err != nil {
+// 		return -999
+// 	}
+// 	return vol
+// }
 
 func shipArmed() bool {
 	lines := utils.LinesFromTXT("mgt2_traffic.config")

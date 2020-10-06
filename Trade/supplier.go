@@ -1,13 +1,12 @@
 package trade
 
 import (
-	"fmt"
 	"sort"
 	"strconv"
 
 	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/dice"
-	"github.com/Galdoba/TR_Dynasty/world"
+	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/utils"
 )
 
@@ -148,10 +147,10 @@ func categoryOf(code string) string {
 	return string([]byte(code)[0]) + string([]byte(code)[1])
 }
 
-func RandomTGCategory(w world.World) string {
+func RandomTGCategory(w wrld.World) string {
 	merch := NewMerchant().SetLocalUWP(w.UWP()).SetLocalTC(w.TradeCodes()).SetMType(constant.MerchantTypeTrade).DetermineGoodsAvailable()
 	l := len(merch.availableTGcodes)
-	fmt.Print(".")
+	//fmt.Print(".")
 	return merch.availableTGcodes[dice.Roll("1d"+strconv.Itoa(l)).DM(-1).Sum()]
 }
 

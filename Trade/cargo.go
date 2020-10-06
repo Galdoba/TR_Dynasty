@@ -1,12 +1,12 @@
 package trade
 
-//Cargo -
-type Cargo struct {
-	code            string
-	sourceWorldUPP  string
-	aquisitionPrice int
-	volume          int
-}
+// //Cargo -
+// type Cargo struct {
+// 	code            string
+// 	sourceWorldUPP  string
+// 	aquisitionPrice int
+// 	volume          int
+// }
 
 /*
 код груза:

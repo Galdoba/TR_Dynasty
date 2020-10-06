@@ -26,16 +26,18 @@ func enterMenu(menu string) {
 		clrScrn()
 		chooseBroker()
 		//menuPosition = ""
-	case "TRAFFIC":
+	case "SEARCH":
 		clrScrn()
 		trafficMenu()
+	case "HANGAR":
+		clrScrn()
 
 	}
 
 }
 
 func startMenu() {
-	opt, action := menu("Select Action:", "Disconnect", "Input Data", "Traffic")
+	opt, action := menu("Select Action:", "Disconnect", "Input Data", "Search")
 	switch opt {
 	default:
 	case 0:
@@ -43,7 +45,7 @@ func startMenu() {
 	case 1:
 		menuPosition = "INPUT"
 	case 2:
-		menuPosition = "TRAFFIC"
+		menuPosition = "SEARCH"
 	}
 	lastAction = action
 	fmt.Println("\033[F'" + action + "' action was chosen...")
