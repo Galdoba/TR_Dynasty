@@ -17,11 +17,9 @@ func MailRoutine() {
 	mailDice := dp.RollNext("2d6").DM(mailDM()).Sum()
 	if mailDice >= 12 {
 		qty := dp.RollNext("1d6").Sum()
-		fee := 0
+		fee := qty * 25000
 		if autoMod {
-			fee = qty*25000 - localBroker.CutFrom(qty*25000)
-		} else {
-			fee = qty * 25000
+			fee -= localBroker.CutFrom(fee)
 		}
 		mailOffer = strconv.Itoa(qty*5) + " tons of Universal mail containers are ready to pick up.\n" + "Hauling fee: " + strconv.Itoa(fee) + " Cr"
 

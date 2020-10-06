@@ -31,13 +31,14 @@ func enterMenu(menu string) {
 		trafficMenu()
 	case "HANGAR":
 		clrScrn()
+		hangarMenu()
 
 	}
 
 }
 
 func startMenu() {
-	opt, action := menu("Select Action:", "Disconnect", "Input Data", "Search")
+	opt, action := menu("Select Action:", "Disconnect", "Input Data", "Search", "Hangar")
 	switch opt {
 	default:
 	case 0:
@@ -46,9 +47,12 @@ func startMenu() {
 		menuPosition = "INPUT"
 	case 2:
 		menuPosition = "SEARCH"
+	case 3:
+		menuPosition = "HANGAR"
 	}
 	lastAction = action
 	fmt.Println("\033[F'" + action + "' action was chosen...")
+
 }
 
 func inputMenu() {
@@ -123,4 +127,51 @@ func trafficMenu() {
 	lastAction = action
 
 	//fmt.Println("\033[F'" + action + "' action was chosen...")
+}
+
+func hangarMenu() {
+	opt, action := menu("Select Action:", "Return", "Test Hangar", "Load Freight")
+	cm := loadCargoManifest()
+	switch opt {
+	default:
+	case 0:
+		menuPosition = ""
+	case 1:
+		menuPosition = "HANGAR: test"
+		fmt.Println("Hangar test valid")
+
+	case 2:
+		menuPosition = "HANGAR: LOCAL FREIGHT"
+
+		if len(portCargo) < 1 {
+			fmt.Println("No Data on local Freight")
+			break
+		}
+		done := false
+		for !done {
+			allLots := []string{}
+			allLots = append(allLots, "[None]")
+			for i := range portCargo {
+				allLots = append(allLots, lotInfo(portCargo[i]))
+			}
+			selected, lot := menu("Load Cargo:", allLots...)
+			if selected == 0 {
+				done = true
+				continue
+			}
+			cm.entry = append(cm.entry, portCargo[selected-1])
+			fmt.Println(lot, "was loaded to ship")
+			deleteFromPortCargo(selected - 1)
+			saveCargoManifest(cm)
+			clrScrn()
+		}
+
+	}
+
+	lastAction = action
+}
+
+func deleteFromPortCargo(i int) {
+	//a = append(a[:i], a[i+1:]...)
+	portCargo = append(portCargo[:i], portCargo[i+1:]...)
 }

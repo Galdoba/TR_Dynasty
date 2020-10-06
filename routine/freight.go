@@ -70,6 +70,10 @@ func FreightRoutine() {
 
 }
 
+func lotInfo(lot cargoLot) string {
+	return lot.GetTGCode() + "	" + strconv.Itoa(lot.GetVolume()) + " tons  	" + lot.GetComment() + "	" + lot.GetDescr()
+}
+
 func determineLot() string {
 	randomLot := trade.RandomTGCategory(sourceWorld) + dice.Roll("2d6").SumStr()
 	return randomLot

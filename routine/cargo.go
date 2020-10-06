@@ -329,7 +329,7 @@ func (cl *cargoLot) detailsFreight(code string, volume int, fee int) {
 	cl.SetETA(formatDate(day+(len(jumpRoute)*7), year))
 	cl.SetDescr(trade.GetDescription(code))
 	cl.SetInsurance(dice.Roll("1d10").Sum() * 10)
-	cl.SetComment("Freight fee: " + strconv.Itoa(fee) + " Cr")
+	cl.SetComment("Freight fee " + strconv.Itoa(fee) + " Cr")
 	cl.SetVolume(volume)
 	cl.SetID(int(time.Now().UnixNano()))
 	cl.SetCost(0)

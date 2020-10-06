@@ -55,7 +55,7 @@ func getShipData(query string) int {
 
 func shipArmed() bool {
 	lines := utils.LinesFromTXT("mgt2_traffic.config")
-	l := utils.InFileContains("mgt2_traffic.config", "SHIP_VOLUME")
+	l := utils.InFileContains("mgt2_traffic.config", "SHIP_ARMED")
 	data := strings.Split(lines[l], ":")
 	switch data[1] {
 	default:
