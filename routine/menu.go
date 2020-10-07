@@ -130,7 +130,7 @@ func trafficMenu() {
 }
 
 func hangarMenu() {
-	opt, action := menu("Select Action:", "Return", "Test Hangar", "Load Freight")
+	opt, action := menu("Select Action:", "Return", "Unload Freight", "Load Freight")
 	cm := loadCargoManifest()
 	switch opt {
 	default:
@@ -139,6 +139,7 @@ func hangarMenu() {
 	case 1:
 		menuPosition = "HANGAR: test"
 		fmt.Println("Hangar test valid")
+		unloadCargo()
 
 	case 2:
 		menuPosition = "HANGAR: LOCAL FREIGHT"
@@ -149,6 +150,7 @@ func hangarMenu() {
 		}
 		done := false
 		for !done {
+			fmt.Println("Free Volume: ", freeCargoVolume())
 			allLots := []string{}
 			allLots = append(allLots, "[None]")
 			for i := range portCargo {
@@ -171,7 +173,9 @@ func hangarMenu() {
 	lastAction = action
 }
 
-func deleteFromPortCargo(i int) {
-	//a = append(a[:i], a[i+1:]...)
-	portCargo = append(portCargo[:i], portCargo[i+1:]...)
+func arrival() {
+	fmt.Println("TODO: test For A/C/R/E")
+	fmt.Println("TODO: test law event (to Jump Program)")
+	fmt.Println("TODO: Search cargo to unload")
+	menu("Initiate connection?", "Yes")
 }

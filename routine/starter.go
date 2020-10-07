@@ -80,6 +80,7 @@ func StartRoutine() {
 	printSlow("Select your current world: \n")
 	sourceWorld = pickWorld()
 	clrScrn()
+	arrival()
 	for !quit {
 		enterMenu(menuPosition)
 	}

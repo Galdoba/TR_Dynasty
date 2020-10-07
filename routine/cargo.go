@@ -233,18 +233,13 @@ func saveCargoManifest(cm cargoManifest) {
 	lines := utils.LinesFromTXT(exPath + cargoFile)
 entry:
 	for i := range cm.entry {
-		fmt.Println("Go Entry", i)
 		for l, val := range lines {
 			if strings.Contains(val, strconv.Itoa(cm.entry[i].GetID())) {
-				fmt.Println("Edit line", l, "entry", cm.entry[i])
 				utils.EditLineInFile(exPath+cargoFile, l, cm.entry[i].SeedData())
-
 				continue entry
 			}
-			fmt.Println(l)
 		}
 		utils.AddLineToFile(exPath+cargoFile, cm.entry[i].SeedData())
-
 	}
 
 }
@@ -297,7 +292,6 @@ func ehexCodeToInteger(s string) int {
 			continue
 		}
 		mn = 30 ^ i // - 1
-		fmt.Println()
 		d += TrvCore.EhexToDigit(string(b)) * mn
 	}
 	if neg {
@@ -334,4 +328,34 @@ func (cl *cargoLot) detailsFreight(code string, volume int, fee int) {
 	cl.SetID(int(time.Now().UnixNano()))
 	cl.SetCost(0)
 
+}
+
+func deleteFromPortCargo(i int) {
+	portCargo = append(portCargo[:i], portCargo[i+1:]...)
+}
+
+func freeCargoVolume() int {
+	overall := getShipData("SHIP_CARGO_VOLUME")
+	fmt.Println("run freeCargoVolume")
+	fmt.Println("overall =", overall)
+	cm := loadCargoManifest()
+	filled := 0
+	for _, val := range cm.entry {
+
+		filled += val.GetVolume()
+		fmt.Println("add", val.GetVolume())
+		fmt.Println("filled =", filled)
+	}
+	fmt.Println("overall - filled", overall-filled, "|", overall, filled)
+	return overall - filled
+}
+
+func unloadCargo() {
+	cm := loadCargoManifest()
+	for _, val := range cm.entry {
+		if val.GetDestination() == sourceWorld.Hex() {
+			n := utils.InFileContains(exPath+cargoFile, strconv.Itoa(val.GetID()))
+			utils.DeleteLinesFromFile(exPath+cargoFile, n)
+		}
+	}
 }
