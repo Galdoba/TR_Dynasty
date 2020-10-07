@@ -14,10 +14,13 @@ func MailRoutine() {
 		fmt.Println("-----------------------------------------------------")
 		return
 	}
+	mailLot := newCargoLot()
+	qty := 0
+	fee := 0
 	mailDice := dp.RollNext("2d6").DM(mailDM()).Sum()
 	if mailDice >= 12 {
-		qty := dp.RollNext("1d6").Sum()
-		fee := qty * 25000
+		qty = dp.RollNext("1d6").Sum()
+		fee = qty * 25000
 		if autoMod {
 			fee -= localBroker.CutFrom(fee)
 		}
@@ -28,6 +31,26 @@ func MailRoutine() {
 	}
 	fmt.Println(mailOffer)
 	fmt.Println("-----------------------------------------------------")
+	if qty != 0 && fee != 0 {
+		mailLot.FillMailData(qty, fee)
+		portCargo = append(portCargo, mailLot)
+	}
+}
+
+func (mailLot *cargoLot) FillMailData(qty, fee int) {
+	mailLot.SetETA(integerToEhexCode(eta))
+	mailLot.SetTGCode("MAIL")
+	mailLot.SetDescr("Universal mail containers")
+	mailLot.SetVolume(qty * 5)
+	mailLot.SetDestination(targetWorld.Hex())
+	mailLot.SetComment("Transport fee " + strconv.Itoa(fee))
+	mailLot.SetCost(fee)
+	mailLot.SetInsurance(100)
+	mailLot.SetDangerDM(-1 * qty)
+	mailLot.SetOrigin(sourceWorld.Hex())
+	mailLot.SetLegality(true)
+	mailLot.SetRiskDM(0)
+	mailLot.SetSupplierType("Goverment")
 }
 
 func mailDM() int {

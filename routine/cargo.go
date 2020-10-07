@@ -69,10 +69,10 @@ func (cl *cargoLot) LeachData(rawData string) error {
 	if errD == nil {
 		cl.destinationWorld = destination.Hex()
 	}
-	cl.eta = "[NO DATA]"
-	if isDate(data[9]) {
-		cl.eta = data[9]
-	}
+	cl.eta = data[9]
+	// if isDate(data[9]) {
+	// 	cl.eta = data[9]
+	// }
 	cl.insurance, err = strconv.Atoi(data[10])
 	cl.suplierType = data[11]
 	cl.comment = data[12]
@@ -291,7 +291,40 @@ func ehexCodeToInteger(s string) int {
 			neg = true
 			continue
 		}
-		mn = 30 ^ i // - 1
+		mn = 1
+		if i == 2 {
+			mn = 30
+		}
+		if i == 3 {
+			mn = 30 * 30
+		}
+		if i == 4 {
+			mn = 30 * 30 * 30
+		}
+		if i == 5 {
+			mn = 30 * 30 * 30 * 30
+		}
+		if i == 6 {
+			mn = 30 * 30 * 30 * 30 * 30
+		}
+		if i == 7 {
+			mn = 30 * 30 * 30 * 30 * 30 * 30
+		}
+		if i == 8 {
+			mn = 30 * 30 * 30 * 30 * 30 * 30 * 30
+		}
+		if i == 9 {
+			mn = 30 * 30 * 30 * 30 * 30 * 30 * 30 * 30
+		}
+		if i == 10 {
+			mn = 30 * 30 * 30 * 30 * 30 * 30 * 30 * 30 * 30
+		}
+		if i == 11 {
+			mn = 30 * 30 * 30 * 30 * 30 * 30 * 30 * 30 * 30 * 30
+		}
+		if i == 12 {
+			mn = 30 * 30 * 30 * 30 * 30 * 30 * 30 * 30 * 30 * 30 * 30
+		}
 		d += TrvCore.EhexToDigit(string(b)) * mn
 	}
 	if neg {
@@ -320,13 +353,13 @@ func (cl *cargoLot) detailsFreight(code string, volume int, fee int) {
 	cl.SetLegality(true)
 	cl.SetOrigin(sourceWorld.Hex())
 	cl.SetSupplierType(constant.MerchantTypeTrade)
-	cl.SetETA(formatDate(day+(len(jumpRoute)*7), year))
+	cl.SetETA(integerToEhexCode(eta))
 	cl.SetDescr(trade.GetDescription(code))
 	cl.SetInsurance(dice.Roll("1d10").Sum() * 10)
 	cl.SetComment("Freight fee " + strconv.Itoa(fee) + " Cr")
 	cl.SetVolume(volume)
 	cl.SetID(int(time.Now().UnixNano()))
-	cl.SetCost(0)
+	cl.SetCost(fee)
 
 }
 
@@ -336,26 +369,84 @@ func deleteFromPortCargo(i int) {
 
 func freeCargoVolume() int {
 	overall := getShipData("SHIP_CARGO_VOLUME")
-	fmt.Println("run freeCargoVolume")
-	fmt.Println("overall =", overall)
 	cm := loadCargoManifest()
 	filled := 0
 	for _, val := range cm.entry {
 
 		filled += val.GetVolume()
-		fmt.Println("add", val.GetVolume())
-		fmt.Println("filled =", filled)
 	}
-	fmt.Println("overall - filled", overall-filled, "|", overall, filled)
 	return overall - filled
 }
 
 func unloadCargo() {
 	cm := loadCargoManifest()
+	totalProfit := 0
 	for _, val := range cm.entry {
 		if val.GetDestination() == sourceWorld.Hex() {
 			n := utils.InFileContains(exPath+cargoFile, strconv.Itoa(val.GetID()))
-			utils.DeleteLinesFromFile(exPath+cargoFile, n)
+			utils.DeleteLineFromFileN(exPath+cargoFile, n)
+			fmt.Print("Unloaded ", val.GetVolume(), " tons of "+val.GetDescr(), "\n")
+			profit := val.GetCost()
+			missedETA := rawDay - ehexCodeToInteger(val.GetETA())
+			//fmt.Println("missedETA", missedETA, ehexCodeToInteger(val.GetETA()), rawDay, ehexCodeToInteger(val.GetETA()), val.GetETA())
+			penny := 0
+			if missedETA > 7 {
+				penny = (dice.Roll("1d6").Sum() + 4)
+			}
+			if missedETA > 14 {
+				penny = (dice.Roll("1d6").Sum() + 4) * 2
+			}
+			if missedETA > 21 {
+				penny = (dice.Roll("1d6").Sum() + 4) * 4
+			}
+			if missedETA > 28 {
+				penny = (dice.Roll("1d6").Sum() + 4) * 8
+			}
+			if missedETA > 35 {
+				penny = (dice.Roll("1d6").Sum() + 4) * 10
+			}
+			//fmt.Println("penny", penny)
+			profit = profit - (int((float64(profit) / 100)) * penny)
+			//fmt.Println("profit", profit)
+			fmt.Print(profit, " Cr was received")
+			if penny > 0 {
+				fmt.Print(" (", penny, "% was taxed due to ETA was missed by ", missedETA, " days)")
+			}
+			fmt.Print("\n")
+			totalProfit += profit
 		}
+
 	}
+	fmt.Print("------------------------------\n")
+	fmt.Print("Total Profit: ", totalProfit, " Cr\n")
+}
+
+func loadCargo() {
+	done := false
+	cm := loadCargoManifest()
+	for !done {
+		clrScrn()
+		fmt.Println("Free Volume: ", freeCargoVolume())
+		allLots := []string{}
+		allLots = append(allLots, "Return")
+		for i := range portCargo {
+			if freeCargoVolume() >= portCargo[i].GetVolume() {
+				allLots = append(allLots, lotInfo(portCargo[i]))
+			}
+		}
+		if len(allLots) == 1 {
+			break
+		}
+		selected, lot := menu("Load Cargo:", allLots...)
+		if selected == 0 {
+			done = true
+			continue
+		}
+		cm.entry = append(cm.entry, portCargo[selected-1])
+		fmt.Println(lot, "was loaded to ship")
+		deleteFromPortCargo(selected - 1)
+		saveCargoManifest(cm)
+
+	}
+	clrScrn()
 }

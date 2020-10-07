@@ -41,6 +41,8 @@ var ftValue int
 var jumpRoute []int
 var day int
 var year int
+var rawDay int
+var eta int
 var autoMod bool
 var gmMode bool
 var menuPosition string
@@ -126,6 +128,7 @@ func userInputDate() string {
 		output = "0" + output
 	}
 	output = output + strconv.Itoa(day) + "-" + strconv.Itoa(year)
+	rawDay = day + (year * 365)
 	return output
 }
 
@@ -325,7 +328,7 @@ func inputJumpRoute() ([]int, error) {
 	err := errors.New("No calculations made")
 	route := ""
 	//route := userInputStr("Enter route sequence (format: 'XXYY XXYY ... XXYY'): ")
-	drive := 1
+	drive := 2
 	for err != nil {
 		fmt.Println("Constructing Plot with jump drive", drive)
 		route, err = Astrogation.PlotCourse(sourceWorld.Hex(), targetWorld.Hex(), drive)
@@ -408,6 +411,7 @@ func printHead() {
 		fmt.Println(" Securty Code: " + sec.Profile())
 
 	}
+	fmt.Println("Cargo volume available:", freeCargoVolume())
 	if targetWorld.CodeTL() != "--NO DATA--" {
 		fmt.Println("  Destination: ", targetWorld.Hex()+" - "+targetWorld.Name()+"  ("+targetWorld.UWP()+")  "+targetWorld.TradeClassifications()+"  "+targetWorld.TravelZone())
 		fmt.Println("Passenger Traffic Value:", ptValue)
@@ -439,6 +443,8 @@ func formatDate(day, year int) string {
 	date += strconv.Itoa(year)
 	return date
 }
+
+//func decodeDate(date string) int, int
 
 // func spendTime(effect, timeLimit int) {
 // 	if localBroker.cut == 0 {
@@ -473,4 +479,5 @@ func pickDestinationWorld() {
 		panic(err.Error())
 	}
 	jumpRoute = jumpRoutelocal
+	eta = rawDay + (len(jumpRoute) * 7)
 }

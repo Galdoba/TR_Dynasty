@@ -104,14 +104,17 @@ func trafficMenu() {
 	case 2:
 		menuPosition = "SEARCH FREIGHT"
 		FreightRoutine()
+
 	case 3:
 		menuPosition = "SEARCH MAIL"
 		MailRoutine()
+
 	case 4:
 		menuPosition = "SEARCH ALL"
 		PassengerRoutine()
 		FreightRoutine()
 		MailRoutine()
+
 	case 5:
 		autoMod = true
 		menuPosition = "SEARCH ALL"
@@ -123,6 +126,11 @@ func trafficMenu() {
 		FreightRoutine()
 		MailRoutine()
 		autoMod = false
+
+	}
+	i, _ := menu("Load Cargo?", "Yes", "No")
+	if i == 0 {
+		loadCargo()
 	}
 	lastAction = action
 
@@ -131,14 +139,13 @@ func trafficMenu() {
 
 func hangarMenu() {
 	opt, action := menu("Select Action:", "Return", "Unload Freight", "Load Freight")
-	cm := loadCargoManifest()
+	clrScrn()
 	switch opt {
 	default:
 	case 0:
 		menuPosition = ""
 	case 1:
-		menuPosition = "HANGAR: test"
-		fmt.Println("Hangar test valid")
+		menuPosition = "HANGAR: UNLOAD CARGO"
 		unloadCargo()
 
 	case 2:
@@ -148,34 +155,16 @@ func hangarMenu() {
 			fmt.Println("No Data on local Freight")
 			break
 		}
-		done := false
-		for !done {
-			fmt.Println("Free Volume: ", freeCargoVolume())
-			allLots := []string{}
-			allLots = append(allLots, "[None]")
-			for i := range portCargo {
-				allLots = append(allLots, lotInfo(portCargo[i]))
-			}
-			selected, lot := menu("Load Cargo:", allLots...)
-			if selected == 0 {
-				done = true
-				continue
-			}
-			cm.entry = append(cm.entry, portCargo[selected-1])
-			fmt.Println(lot, "was loaded to ship")
-			deleteFromPortCargo(selected - 1)
-			saveCargoManifest(cm)
-			clrScrn()
-		}
-
+		loadCargo()
 	}
 
 	lastAction = action
 }
 
 func arrival() {
-	fmt.Println("TODO: test For A/C/R/E")
-	fmt.Println("TODO: test law event (to Jump Program)")
-	fmt.Println("TODO: Search cargo to unload")
-	menu("Initiate connection?", "Yes")
+	i, _ := menu("Unload Freight for this planet?", "Yes", "No")
+	if i == 0 {
+		unloadCargo()
+		menu("------------------", "Continue")
+	}
 }
