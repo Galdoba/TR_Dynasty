@@ -129,11 +129,12 @@ func trafficMenu() {
 		autoMod = false
 
 	}
+	advanceTime(longestSearchTime)
 	if userConfirm("Load Cargo?") {
 		loadCargo()
 	}
 	lastAction = action
-
+	menuPosition = ""
 	//fmt.Println("\033[F'" + action + "' action was chosen...")
 }
 

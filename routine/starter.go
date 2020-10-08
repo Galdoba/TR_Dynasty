@@ -484,3 +484,12 @@ func pickDestinationWorld() {
 	jumpRoute = jumpRoutelocal
 	eta = rawDay + (len(jumpRoute) * 7)
 }
+
+func advanceTime(time int) {
+	day += time
+	for day > 365 {
+		day -= 365
+		year++
+	}
+	longestSearchTime = 0
+}

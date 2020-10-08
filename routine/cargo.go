@@ -178,6 +178,11 @@ func (cl *cargoLot) GetETA() string {
 	return cl.eta
 }
 
+func etaDate(cl cargoLot) string {
+	d := ehexCodeToInteger(cl.GetETA())
+	return formatDate(d%365, d/365)
+}
+
 func (cl *cargoLot) GetInsurance() int {
 	return cl.insurance
 }
@@ -212,7 +217,7 @@ func loadCargoManifest() cargoManifest {
 	return cm
 }
 
-func TestCargo() {
+func testCargo() {
 	cm := loadCargoManifest()
 	for i := range cm.entry {
 		fmt.Println(i, cm.entry[i])
@@ -356,7 +361,7 @@ func (cl *cargoLot) detailsFreight(code string, volume int, fee int) {
 	cl.SetLegality(true)
 	cl.SetOrigin(sourceWorld.Hex())
 	cl.SetSupplierType(constant.MerchantTypeTrade)
-	cl.SetETA(integerToEhexCode(eta))
+	cl.SetETA(integerToEhexCode(rawDay + (dice.Roll("2d6").Sum() * len(jumpRoute)) + longestSearchTime))
 	cl.SetDescr(trade.GetDescription(code))
 	cl.SetInsurance(dice.Roll("1d10").Sum() * 10)
 	cl.SetComment("Freight fee " + strconv.Itoa(fee) + " Cr")
@@ -426,8 +431,12 @@ func unloadCargo() {
 func loadCargo() {
 	done := false
 	cm := loadCargoManifest()
+	message := ""
 	for !done {
 		clrScrn()
+		if message != "" {
+			fmt.Println(message)
+		}
 		fmt.Println("Free Volume: ", freeCargoVolume())
 		allLots := []string{}
 		allLots = append(allLots, "Return")
@@ -437,6 +446,7 @@ func loadCargo() {
 			}
 		}
 		if len(allLots) == 1 {
+			menu("Nothing to load...", "Return")
 			break
 		}
 		selected, lot := menu("Load Cargo:", allLots...)
@@ -445,7 +455,7 @@ func loadCargo() {
 			continue
 		}
 		cm.entry = append(cm.entry, portCargo[selected-1])
-		fmt.Println(lot, "was loaded to ship")
+		message = lot + " was loaded to ship"
 		deleteFromPortCargo(selected - 1)
 		saveCargoManifest(cm)
 

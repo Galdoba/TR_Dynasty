@@ -36,10 +36,9 @@ func PassengerRoutine() {
 		fmt.Println("Search aborted after", time, "days...")
 	}
 	fmt.Println("Search took", time, "days...")
-	// if gmMode {
-	// 	fmt.Println("GM TIP: Passenger Roll:", ptValue, playerEffect1, localBroker.DM(), "|", ptValue+playerEffect1+localBroker.DM())
-	// }
-
+	if longestSearchTime < time {
+		longestSearchTime = time
+	}
 	low, basic, middle, high := availablePassengers(ptValue + playerEffect1 + localBroker.DM())
 	printSlow("Active passenger requests: " + strconv.Itoa(low+basic+middle+high) + "\n")
 	if low > 0 {

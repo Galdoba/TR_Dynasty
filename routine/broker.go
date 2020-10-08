@@ -13,12 +13,13 @@ type broker struct {
 	cut   float64
 }
 
+//Broker - дает модификатор на поиск и торговлю, но забирает процент со сделки
 type Broker interface {
 	CutFrom(int) int
 	DM() int
 }
 
-func NewBroker(skill int) broker {
+func newBroker(skill int) broker {
 	br := broker{}
 	br.skill = skill
 	switch skill {
@@ -67,7 +68,7 @@ func chooseBroker() {
 		skill := userInputInt("Select: ")
 		switch skill {
 		case 0, 1, 2, 3, 4, 5, 6, 7:
-			localBroker = NewBroker(skill)
+			localBroker = newBroker(skill)
 			valid = true
 			if skill == 7 {
 				printSlow("Services refused\n")
