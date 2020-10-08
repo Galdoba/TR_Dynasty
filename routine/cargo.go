@@ -1,11 +1,13 @@
 package routine
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
 
 	trade "github.com/Galdoba/TR_Dynasty/Trade"
@@ -13,6 +15,7 @@ import (
 	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/otu"
+	"github.com/Galdoba/TR_Dynasty/wrld"
 )
 
 const (
@@ -383,8 +386,6 @@ func unloadCargo() {
 	totalProfit := 0
 	for _, val := range cm.entry {
 		if val.GetDestination() == sourceWorld.Hex() {
-			n := utils.InFileContains(exPath+cargoFile, strconv.Itoa(val.GetID()))
-			utils.DeleteLineFromFileN(exPath+cargoFile, n)
 			fmt.Print("Unloaded ", val.GetVolume(), " tons of "+val.GetDescr(), "\n")
 			profit := val.GetCost()
 			missedETA := rawDay - ehexCodeToInteger(val.GetETA())
@@ -414,6 +415,7 @@ func unloadCargo() {
 			}
 			fmt.Print("\n")
 			totalProfit += profit
+			deleteFromCargoManifest(val.GetID())
 		}
 
 	}
@@ -449,4 +451,99 @@ func loadCargo() {
 
 	}
 	clrScrn()
+}
+
+func cargoDesignatedTo(w wrld.World) int {
+	cm := loadCargoManifest()
+	d := 0
+	for _, val := range cm.entry {
+		if val.destinationWorld == w.Hex() {
+			d++
+		}
+	}
+	return d
+}
+
+func reserveCargoSpace() {
+	clrScrn()
+	cm := loadCargoManifest()
+	tons := -1
+	descr := ""
+	err := errors.New("No value for tons")
+	for err != nil {
+		fmt.Print("Enter volume in tons to designate: ")
+		tons, err = user.InputInt()
+		if tons == 0 {
+			err = errors.New("WARNING: Zero value entered")
+			reportErr(err)
+			if userConfirm("Abort operation?") {
+				return
+			}
+			continue
+		}
+		if tons < 0 {
+			err = errors.New("Error: Tons can't be negative")
+		}
+		if tons > freeCargoVolume() {
+			err = errors.New("Error: Tons can't be more than free volume")
+		}
+		reportErr(err)
+	}
+	err = errors.New("No value for descr")
+	for err != nil {
+		fmt.Print("Enter volume reserve description: ")
+		descr, err = user.InputStr()
+		reportErr(err)
+	}
+	cl := newCargoLot()
+	cl.SetVolume(tons)
+	cl.SetDescr(descr)
+	cm.entry = append(cm.entry, cl)
+	saveCargoManifest(cm)
+}
+
+func editCargoEntryVolume() {
+	clrScrn()
+	cm := loadCargoManifest()
+	allLots := []string{}
+	allLots = append(allLots, "Return")
+	for _, val := range cm.entry {
+		allLots = append(allLots, strconv.Itoa(val.GetVolume())+" tons of "+val.GetDescr()+"	(ID:"+strconv.Itoa(val.GetID())+")")
+	}
+	i, _ := menu("Select Cargo to edit:", allLots...)
+	if i == 0 {
+		return
+	}
+	err := errors.New("No value for 'newVal'")
+	newVal := 0
+	for err != nil {
+		fmt.Print("Enter new volume: ")
+		newVal, err = user.InputInt()
+		if newVal == 0 {
+			err = errors.New("Zero value entered") //delete?
+			reportErr(err)
+			if userConfirm("Delete entry: " + allLots[i] + "?") {
+				deleteFromCargoManifest(cm.entry[i-1].GetID())
+				return
+			}
+			err = nil
+		}
+		if newVal < 0 {
+			err = errors.New("Error: New volume can't be negative")
+		}
+		if newVal > cm.entry[i-1].GetVolume()+freeCargoVolume() {
+			err = errors.New("Error: Not enough Cargo Volume")
+		}
+		cm.entry[i-1].SetVolume(newVal)
+		reportErr(err)
+	}
+	saveCargoManifest(cm)
+	menuPosition = "HANGAR"
+}
+
+func deleteFromCargoManifest(idValue int) cargoManifest {
+	id := strconv.Itoa(idValue)
+	n := utils.InFileContains(exPath+cargoFile, id)
+	utils.DeleteLineFromFileN(exPath+cargoFile, n)
+	return loadCargoManifest()
 }

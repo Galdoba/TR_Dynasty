@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -51,10 +50,10 @@ var exPath string
 
 func init() {
 	printSlow("Initialisation...\n")
-	ex, _ := os.Executable()
-	exPath = filepath.Dir(ex)
-	//test
-	exPath = "f:\\Work\\golang\\src\\github.com\\Galdoba\\TR_Dynasty\\"
+	// ex, _ := os.Executable()
+	// exPath = filepath.Dir(ex)
+	// //test
+	// exPath = "f:\\Work\\golang\\src\\github.com\\Galdoba\\TR_Dynasty\\"
 	del, err := time.ParseDuration(typingDelay)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -69,7 +68,6 @@ func init() {
 func StartRoutine() {
 
 	//TestCargo()
-
 	//return
 	clrScrn()
 	printSlow("Start...\n")
@@ -402,22 +400,27 @@ func helloWorld() {
 }
 
 func printHead() {
+	fmt.Println("----Ship data----------------------------------------")
+	fmt.Println("Cargo volume available:", freeCargoVolume())
+	fmt.Println("  Staterooms available:", freeCargoVolume())
+	fmt.Println("----Sourceworld data---------------------------------")
 	fmt.Println("         Date: ", formatDate(day, year))
 	fmt.Println("Current World: ", sourceWorld.Hex()+" - "+sourceWorld.Name()+"  ("+sourceWorld.UWP()+")  "+sourceWorld.TradeClassifications()+"  "+sourceWorld.TravelZone())
 	if sourceWorld.CodeTL() != "--NO DATA--" {
 		sp, _ := starport.From(sourceWorld)
 		sec = sp.Security()
 		fmt.Println(sp.ShortInfo())
-		fmt.Println(" Securty Code: " + sec.Profile())
+		fmt.Println(" Securty Code: ", sec.Profile())
 
 	}
-	fmt.Println("Cargo volume available:", freeCargoVolume())
+
 	if targetWorld.CodeTL() != "--NO DATA--" {
+		fmt.Println("----Targetworld data---------------------------------")
 		fmt.Println("  Destination: ", targetWorld.Hex()+" - "+targetWorld.Name()+"  ("+targetWorld.UWP()+")  "+targetWorld.TradeClassifications()+"  "+targetWorld.TravelZone())
 		fmt.Println("Passenger Traffic Value:", ptValue)
 		fmt.Println("  Freight Traffic Value:", ftValue)
 		fmt.Println("     Local Broker's Cut:", localBroker.cut, "%")
-		fmt.Println("-----------------------------------------------------")
+		fmt.Println("----Jumproute data-----------------------------------")
 		fmt.Println("Expected Jump Sequence: ", jumpRoute)
 		fmt.Println("        Total Distance: ", distance)
 		fmt.Println("                   ETA: ", formatDate(day+(len(jumpRoute)*7), year))

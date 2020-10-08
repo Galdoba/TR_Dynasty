@@ -2,6 +2,7 @@ package routine
 
 import (
 	"fmt"
+	"strconv"
 )
 
 var lastAction string
@@ -128,8 +129,7 @@ func trafficMenu() {
 		autoMod = false
 
 	}
-	i, _ := menu("Load Cargo?", "Yes", "No")
-	if i == 0 {
+	if userConfirm("Load Cargo?") {
 		loadCargo()
 	}
 	lastAction = action
@@ -138,7 +138,7 @@ func trafficMenu() {
 }
 
 func hangarMenu() {
-	opt, action := menu("Select Action:", "Return", "Unload Freight", "Load Freight")
+	opt, action := menu("Select Action:", "Return", "Unload Freight", "Load Freight", "Edit Cargo Space")
 	clrScrn()
 	switch opt {
 	default:
@@ -146,25 +146,52 @@ func hangarMenu() {
 		menuPosition = ""
 	case 1:
 		menuPosition = "HANGAR: UNLOAD CARGO"
-		unloadCargo()
+		clrScrn()
+		d := cargoDesignatedTo(sourceWorld)
+		if d < 1 {
+			menu("No designnated Cargo for this planet", "Return to HANGAR")
+			menuPosition = "HANGAR"
+			return
+		}
+		if userConfirm("Unload Freight for this planet? (" + strconv.Itoa(d) + " Lots)") {
+			unloadCargo()
+		}
 
 	case 2:
 		menuPosition = "HANGAR: LOCAL FREIGHT"
-
+		clrScrn()
 		if len(portCargo) < 1 {
-			fmt.Println("No Data on local Freight")
+			menu("No Data on local Freight", "Return to HANGAR")
+			menuPosition = "HANGAR"
 			break
 		}
 		loadCargo()
+		menuPosition = "HANGAR"
+
+	case 3:
+		menuPosition = "HANGAR: EDIT CARGO SPACE"
+
+		i, _ := menu("Select Action:", "Reserve Cargo Space", "Edit Cargo Space")
+		switch i {
+		case 0:
+			reserveCargoSpace()
+		case 1:
+			editCargoEntryVolume()
+		}
+		menuPosition = "HANGAR"
 	}
 
 	lastAction = action
 }
 
 func arrival() {
-	i, _ := menu("Unload Freight for this planet?", "Yes", "No")
-	if i == 0 {
+	d := cargoDesignatedTo(sourceWorld)
+	if d < 1 {
+		return
+	}
+	if userConfirm("Unload Freight for this planet? (" + strconv.Itoa(d) + " Lots)") {
 		unloadCargo()
 		menu("------------------", "Continue")
 	}
+
 }
