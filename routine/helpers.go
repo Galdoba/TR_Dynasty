@@ -3,6 +3,7 @@ package routine
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/Galdoba/devtools/cli/user"
@@ -32,4 +33,16 @@ func reportErr(err error) {
 	if err != nil {
 		fmt.Print(err.Error() + " \n")
 	}
+}
+
+func fileExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	fmt.Println(err)
+	return true, err
 }

@@ -33,13 +33,15 @@ func enterMenu(menu string) {
 	case "HANGAR":
 		clrScrn()
 		hangarMenu()
-
+	case "INFORMATION":
+		clrScrn()
+		infoMenu()
 	}
 
 }
 
 func startMenu() {
-	opt, action := menu("Select Action:", "Disconnect", "Input Data", "Search", "Hangar")
+	opt, action := menu("Select Action:", "Disconnect", "Input Data", "Search", "Hangar", "Information")
 	switch opt {
 	default:
 	case 0:
@@ -50,6 +52,8 @@ func startMenu() {
 		menuPosition = "SEARCH"
 	case 3:
 		menuPosition = "HANGAR"
+	case 4:
+		menuPosition = "INFORMATION"
 	}
 	lastAction = action
 	fmt.Println("\033[F'" + action + "' action was chosen...")
@@ -195,4 +199,18 @@ func arrival() {
 		menu("------------------", "Continue")
 	}
 
+}
+
+func infoMenu() {
+	i, _ := menu("Select category:", "Return", "Ship", "Port", "Planet")
+	switch i {
+	case 0:
+		menuPosition = ""
+		return
+	case 1:
+		clrScrn()
+		fmt.Println(shipInfo())
+	}
+	menu("---------------", "Continue")
+	menuPosition = "INFORMATION"
 }

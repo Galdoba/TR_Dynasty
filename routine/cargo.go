@@ -18,10 +18,6 @@ import (
 	"github.com/Galdoba/TR_Dynasty/wrld"
 )
 
-const (
-	cargoFile = "mgt2_traffic.config"
-)
-
 type cargoManifest struct {
 	entry        []cargoLot
 	maximumTonns int
@@ -238,16 +234,16 @@ func (cm *cargoManifest) addCargo(cl cargoLot) {
 }
 
 func saveCargoManifest(cm cargoManifest) {
-	lines := utils.LinesFromTXT(exPath + cargoFile)
+	lines := utils.LinesFromTXT(exPath + cargofile)
 entry:
 	for i := range cm.entry {
 		for l, val := range lines {
 			if strings.Contains(val, strconv.Itoa(cm.entry[i].GetID())) {
-				utils.EditLineInFile(exPath+cargoFile, l, cm.entry[i].SeedData())
+				utils.EditLineInFile(exPath+cargofile, l, cm.entry[i].SeedData())
 				continue entry
 			}
 		}
-		utils.AddLineToFile(exPath+cargoFile, cm.entry[i].SeedData())
+		utils.AddLineToFile(exPath+cargofile, cm.entry[i].SeedData())
 	}
 
 }
@@ -518,7 +514,7 @@ func editCargoEntryVolume() {
 	allLots := []string{}
 	allLots = append(allLots, "Return")
 	for _, val := range cm.entry {
-		allLots = append(allLots, strconv.Itoa(val.GetVolume())+" tons of "+val.GetDescr()+"	(ID:"+strconv.Itoa(val.GetID())+")")
+		allLots = append(allLots, strconv.Itoa(val.GetVolume())+" tons of "+val.GetDescr()+"	(ID:"+strconv.Itoa(val.GetID())+") "+val.GetDestination())
 	}
 	i, _ := menu("Select Cargo to edit:", allLots...)
 	if i == 0 {
@@ -553,7 +549,7 @@ func editCargoEntryVolume() {
 
 func deleteFromCargoManifest(idValue int) cargoManifest {
 	id := strconv.Itoa(idValue)
-	n := utils.InFileContains(exPath+cargoFile, id)
-	utils.DeleteLineFromFileN(exPath+cargoFile, n)
+	n := utils.InFileContains(exPath+cargofile, id)
+	utils.DeleteLineFromFileN(exPath+cargofile, n)
 	return loadCargoManifest()
 }

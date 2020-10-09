@@ -1,13 +1,19 @@
 package routine
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/name"
 	"github.com/Galdoba/TR_Dynasty/profile"
 	"github.com/Galdoba/TR_Dynasty/wrld"
+	"github.com/Galdoba/devtools/cli/user"
+	"github.com/Galdoba/utils"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 )
@@ -58,6 +64,9 @@ func PassengerRoutine() {
 		printSlow("  High Passengers: " + strconv.Itoa(high) + "		Transport fee: " + strconv.Itoa(fee) + "\n")
 	}
 	fmt.Println("-----------------------------------------------------")
+	if userConfirm("Take Passengers?") {
+		takePassengers()
+	}
 }
 
 //ABCD
@@ -329,10 +338,11 @@ func hghPass(ptv int) int {
 }
 
 const (
-	highPassenger = 0
-	midPassenger  = 1
-	basPassenger  = 2
-	lowPassenger  = 3
+	highPassenger   = 0
+	midPassenger    = 1
+	basPassenger    = 2
+	lowPassenger    = 3
+	guestyPassenger = 4
 )
 
 func lowPassCost(jumpSeq []int) int {
@@ -440,3 +450,256 @@ Parsecs Travelled	High Passage	Middle Passage	Basic Passage	Low Passage	Freight
 
 
 */
+
+// type passengers struct {
+// 	pType             int
+// 	pQty              int
+// 	cost              int
+// 	destiantion       string
+// 	notablePassengers int
+// }
+
+/*
+TranzitHazardDM - Следует использовать в прыжковой программе
+*/
+
+// func newPassengers(pType int, pQty int, cost int) passengers {
+// 	p := passengers{}
+// 	p.pType = pType
+// 	p.pQty = pQty
+// 	p.cost = cost
+// 	p.destiantion = targetWorld.Hex()
+// 	if p.pType != lowPassenger {
+// 		p.notablePassengers = notablePassengers(p.pQty)
+// 	}
+// 	return p
+// }
+
+// func notablePassengers(i int) int {
+// 	n := 0
+// 	for i > 0 {
+// 		if dice.Roll("1d6").Sum() > 3 {
+// 			n++
+// 		}
+// 		i = i - 6
+// 	}
+// 	return n
+// }
+
+func takePassengers() {
+	clrScrn()
+	//err := errors.New("No Value for 'pQty'")
+
+	ptype, _ := menu("Select Passenger Type:", "High", "Middle", "Basic", "Low", "Guest", "[End Operation]")
+	if ptype == 5 {
+		return
+	}
+
+}
+
+func pickUpBasicPassengers(avail int) {
+	maxPass := utils.Min(avail, getShipData("SHIP_STATEROOMS_STANDARD")*4)
+	pass := 0
+	err := errors.New("No Value")
+	fmt.Print("Enter Number to Pick Up (0-" + strconv.Itoa(maxPass) + "): ")
+	for err != nil {
+		pass, err = user.InputInt()
+		if pass < 0 {
+			err = errors.New("Can't have negative number")
+		}
+		if pass > maxPass {
+			err = errors.New("Not enough Staterooms")
+		}
+		reportErr(err)
+	}
+	setPassengers(basPassenger, pass)
+
+	//recalculatePassengerCargo()
+}
+
+/*
+	highPassenger   = 0
+	midPassenger    = 1
+	basPassenger    = 2
+	lowPassenger    = 3
+	guestyPassenger = 4
+
+D66 Passenger Transit Hazard DM
+11 Refugee – political +4
+12 Refugee – economic +3
+13 Starting a new life offworld –5
+14 Mercenary +0
+15 Spy +1
+16 Corporate executive +0
+21 Out to see the universe –4
+22 Tourist. (1–3 Irritating, 4–6 Charming) –4
+23 Wide-eyed yokel –5
+24 Adventurer +1
+25 Explorer +0
+26 Claustrophobic +0
+31 Expectant Mother +0
+32 Wants to stowaway or join the crew +1
+33 Possesses something dangerous or illegal +3
+34 Troublemaker (1–3 drunkard, 4–5 violent, 6 insane) +0
+35 Unusually pretty or handsome +1
+36 Engineer (Mechanic and Engineer of 1d6-1 each) +0
+41 Ex-scout +1
+42 Wanderer –2
+43 Thief or other criminal +2
+44 Scientist +1
+45 Journalist or researcher +1
+46 Entertainer (Steward and Perform of 1d6-1 each) +1
+51 Gambler (Gambling skill of 1d6-1) +2
+52 Rich noble – complains a lot +1
+53 Rich noble – eccentric +2
+54 Rich noble – raconteur +2
+55 Diplomat on a mission +3
+56 Agent on a mission +3
+61 Patron +1
+62 Alien (roll again; ignoring ‘62’ for alien’s further deﬁ nition) +0
+63 Bounty Hunter +3
+64 On the run +4
+65 Wants to be on board the PC’s ship for some reason +1
+66 Hijacker or pirate agent +5
+
+*/
+
+type passengerManifest struct {
+	entry []passenger
+}
+
+type passenger struct {
+	id          int
+	name        string
+	category    string
+	quality     string
+	thDM        int
+	fee         int
+	origin      string
+	destination string
+}
+
+func newPassenger() passenger {
+	p := passenger{}
+	p.id = int(time.Now().UnixNano())
+	p.name = name.RandomNew()
+	p.origin = sourceWorld.Hex()
+	p.destination = targetWorld.Hex()
+	return p
+}
+
+func (p *passenger) ID() int {
+	return p.id
+}
+
+func (p *passenger) setID(id int) {
+	p.id = id
+}
+
+func (p *passenger) IDstr() string {
+	return strconv.Itoa(p.id)
+}
+
+func (p *passenger) Name() string {
+	return p.name
+}
+
+func (p *passenger) setName(name string) {
+	p.name = name
+}
+
+func (p *passenger) Category() string {
+	return p.category
+}
+
+func (p *passenger) setCategory(category string) {
+	p.category = category
+}
+
+func (p *passenger) Quality() string {
+	return p.quality
+}
+
+func (p *passenger) setQuality(quality string) {
+	p.quality = quality
+}
+
+func (p *passenger) TransitHazardDM() int {
+	return p.thDM
+}
+
+func (p *passenger) setTransitHazardDM(th int) {
+	p.thDM = th
+}
+
+func (p *passenger) Fee() int {
+	return p.fee
+}
+
+func (p *passenger) setFee(fee int) {
+	p.fee = fee
+}
+
+func (p *passenger) Origin() string {
+	return p.origin
+}
+
+func (p *passenger) setOrigin(origin string) {
+	p.origin = origin
+}
+
+func (p *passenger) Destination() string {
+	return p.destination
+}
+
+func (p *passenger) setDestination(destination string) {
+	p.destination = destination
+}
+
+func loadPassengerManifest() passengerManifest {
+	pm := passengerManifest{}
+	rawData := getPassengers()
+	for i := range rawData {
+		lot := newPassenger()
+		if lot.LeachData(rawData[i]) != nil {
+			continue
+		}
+		pm.entry = append(pm.entry, lot)
+	}
+	return pm
+}
+
+func getPassengers() []string {
+	lines := utils.LinesFromTXT(passengerfile)
+
+	lineNums := utils.InFileContainsN(passengerfile, "ENTRY")
+	passengersInfo := []string{}
+
+	for _, i := range lineNums {
+		currentLine := lines[i]
+		data := strings.Split(currentLine, ":")
+		dataParts := strings.Split(data[1], "_")
+		if len(dataParts) != 8 {
+			for e := 0; e < len(dataParts); e++ {
+				fmt.Println(e, dataParts[e])
+			}
+			panic(errors.New("Data Corrupted: " + data[1]))
+		}
+		passengersInfo = append(passengersInfo, data[1])
+	}
+	return passengersInfo
+}
+
+func (p *passenger) LeachData(rawData string) error {
+	err := errors.New("Null error")
+	data := strings.Split(rawData, "_")
+	p.id, err = strconv.Atoi(data[0])
+	p.name = data[1]
+	p.category = data[2]
+	p.quality = data[3]
+	p.thDM, err = strconv.Atoi(data[4])
+	p.fee, err = strconv.Atoi(data[5])
+	p.origin = data[6]
+	p.destination = data[7]
+	return err
+}

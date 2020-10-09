@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/utils"
 )
 
@@ -18,6 +19,31 @@ func getShipData(query string) int {
 		return -999
 	}
 	return jd
+}
+
+func getShipDataStr(query string) string {
+	lines := utils.LinesFromTXT("mgt2_traffic.config")
+	l := utils.InFileContains("mgt2_traffic.config", query)
+	data := strings.Split(lines[l], ":")
+	return data[1]
+}
+
+func getPassengerData(query string) int {
+	lines := utils.LinesFromTXT(passengerfile)
+	l := utils.InFileContains(passengerfile, query)
+	data := strings.Split(lines[l], ":")
+	jd, err := strconv.Atoi(data[1])
+	if err != nil {
+		return -999
+	}
+	return jd
+}
+
+func getPassengerDataStr(query string) string {
+	lines := utils.LinesFromTXT(passengerfile)
+	l := utils.InFileContains(passengerfile, query)
+	data := strings.Split(lines[l], ":")
+	return data[1]
 }
 
 // func getJumpDrive() int {
@@ -128,9 +154,11 @@ func mutateTestResultsByTime(effect, time, timeLimit int) (int, int, bool) {
 
 func getCargo() []string {
 
-	lines := utils.LinesFromTXT(exPath + "mgt2_traffic.config")
-	lineNums := utils.InFileContainsN("mgt2_traffic.config", "CARGOENTRY")
+	lines := utils.LinesFromTXT(cargofile)
+
+	lineNums := utils.InFileContainsN(cargofile, "CARGOENTRY")
 	cargo := []string{}
+
 	for _, i := range lineNums {
 		currentLine := lines[i]
 		data := strings.Split(currentLine, ":")
@@ -144,4 +172,98 @@ func getCargo() []string {
 		cargo = append(cargo, data[1])
 	}
 	return cargo
+}
+
+func shipInfo() string {
+	str := "SHIP DATA:\n"
+	str += "   Name: " + getShipDataStr("SHIP_NAME") + "\n"
+	str += "  Class: " + getShipDataStr("SHIP_CLASS") + " (Type-" + getShipDataStr("SHIP_TYPE") + ")\n"
+	str += "Tonnage: " + getShipDataStr("SHIP_VOLUME") + " tons\n"
+	str += "J-Drive: " + "Jump-" + getShipDataStr("JUMP_DRIVE") + "\n"
+	str += "M-Drive: " + "Thrust " + getShipDataStr("MANUVER_DRIVE") + "\n"
+	str += "   Crew: " + getShipDataStr("CURRENT_CREW") + "\n"
+	str += "  Cargo: " + getShipDataStr("SHIP_CARGO_VOLUME") + " tons (" + strconv.Itoa(freeCargoVolume()) + " available)\n"
+	str += "--------------------------------------------------------------------------------\n"
+	cm := loadCargoManifest()
+	for i := range cm.entry {
+		info := cm.entry[i].GetTGCode() + "	" + strconv.Itoa(cm.entry[i].GetVolume()) + " tons " + cm.entry[i].GetDescr()
+		if cm.entry[i].GetDestination() != "[NO DATA]" {
+			planet, _ := otu.GetDataOn(cm.entry[i].GetDestination())
+			info += "	(Freight to " + planet.Name() + "  ETA:" + etaDate(cm.entry[i]) + ")"
+
+		}
+		str += info + "\n"
+	}
+	str += "--------------------------------------------------------------------------------\n"
+
+	return str
+}
+
+func setPassengers(pType int, qty int) error {
+	lines := utils.LinesFromTXT(exPath + passengerfile)
+	lineNums := -1
+	switch pType {
+	default:
+		return errors.New("Unknown Passenger Type")
+	case lowPassenger:
+		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_LOW")
+	case basPassenger:
+		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_BASIC")
+	case midPassenger:
+		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_MIDDLE")
+	case highPassenger:
+		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_HIGH")
+	case guestyPassenger:
+		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_GUESTS")
+	}
+	data := strings.Split(lines[lineNums], ":")
+	utils.EditLineInFile(exPath+passengerfile, lineNums, data[0]+":"+strconv.Itoa(qty))
+	return nil
+}
+
+func passengersQty(pType int) (int, error) {
+	lines := utils.LinesFromTXT(exPath + passengerfile)
+	lineNums := -1
+	switch pType {
+	default:
+		return 0, errors.New("Unknown Passenger Type")
+	case lowPassenger:
+		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_LOW")
+	case basPassenger:
+		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_BASIC")
+	case midPassenger:
+		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_MIDDLE")
+	case highPassenger:
+		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_HIGH")
+	case guestyPassenger:
+		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_GUESTS")
+	}
+	data := strings.Split(lines[lineNums], ":")
+	return strconv.Atoi(data[1])
+}
+
+func freeStaterooms() (int, int, int, int) {
+	lb, st, hi, lu := getShipData("SHIP_LOWBIRTHS"), getShipData("SHIP_STATEROOMS_STANDARD"), getShipData("SHIP_STATEROOMS_HIGH"), getShipData("SHIP_STATEROOMS_LUXURY")
+	lp, bp, mp, hp, gp, cc := getShipData("PASSENGERS_LOW"), getShipData("PASSENGERS_BASIC"), getShipData("PASSENGERS_MIDDLE"), getShipData("PASSENGERS_HIGH"), getShipData("PASSENGERS_GUESTS"), getShipData("CURRENT_CREW")
+	for i := cc; i > 0; i-- {
+		st--
+	}
+	for i := gp; i > 0; i-- {
+		st--
+	}
+	for i := hp; i > 0; i-- {
+		st--
+	}
+	for i := mp; i > 0; i-- {
+		st--
+	}
+	bpOcc := 0
+	if bp > 0 {
+		bpOcc = (bp / 4) + 1
+	}
+	st = st - bpOcc
+	for i := lp; i > 0; i-- {
+		lp--
+	}
+	return lb, st, hi, lu
 }

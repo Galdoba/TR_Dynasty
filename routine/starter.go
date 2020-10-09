@@ -25,7 +25,9 @@ import (
 )
 
 const (
-	typingDelay = "4ms"
+	typingDelay   = "4ms"
+	cargofile     = "CargoManifest.txt"
+	passengerfile = "PassengerManifest.txt"
 )
 
 var delay time.Duration
@@ -47,9 +49,25 @@ var gmMode bool
 var menuPosition string
 var quit bool
 var exPath string
+var Cargofile string
+var Passengerfile string
 
 func init() {
 	printSlow("Initialisation...\n")
+
+	existCF, err := fileExists(cargofile)
+	reportErr(err)
+	if !existCF {
+		_, err = os.Create(cargofile)
+		reportErr(err)
+	}
+	existPF, err := fileExists(passengerfile)
+	reportErr(err)
+	if !existPF {
+		_, err = os.Create(passengerfile)
+		reportErr(err)
+	}
+
 	// ex, _ := os.Executable()
 	// exPath = filepath.Dir(ex)
 	// //test
@@ -68,7 +86,6 @@ func init() {
 func StartRoutine() {
 
 	//TestCargo()
-	//return
 	clrScrn()
 	printSlow("Start...\n")
 	helloWorld()
