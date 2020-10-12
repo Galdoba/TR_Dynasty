@@ -185,6 +185,7 @@ func shipInfo() string {
 	str += "  Cargo: " + getShipDataStr("SHIP_CARGO_VOLUME") + " tons (" + strconv.Itoa(freeCargoVolume()) + " available)\n"
 	str += "--------------------------------------------------------------------------------\n"
 	cm := loadCargoManifest()
+	str += "CURRENT CARGO:\n"
 	for i := range cm.entry {
 		info := cm.entry[i].GetTGCode() + "	" + strconv.Itoa(cm.entry[i].GetVolume()) + " tons " + cm.entry[i].GetDescr()
 		if cm.entry[i].GetDestination() != "[NO DATA]" {
@@ -199,71 +200,10 @@ func shipInfo() string {
 	return str
 }
 
-func setPassengers(pType int, qty int) error {
-	lines := utils.LinesFromTXT(exPath + passengerfile)
-	lineNums := -1
-	switch pType {
-	default:
-		return errors.New("Unknown Passenger Type")
-	case lowPassenger:
-		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_LOW")
-	case basPassenger:
-		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_BASIC")
-	case midPassenger:
-		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_MIDDLE")
-	case highPassenger:
-		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_HIGH")
-	case guestyPassenger:
-		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_GUESTS")
-	}
-	data := strings.Split(lines[lineNums], ":")
-	utils.EditLineInFile(exPath+passengerfile, lineNums, data[0]+":"+strconv.Itoa(qty))
-	return nil
-}
-
-func passengersQty(pType int) (int, error) {
-	lines := utils.LinesFromTXT(exPath + passengerfile)
-	lineNums := -1
-	switch pType {
-	default:
-		return 0, errors.New("Unknown Passenger Type")
-	case lowPassenger:
-		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_LOW")
-	case basPassenger:
-		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_BASIC")
-	case midPassenger:
-		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_MIDDLE")
-	case highPassenger:
-		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_HIGH")
-	case guestyPassenger:
-		lineNums = utils.InFileContains(passengerfile, "PASSENGERS_GUESTS")
-	}
-	data := strings.Split(lines[lineNums], ":")
-	return strconv.Atoi(data[1])
-}
-
-func freeStaterooms() (int, int, int, int) {
-	lb, st, hi, lu := getShipData("SHIP_LOWBIRTHS"), getShipData("SHIP_STATEROOMS_STANDARD"), getShipData("SHIP_STATEROOMS_HIGH"), getShipData("SHIP_STATEROOMS_LUXURY")
-	lp, bp, mp, hp, gp, cc := getShipData("PASSENGERS_LOW"), getShipData("PASSENGERS_BASIC"), getShipData("PASSENGERS_MIDDLE"), getShipData("PASSENGERS_HIGH"), getShipData("PASSENGERS_GUESTS"), getShipData("CURRENT_CREW")
-	for i := cc; i > 0; i-- {
-		st--
-	}
-	for i := gp; i > 0; i-- {
-		st--
-	}
-	for i := hp; i > 0; i-- {
-		st--
-	}
-	for i := mp; i > 0; i-- {
-		st--
-	}
-	bpOcc := 0
-	if bp > 0 {
-		bpOcc = (bp / 4) + 1
-	}
-	st = st - bpOcc
-	for i := lp; i > 0; i-- {
-		lp--
-	}
-	return lb, st, hi, lu
+func getAllStaterooms() (int, int, int) {
+	lsr, hsr, ssr := 0, 0, 0
+	lsr = getShipData("SHIP_STATEROOMS_LUXURY")
+	hsr = getShipData("SHIP_STATEROOMS_HIGH")
+	ssr = getShipData("SHIP_STATEROOMS_STANDARD")
+	return lsr, hsr, ssr
 }

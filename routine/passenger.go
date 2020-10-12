@@ -12,7 +12,6 @@ import (
 	"github.com/Galdoba/TR_Dynasty/name"
 	"github.com/Galdoba/TR_Dynasty/profile"
 	"github.com/Galdoba/TR_Dynasty/wrld"
-	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
@@ -338,11 +337,12 @@ func hghPass(ptv int) int {
 }
 
 const (
-	highPassenger   = 0
-	midPassenger    = 1
-	basPassenger    = 2
-	lowPassenger    = 3
-	guestyPassenger = 4
+	crewMember     = -2
+	highPassenger  = 0
+	midPassenger   = 1
+	basPassenger   = 2
+	lowPassenger   = 3
+	guestPassenger = 4
 )
 
 func lowPassCost(jumpSeq []int) int {
@@ -497,26 +497,6 @@ func takePassengers() {
 
 }
 
-func pickUpBasicPassengers(avail int) {
-	maxPass := utils.Min(avail, getShipData("SHIP_STATEROOMS_STANDARD")*4)
-	pass := 0
-	err := errors.New("No Value")
-	fmt.Print("Enter Number to Pick Up (0-" + strconv.Itoa(maxPass) + "): ")
-	for err != nil {
-		pass, err = user.InputInt()
-		if pass < 0 {
-			err = errors.New("Can't have negative number")
-		}
-		if pass > maxPass {
-			err = errors.New("Not enough Staterooms")
-		}
-		reportErr(err)
-	}
-	setPassengers(basPassenger, pass)
-
-	//recalculatePassengerCargo()
-}
-
 /*
 	highPassenger   = 0
 	midPassenger    = 1
@@ -577,6 +557,7 @@ type passenger struct {
 	fee         int
 	origin      string
 	destination string
+	stateroom   string
 }
 
 func newPassenger() passenger {
@@ -656,6 +637,14 @@ func (p *passenger) setDestination(destination string) {
 	p.destination = destination
 }
 
+func (p *passenger) Stateroom() string {
+	return p.stateroom
+}
+
+func (p *passenger) setStateroom(sttrm string) {
+	p.stateroom = sttrm
+}
+
 func loadPassengerManifest() passengerManifest {
 	pm := passengerManifest{}
 	rawData := getPassengers()
@@ -701,5 +690,101 @@ func (p *passenger) LeachData(rawData string) error {
 	p.fee, err = strconv.Atoi(data[5])
 	p.origin = data[6]
 	p.destination = data[7]
+	p.stateroom = data[8]
 	return err
+}
+
+func (p *passenger) SeedData() string {
+	str := "CARGOENTRY:"
+	//ENTRY:ID_NAME_CATEGORY_QUALITY_THDM_FEE_ORIGIN_DESTINATION
+	str += p.IDstr() + "_" + p.Name() + "_" + p.Category() + "_" + p.Quality() + "_" + strconv.Itoa(p.TransitHazardDM()) + "_" +
+		strconv.Itoa(p.Fee()) + "_" + p.Origin() + "_" + p.Destination() + "_" + p.Stateroom()
+	return str
+
+}
+
+func pType2Category(pType int) string {
+	switch pType {
+	case lowPassenger:
+		return "Low"
+	case basPassenger:
+		return "Basic"
+	case midPassenger:
+		return "Middle"
+	case highPassenger:
+		return "High"
+	case guestPassenger:
+		return "Guest"
+	case crewMember:
+		return "Crew"
+	}
+	return ""
+}
+
+func category2pType(cat string) int {
+	switch cat {
+	case "High":
+		return highPassenger
+	case "Middle":
+		return midPassenger
+	case "Basic":
+		return basPassenger
+	case "Low":
+		return lowPassenger
+	case "Guest":
+		return guestPassenger
+	case "Crew":
+		return crewMember
+	}
+	return -999
+}
+
+func pickUpPassengers(pQty int, pType int, fee int) {
+	pm := loadPassengerManifest()
+	for i := 0; i < pQty; i++ {
+		ps := newPassenger()
+		ps.setCategory(pType2Category(pType))
+		ps.setFee(fee)
+		pm.entry = append(pm.entry, ps)
+	}
+	savePassengerManifest(pm)
+}
+
+func savePassengerManifest(pm passengerManifest) {
+	lines := utils.LinesFromTXT(exPath + passengerfile)
+entry:
+	for i := range pm.entry {
+		for l, val := range lines {
+			if strings.Contains(val, strconv.Itoa(pm.entry[i].ID())) {
+				utils.EditLineInFile(exPath+passengerfile, l, pm.entry[i].SeedData())
+				continue entry
+			}
+		}
+		utils.AddLineToFile(exPath+passengerfile, pm.entry[i].SeedData())
+	}
+}
+
+func bestStateroom(pType int) string {
+	sttrm := ""
+	lsr, hsr, ssr := getAllStaterooms()
+	lsrO, hsrO, ssrO := getOccupiedStaterooms()
+	switch pType {
+	case luxPassenger:
+		if lsr > 1 {
+
+		}
+	}
+	fmt.Println("return :'" + sttrm + "'")
+	return sttrm
+}
+
+func getOccupiedStaterooms() (int, int, int) {
+	pm := loadPassengerManifest()
+	passcateg := make(map[int]int)
+	for i, pas := range pm.entry {
+		passcateg[category2pType(p.Category())]++
+	}
+
+	lsrO := strmMap[pType2Category]
+
 }

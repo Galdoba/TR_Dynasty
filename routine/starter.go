@@ -84,7 +84,13 @@ func init() {
 }
 
 func StartRoutine() {
-
+	//pickUpPassengers(6, lowPassenger, 500)
+	bestStateroom(0)
+	bestStateroom(1)
+	bestStateroom(2)
+	bestStateroom(3)
+	bestStateroom(4)
+	return
 	//TestCargo()
 	clrScrn()
 	printSlow("Start...\n")
