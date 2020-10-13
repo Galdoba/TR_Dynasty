@@ -186,6 +186,9 @@ func shipInfo() string {
 	str += "--------------------------------------------------------------------------------\n"
 	cm := loadCargoManifest()
 	str += "CURRENT CARGO:\n"
+	if len(cm.entry) == 0 {
+		str += "NONE"
+	}
 	for i := range cm.entry {
 		info := cm.entry[i].GetTGCode() + "	" + strconv.Itoa(cm.entry[i].GetVolume()) + " tons " + cm.entry[i].GetDescr()
 		if cm.entry[i].GetDestination() != "[NO DATA]" {
@@ -196,14 +199,28 @@ func shipInfo() string {
 		str += info + "\n"
 	}
 	str += "--------------------------------------------------------------------------------\n"
-
+	str += "CURRENT PASSENGERS:\n"
+	pm := loadPassengerManifest()
+	if len(pm.entry) == 0 {
+		str += "NONE"
+	}
+	for i := range pm.entry {
+		str += pm.entry[i].Category() + ": " + pm.entry[i].Name() + "\n"
+	}
 	return str
 }
 
-func getAllStaterooms() (int, int, int) {
-	lsr, hsr, ssr := 0, 0, 0
+func getAllStaterooms() (int, int, int, int) {
+	lsr, hsr, ssr, lb := 0, 0, 0, 0
 	lsr = getShipData("SHIP_STATEROOMS_LUXURY")
 	hsr = getShipData("SHIP_STATEROOMS_HIGH")
 	ssr = getShipData("SHIP_STATEROOMS_STANDARD")
-	return lsr, hsr, ssr
+	lb = getShipData("SHIP_LOWBIRTHS")
+	return lsr, hsr, ssr, lb
+}
+
+func portInfo() string {
+	str := ""
+	str += "TODO: Some info"
+	return str
 }

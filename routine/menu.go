@@ -190,14 +190,9 @@ func hangarMenu() {
 }
 
 func arrival() {
-	d := cargoDesignatedTo(sourceWorld)
-	if d < 1 {
-		return
-	}
-	if userConfirm("Unload Freight for this planet? (" + strconv.Itoa(d) + " Lots)") {
-		unloadCargo()
-		menu("------------------", "Continue")
-	}
+	unloadPassengers()
+	unloadCargo()
+	menu("------------------------------", "Continue")
 
 }
 
@@ -210,6 +205,9 @@ func infoMenu() {
 	case 1:
 		clrScrn()
 		fmt.Println(shipInfo())
+	case 2:
+		clrScrn()
+		fmt.Println(portInfo())
 	}
 	menu("---------------", "Continue")
 	menuPosition = "INFORMATION"

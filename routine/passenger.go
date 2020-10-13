@@ -12,6 +12,7 @@ import (
 	"github.com/Galdoba/TR_Dynasty/name"
 	"github.com/Galdoba/TR_Dynasty/profile"
 	"github.com/Galdoba/TR_Dynasty/wrld"
+	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
@@ -45,26 +46,32 @@ func PassengerRoutine() {
 		longestSearchTime = time
 	}
 	low, basic, middle, high := availablePassengers(ptValue + playerEffect1 + localBroker.DM())
+	passPrices := make(map[int]int)
+	passPrices[lowPassenger] = lowPassCost(jumpRoute) - localBroker.CutFrom(lowPassCost(jumpRoute))
+	passPrices[basPassenger] = basicPassCost(jumpRoute) - localBroker.CutFrom(basicPassCost(jumpRoute))
+	passPrices[midPassenger] = middlePassCost(jumpRoute) - localBroker.CutFrom(middlePassCost(jumpRoute))
+	passPrices[highPassenger] = highPassCost(jumpRoute) - localBroker.CutFrom(highPassCost(jumpRoute))
+
 	printSlow("Active passenger requests: " + strconv.Itoa(low+basic+middle+high) + "\n")
 	if low > 0 {
-		fee := lowPassCost(jumpRoute) - localBroker.CutFrom(lowPassCost(jumpRoute))
+		fee := passPrices[lowPassenger]
 		printSlow("   Low Passengers: " + strconv.Itoa(low) + "		Transport fee: " + strconv.Itoa(fee) + "\n")
 	}
 	if basic > 0 {
-		fee := basicPassCost(jumpRoute) - localBroker.CutFrom(basicPassCost(jumpRoute))
+		fee := passPrices[basPassenger]
 		printSlow(" Basic Passengers: " + strconv.Itoa(basic) + "		Transport fee: " + strconv.Itoa(fee) + "\n")
 	}
 	if middle > 0 {
-		fee := middlePassCost(jumpRoute) - localBroker.CutFrom(middlePassCost(jumpRoute))
+		fee := passPrices[midPassenger]
 		printSlow("Middle Passengers: " + strconv.Itoa(middle) + "		Transport fee: " + strconv.Itoa(fee) + "\n")
 	}
 	if high > 0 {
-		fee := highPassCost(jumpRoute) - localBroker.CutFrom(highPassCost(jumpRoute))
+		fee := passPrices[highPassenger]
 		printSlow("  High Passengers: " + strconv.Itoa(high) + "		Transport fee: " + strconv.Itoa(fee) + "\n")
 	}
 	fmt.Println("-----------------------------------------------------")
 	if userConfirm("Take Passengers?") {
-		takePassengers()
+		takePassengers(passPrices)
 	}
 }
 
@@ -486,13 +493,38 @@ TranzitHazardDM - Следует использовать в прыжковой 
 // 	return n
 // }
 
-func takePassengers() {
+func takePassengers(passPrices map[int]int) {
 	clrScrn()
 	//err := errors.New("No Value for 'pQty'")
-
-	ptype, _ := menu("Select Passenger Type:", "High", "Middle", "Basic", "Low", "Guest", "[End Operation]")
-	if ptype == 5 {
-		return
+	done := false
+	for !done {
+		fstr := freeStateRooms()
+		ptype, _ := menu("Select Passenger Type:", "High", "Middle", "Basic", "Low", "Guest", "[End Operation]")
+		if ptype == 5 {
+			return
+		}
+		err := errors.New("Not valid number")
+		num := 0
+		for err != nil {
+			fmt.Print("Enter number of passengers [0-" + strconv.Itoa(fstr) + "]: ")
+			num, err = user.InputInt()
+			if num < 0 {
+				err = errors.New("Can't have negative value")
+			}
+			if num > fstr {
+				err = errors.New("Not enough Free Staterooms")
+			}
+			if num == 0 {
+				err = errors.New("Zero value entered")
+				reportErr(err)
+				if userConfirm("End Operation?") {
+					return
+				}
+				continue
+			}
+			reportErr(err)
+		}
+		pickUpPassengers(num, ptype, passPrices[ptype])
 	}
 
 }
@@ -668,7 +700,7 @@ func getPassengers() []string {
 		currentLine := lines[i]
 		data := strings.Split(currentLine, ":")
 		dataParts := strings.Split(data[1], "_")
-		if len(dataParts) != 8 {
+		if len(dataParts) != 9 {
 			for e := 0; e < len(dataParts); e++ {
 				fmt.Println(e, dataParts[e])
 			}
@@ -745,6 +777,7 @@ func pickUpPassengers(pQty int, pType int, fee int) {
 		ps := newPassenger()
 		ps.setCategory(pType2Category(pType))
 		ps.setFee(fee)
+		ps.setStateroom(bestStateroom(ps))
 		pm.entry = append(pm.entry, ps)
 	}
 	savePassengerManifest(pm)
@@ -764,27 +797,51 @@ entry:
 	}
 }
 
-func bestStateroom(pType int) string {
-	sttrm := ""
-	lsr, hsr, ssr := getAllStaterooms()
-	lsrO, hsrO, ssrO := getOccupiedStaterooms()
-	switch pType {
-	case luxPassenger:
-		if lsr > 1 {
+const (
+	stroomLux  = "STATEROOMLUX"
+	stroomHigh = "STATEROOMHIGH"
+	stroomStd  = "STATEROOMSSTD"
+	stroomLB   = "LOWBIRTH"
+)
 
-		}
+func bestStateroom(p passenger) string {
+	switch p.Category() {
+	default:
+		return stroomStd
 	}
-	fmt.Println("return :'" + sttrm + "'")
-	return sttrm
 }
 
-func getOccupiedStaterooms() (int, int, int) {
+func getOccupiedStaterooms() int { //Временная мера
 	pm := loadPassengerManifest()
-	passcateg := make(map[int]int)
-	for i, pas := range pm.entry {
-		passcateg[category2pType(p.Category())]++
+	count := len(pm.entry)
+	return count
+}
+
+func freeStateRooms() int {
+	total := getShipData("SHIP_STATEROOMS_STANDARD")
+	occ := getOccupiedStaterooms()
+	return total - occ
+}
+
+func unloadPassengers() {
+	pm := loadPassengerManifest()
+	totalProfit := 0
+	for _, val := range pm.entry {
+		if val.Destination() == sourceWorld.Hex() {
+			fmt.Print("Unloaded ", val.Name(), " fee: "+strconv.Itoa(val.Fee()), " Cr\n")
+			profit := val.Fee()
+			totalProfit += profit
+			deleteFromPassengerManifest(val.ID())
+		}
+
 	}
+	fmt.Print("------------------------------\n")
+	fmt.Print("Passenger freight fee: ", totalProfit, " Cr\n")
+}
 
-	lsrO := strmMap[pType2Category]
-
+func deleteFromPassengerManifest(idValue int) passengerManifest {
+	id := strconv.Itoa(idValue)
+	n := utils.InFileContains(exPath+passengerfile, id)
+	utils.DeleteLineFromFileN(exPath+passengerfile, n)
+	return loadPassengerManifest()
 }

@@ -421,7 +421,7 @@ func unloadCargo() {
 
 	}
 	fmt.Print("------------------------------\n")
-	fmt.Print("Total Profit: ", totalProfit, " Cr\n")
+	fmt.Print("Cargo freight fee: ", totalProfit, " Cr\n")
 }
 
 func loadCargo() {
