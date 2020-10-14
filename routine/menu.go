@@ -190,25 +190,39 @@ func hangarMenu() {
 }
 
 func arrival() {
-	unloadPassengers()
-	unloadCargo()
-	menu("------------------------------", "Continue")
+	unload := false
+	if passengersDesignatedTo(sourceWorld) > 0 {
+		unload = true
+		unloadPassengers()
+	}
+	if cargoDesignatedTo(sourceWorld) > 0 {
+		unload = true
+		unloadCargo()
+	}
+
+	if unload {
+		userConfirm("Continue")
+	}
 
 }
 
 func infoMenu() {
-	i, _ := menu("Select category:", "Return", "Ship", "Port", "Planet")
-	switch i {
-	case 0:
+	i, val := menu("Select category:", "Return", "Ship", "Port", "Planet")
+	menuPosition = "INFORMATION"
+	if i == 0 {
 		menuPosition = ""
 		return
+	}
+	menuPosition += " > " + val
+	clrScrn()
+	switch i {
 	case 1:
-		clrScrn()
 		fmt.Println(shipInfo())
 	case 2:
-		clrScrn()
 		fmt.Println(portInfo())
+	case 3:
+		fmt.Println("TODO: planetInfo()")
 	}
-	menu("---------------", "Continue")
+	userConfirm("Continue ")
 	menuPosition = "INFORMATION"
 }

@@ -18,6 +18,8 @@ import (
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 )
 
+var localPassengers []passenger
+
 //PassengerRoutine -
 func PassengerRoutine() {
 
@@ -46,12 +48,16 @@ func PassengerRoutine() {
 		longestSearchTime = time
 	}
 	low, basic, middle, high := availablePassengers(ptValue + playerEffect1 + localBroker.DM())
+	passQty := make(map[int]int)
 	passPrices := make(map[int]int)
 	passPrices[lowPassenger] = lowPassCost(jumpRoute) - localBroker.CutFrom(lowPassCost(jumpRoute))
+	passQty[lowPassenger] = low
 	passPrices[basPassenger] = basicPassCost(jumpRoute) - localBroker.CutFrom(basicPassCost(jumpRoute))
+	passQty[midPassenger] = middle
 	passPrices[midPassenger] = middlePassCost(jumpRoute) - localBroker.CutFrom(middlePassCost(jumpRoute))
+	passQty[basPassenger] = basic
 	passPrices[highPassenger] = highPassCost(jumpRoute) - localBroker.CutFrom(highPassCost(jumpRoute))
-
+	passQty[highPassenger] = high
 	printSlow("Active passenger requests: " + strconv.Itoa(low+basic+middle+high) + "\n")
 	if low > 0 {
 		fee := passPrices[lowPassenger]
@@ -71,7 +77,7 @@ func PassengerRoutine() {
 	}
 	fmt.Println("-----------------------------------------------------")
 	if userConfirm("Take Passengers?") {
-		takePassengers(passPrices)
+		takePassengers(passPrices, passQty)
 	}
 }
 
@@ -493,31 +499,44 @@ TranzitHazardDM - Следует использовать в прыжковой 
 // 	return n
 // }
 
-func takePassengers(passPrices map[int]int) {
-	clrScrn()
+func takePassengers(passPrices map[int]int, passQty map[int]int) {
 	//err := errors.New("No Value for 'pQty'")
 	done := false
 	for !done {
+		clrScrn()
 		fstr := freeStateRooms()
-		ptype, _ := menu("Select Passenger Type:", "High", "Middle", "Basic", "Low", "Guest", "[End Operation]")
-		if ptype == 5 {
+		if fstr < 1 {
+			fmt.Print("Not enough Free Staterooms\n")
 			return
 		}
+		ptype, _ := menu("Select Passenger Type:", "High", "Middle", "Basic", "Low", "[End Operation]")
+		if ptype == 5 {
+			clrScrn()
+			return
+		}
+		// if ptype == 2 {
+		// 	fstr = fstr * 4
+		// }
 		err := errors.New("Not valid number")
 		num := 0
 		for err != nil {
-			fmt.Print("Enter number of passengers [0-" + strconv.Itoa(fstr) + "]: ")
+			canTake := utils.Min(fstr, passQty[ptype])
+			if canTake < 0 {
+				canTake = 0
+			}
+			fmt.Print("Enter number of passengers [0-" + strconv.Itoa(canTake) + "]: ")
 			num, err = user.InputInt()
 			if num < 0 {
 				err = errors.New("Can't have negative value")
 			}
-			if num > fstr {
+			if num > canTake {
 				err = errors.New("Not enough Free Staterooms")
 			}
 			if num == 0 {
 				err = errors.New("Zero value entered")
 				reportErr(err)
 				if userConfirm("End Operation?") {
+					clrScrn()
 					return
 				}
 				continue
@@ -828,7 +847,7 @@ func unloadPassengers() {
 	totalProfit := 0
 	for _, val := range pm.entry {
 		if val.Destination() == sourceWorld.Hex() {
-			fmt.Print("Unloaded ", val.Name(), " fee: "+strconv.Itoa(val.Fee()), " Cr\n")
+			fmt.Print(val.Name()+"-", val.Category()+" class passenger has left the ship\n", strconv.Itoa(val.Fee()), " Cr was received\n")
 			profit := val.Fee()
 			totalProfit += profit
 			deleteFromPassengerManifest(val.ID())
@@ -836,7 +855,8 @@ func unloadPassengers() {
 
 	}
 	fmt.Print("------------------------------\n")
-	fmt.Print("Passenger freight fee: ", totalProfit, " Cr\n")
+	fmt.Print("Total Passenger fee: ", totalProfit, " Cr\n")
+	fmt.Print("------------------------------\n")
 }
 
 func deleteFromPassengerManifest(idValue int) passengerManifest {
@@ -844,4 +864,15 @@ func deleteFromPassengerManifest(idValue int) passengerManifest {
 	n := utils.InFileContains(exPath+passengerfile, id)
 	utils.DeleteLineFromFileN(exPath+passengerfile, n)
 	return loadPassengerManifest()
+}
+
+func passengersDesignatedTo(w wrld.World) int {
+	pm := loadPassengerManifest()
+	d := 0
+	for _, val := range pm.entry {
+		if val.Destination() == w.Hex() {
+			d++
+		}
+	}
+	return d
 }

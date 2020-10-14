@@ -221,6 +221,20 @@ func getAllStaterooms() (int, int, int, int) {
 
 func portInfo() string {
 	str := ""
-	str += "TODO: Some info"
+	clrScrn()
+	i, val := menu("Select data:", "Services", "Security", "Tariffs", "Market")
+	menuPosition += " > " + val
+	clrScrn()
+	switch i {
+	default:
+	case 1:
+		str += "TODO: Services Info\n"
+	case 2:
+		str += "TODO: Security Info\n"
+	case 3:
+		str += "TODO: Tariffs Info\n"
+	case 4:
+		str += "TODO: Market Info\n"
+	}
 	return str
 }
