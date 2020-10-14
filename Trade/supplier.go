@@ -1,6 +1,7 @@
 package trade
 
 import (
+	"fmt"
 	"sort"
 	"strconv"
 
@@ -380,3 +381,53 @@ sale table:
 |Tons per Defined Trade Good|Proposal|Tax|Total Profit|Sell DM|
 
 */
+
+func (m *Merchant) ListExport() []string {
+	allCodes := allCategories()
+	availableCategories := []string{}
+	for i := range allCodes {
+		pdm, _ := PurchSaleDMs(allCodes[i], m.localTC)
+		fmt.Println("pdm", pdm)
+		if matchWorldsTC(allCodes[i]+"7", m.localTC) {
+			fmt.Println("Add Export", allCodes[i], GetCategory(allCodes[i]+"7"))
+			availableCategories = append(availableCategories, allCodes[i])
+		}
+	}
+	exportList := []string{}
+	for i := range availableCategories {
+		exportList = append(exportList, availableCategories[i]+" "+GetCategory(availableCategories[i]+"7"))
+	}
+
+	return exportList
+}
+
+func (m *Merchant) ListImport() []string {
+	allCodes := allCategories()
+	importList := []string{}
+	for i := range allCodes {
+		_, sdm := PurchSaleDMs(allCodes[i], m.localTC)
+		fmt.Println(sdm)
+		if sdm > 0 {
+			importList = append(importList, allCodes[i]+" "+GetCategory(allCodes[i]+"7"))
+			fmt.Println("add import: " + allCodes[i] + " " + GetCategory(allCodes[i]+"7"))
+		}
+	}
+
+	return importList
+}
+
+func (m *Merchant) ListImportExport() ([]string, []string) {
+	allCodes := allCategories()
+	exportList := []string{}
+	importList := []string{}
+	for i := range allCodes {
+		pdm, sdm := PurchSaleDMs(allCodes[i], m.localTC)
+		if sdm > pdm && sdm > 0 {
+			importList = append(importList, GetCategory(allCodes[i]+"7")+" ["+allCodes[i]+"]")
+		}
+		if pdm > sdm && pdm > 0 {
+			exportList = append(exportList, GetCategory(allCodes[i]+"7")+" ["+allCodes[i]+"]")
+		}
+	}
+	return importList, exportList
+}

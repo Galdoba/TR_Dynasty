@@ -6,6 +6,9 @@ import (
 	"strconv"
 	"strings"
 
+	starport "github.com/Galdoba/TR_Dynasty/Starport"
+	trade "github.com/Galdoba/TR_Dynasty/Trade"
+	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/utils"
 )
@@ -225,16 +228,42 @@ func portInfo() string {
 	i, val := menu("Select data:", "Services", "Security", "Tariffs", "Market")
 	menuPosition += " > " + val
 	clrScrn()
+	sp, err := starport.From(sourceWorld)
+	if err != nil {
+		fmt.Println(err)
+	}
 	switch i {
 	default:
+	case 0:
+		str += sp.Info() + "\n"
 	case 1:
-		str += "TODO: Services Info\n"
+		sec := sp.Security()
+		str += sec.String() + "\n"
 	case 2:
-		str += "TODO: Security Info\n"
-	case 3:
 		str += "TODO: Tariffs Info\n"
-	case 4:
-		str += "TODO: Market Info\n"
+	case 3:
+		str += importExportInfo()
+	}
+	return str
+}
+
+func importExportInfo() string {
+	str := "\nPlanet Imports: \n"
+	merch := trade.NewMerchant().SetLocalUWP(sourceWorld.UWP()).SetLocalTC(sourceWorld.TradeCodes()).SetMType(constant.MerchantTypeTrade)
+	impL, expL := merch.ListImportExport()
+	if len(impL) == 0 {
+		str += "   Nothing Significant" + "\n"
+	}
+	for _, val := range impL {
+		str += val + "\n"
+	}
+	str += "\n"
+	str += "Planet Exports: \n"
+	if len(expL) == 0 {
+		str += "   Nothing Significant" + "\n"
+	}
+	for _, val := range expL {
+		str += val + "\n"
 	}
 	return str
 }

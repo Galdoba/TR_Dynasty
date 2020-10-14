@@ -251,7 +251,7 @@ func (sp Starport) Info() string {
 	str += "            TL : " + strconv.Itoa(sp.tl) + "\n"
 	// bases    []string
 	str += "  Berting cost : " + sp.berthing + "\n"
-	str += sp.sec.String() + "\n"
+	//str += sp.sec.String() + "\n"
 
 	return str
 }
