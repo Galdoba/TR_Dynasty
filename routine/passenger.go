@@ -29,7 +29,7 @@ func PassengerRoutine() {
 	switch autoMod {
 	case false:
 		//playerEffect1 = userInputInt("Enter Effect of Carouse(8) or Streetwise(8) check: ")
-		input := userInputIntSlice("Enter Effect of Carouse(8) or Streetwise(8) check (and time limit in days after ' ' if nesessary): ")
+		input := userInputIntSlice("Enter Effect of Carouse(8) or Streetwise(8) check (limit in days after '/' if nesessary): ")
 		if len(input) > 0 {
 			playerEffect1 = input[0]
 		}

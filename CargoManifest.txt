@@ -1,1 +1,3 @@
-CARGOENTRY:1212_Personal Stuff_6_[NO DATA]_0_0_0_false_[NO DATA]__0___1602227691567104200
+CARGOENTRY:_Personal Stuff_6_[NO DATA]_0_0_0_false_[NO DATA]__0___1602227691567104200
+CARGOENTRY:237_Survival Equipment/Colonisation Kits_16_2223_90000_-2_2_true_[NO DATA]__0__Bought at Drinax on day 013-1105_1602754024612508200
+CARGOENTRY:165_Chalcocite or Talc_10_2223_400_-6_0_true___0__Bought at Drinax on day 006-1105_1602754236626167300

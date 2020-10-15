@@ -13,7 +13,9 @@ import (
 	"github.com/Galdoba/TR_Dynasty/Astrogation"
 	law "github.com/Galdoba/TR_Dynasty/Law"
 	starport "github.com/Galdoba/TR_Dynasty/Starport"
+	trade "github.com/Galdoba/TR_Dynasty/Trade"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
+	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/world"
@@ -98,6 +100,7 @@ func StartRoutine() {
 	sourceWorld = pickWorld()
 	clrScrn()
 	arrival()
+	localSupplier = trade.NewMerchant().SetLocalUWP(sourceWorld.UWP()).SetLocalTC(sourceWorld.TradeCodes()).SetMType(constant.MerchantTypeTrade).DetermineGoodsAvailable()
 	for !quit {
 		enterMenu(menuPosition)
 	}

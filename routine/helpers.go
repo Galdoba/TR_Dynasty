@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/Galdoba/devtools/cli/user"
@@ -45,4 +46,21 @@ func fileExists(path string) (bool, error) {
 	}
 	fmt.Println(err)
 	return true, err
+}
+
+func userInputIntMinMax(msg string, min, max int) int {
+	i := 0
+	err := errors.New("No value")
+	for err != nil {
+		fmt.Print(msg, " [", min, "-", max, "]: ")
+		i, err = user.InputInt()
+		if i < min {
+			err = errors.New("Value is less than " + strconv.Itoa(min))
+		}
+		if i > max {
+			err = errors.New("Value is more than " + strconv.Itoa(max))
+		}
+		reportErr(err)
+	}
+	return i
 }

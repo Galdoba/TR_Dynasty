@@ -3,6 +3,12 @@ package routine
 import (
 	"fmt"
 	"strconv"
+
+	"github.com/Galdoba/TR_Dynasty/TrvCore"
+	"github.com/Galdoba/TR_Dynasty/profile"
+
+	trade "github.com/Galdoba/TR_Dynasty/Trade"
+	"github.com/Galdoba/TR_Dynasty/dice"
 )
 
 var lastAction string
@@ -36,12 +42,15 @@ func enterMenu(menu string) {
 	case "INFORMATION":
 		clrScrn()
 		infoMenu()
+	case "MARKET":
+		clrScrn()
+		marketMenu()
 	}
 
 }
 
 func startMenu() {
-	opt, action := menu("Select Action:", "Disconnect", "Input Data", "Search", "Hangar", "Information")
+	opt, action := menu("Select Action:", "Disconnect", "Input Data", "Search", "Hangar", "Information", "Market")
 	switch opt {
 	default:
 	case 0:
@@ -54,6 +63,8 @@ func startMenu() {
 		menuPosition = "HANGAR"
 	case 4:
 		menuPosition = "INFORMATION"
+	case 5:
+		menuPosition = "MARKET"
 	}
 	lastAction = action
 	fmt.Println("\033[F'" + action + "' action was chosen...")
@@ -225,4 +236,93 @@ func infoMenu() {
 	}
 	userConfirm("Continue ")
 	menuPosition = "INFORMATION"
+}
+
+var localSupplier trade.Merchant
+var localMarket []cargoLot
+
+func marketMenu() {
+	i, val := menu("Select category:", "Return", "Search Supplier", "Purchase Trade Goods", "Sell Trade Goods")
+
+	//localSupplier = localSupplier.SetTraderDice(d.RollNext("3d6").Sum())
+	menuPosition = "MARKET > " + val
+	if i == 0 {
+		menuPosition = ""
+		return
+	}
+	eff := 0
+	timeLimit := 999
+	longestSearchTime = 0
+	time := dice.Roll("1d6").Sum()
+	switch i {
+	case 1:
+		suplTypes := []string{}
+		sup, _ := menu("Select Supplier Type:", "Common-goods Supplier", "Trade Supplier", "Morally Neutral Supplier", "Black Market Supplier")
+		switch sup {
+		case 0:
+			//fmt.Println("Enter Effect of a Broker (6), EDU or SOC, 1–6 days:")
+			input := userInputIntSlice("Enter Effect of Broker (6), EDU or SOC check (limit in days after '/' if nesessary): ")
+			eff, timeLimit = getEffTime(input)
+		case 1:
+			//fmt.Println("Enter Effect of a Broker (6), EDU or SOC, 1–6 days:")
+			input := userInputIntSlice("Enter Effect of Broker (8), EDU or SOC check (limit in days after '/' if nesessary): ")
+			eff, timeLimit = getEffTime(input)
+		case 2:
+			//fmt.Println("Enter Effect of a Broker (6), EDU or SOC, 1–6 days:")
+			input := userInputIntSlice("Enter Effect of Streetwise or Investigate (10), EDU or SOC check (limit in days after '/' if nesessary): ")
+			eff, timeLimit = getEffTime(input)
+			time = dice.Roll("1d6").Sum() * 2
+		case 3:
+			//fmt.Println("Enter Effect of a Broker (6), EDU or SOC, 1–6 days:")
+			input := userInputIntSlice("Enter Effect of Streetwise (8), EDU or SOC check (limit in days after '/' if nesessary): ")
+			eff, timeLimit = getEffTime(input)
+		}
+		eff, time, abort := mutateTestResultsByTime(eff, time, timeLimit)
+
+		if abort {
+			fmt.Println("Search aborted after", time, "days...")
+		} else {
+			fmt.Println("Search took", time, "days...")
+		}
+		if longestSearchTime < time {
+			longestSearchTime = time
+		}
+		advanceTime(longestSearchTime)
+		fmt.Println(eff, suplTypes)
+		if eff >= 0 {
+			newLocalSupplier(sup)
+			return
+		}
+		prf, _ := profile.NewUWP(sourceWorld.UWP())
+		r := dice.Roll("2d6").Sum()
+		if r-eff > TrvCore.EhexToDigit(prf.Laws()) {
+			fmt.Println(r, eff, TrvCore.EhexToDigit(prf.Laws()))
+			menu("TODO: NEGATIVE EVENT", "Continue")
+		}
+
+	case 2:
+		fmt.Println("Purchase:")
+		if len(localMarket) == 0 {
+			menu("Local Supplier not Found", "Return")
+			menuPosition = "MARKET"
+			return
+		}
+		purchase()
+	case 3:
+		fmt.Println("Sale:")
+		menu("TODO: Sale", "TODO")
+		menuPosition = "MARKET"
+	}
+}
+
+func getEffTime(input []int) (int, int) {
+	eff := 0
+	timeLim := 999
+	if len(input) > 0 {
+		eff = input[0]
+	}
+	if len(input) > 1 {
+		timeLim = input[1]
+	}
+	return eff, timeLim
 }

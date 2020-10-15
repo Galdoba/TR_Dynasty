@@ -144,6 +144,10 @@ func (m Merchant) DetermineGoodsAvailable() Merchant {
 	return m
 }
 
+func (m *Merchant) Volume(code string) int {
+	return m.volume[categoryOf(code)]
+}
+
 func categoryOf(code string) string {
 	return string([]byte(code)[0]) + string([]byte(code)[1])
 }
