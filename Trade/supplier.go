@@ -77,6 +77,10 @@ func (m Merchant) SetTraderDice(tDice int) Merchant {
 	return m
 }
 
+func (m Merchant) TraderDice() int {
+	return m.tradeDice
+}
+
 //AvailableCategories -
 func (m Merchant) AvailableCategories() []string {
 	return m.availableTGcodes
@@ -106,6 +110,9 @@ func (m Merchant) DetermineGoodsAvailable() Merchant {
 	}
 	for i := 0; i < dice.Roll1D(); i++ {
 		roll := dice.RollD66()
+		for roll == "66" {
+			roll = dice.RollD66() //исключает экзотические товары пока не имплементируется
+		}
 		availableCategories = append(availableCategories, roll)
 	}
 	switch m.mType { //case constant.MerchantTypeNeutral: имеет ВСЕ товары
@@ -146,6 +153,10 @@ func (m Merchant) DetermineGoodsAvailable() Merchant {
 
 func (m *Merchant) Volume(code string) int {
 	return m.volume[categoryOf(code)]
+}
+
+func (m *Merchant) MerchantType() string {
+	return m.mType
 }
 
 func categoryOf(code string) string {

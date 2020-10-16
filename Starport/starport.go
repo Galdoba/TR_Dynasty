@@ -1,6 +1,7 @@
 package starport
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -166,6 +167,25 @@ func From(wrld wrld.World) (Starport, error) {
 	//fmt.Println("Ships in Port:", ships)
 	//fmt.Println("Ships in Port By type:", defineShips(ships, spCode))
 	return sp, nil
+}
+
+func (sp *Starport) BerthingFee(days int) (int, error) {
+	if days < 1 {
+		return 0, errors.New("'days' cant be Negative")
+	}
+	data := sp.berthing
+	data = strings.TrimSuffix(data, " Cr")
+	costs := strings.Split(data, " / ")
+	total, errT := strconv.Atoi(costs[0])
+	dayly, errD := strconv.Atoi(costs[1])
+	if errD != nil {
+		return 0, errD
+	}
+	if errT != nil {
+		return 0, errT
+	}
+
+	return total + (dayly * (days - 1)), nil
 }
 
 func defineShips(shipsNum int, spCode string) []int {

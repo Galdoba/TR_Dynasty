@@ -553,3 +553,13 @@ func deleteFromCargoManifest(idValue int) cargoManifest {
 	utils.DeleteLineFromFileN(exPath+cargofile, n)
 	return loadCargoManifest()
 }
+
+func byID(id int) cargoLot {
+	cm := loadCargoManifest()
+	for _, val := range cm.entry {
+		if val.GetID() == id {
+			return val
+		}
+	}
+	return cargoLot{}
+}

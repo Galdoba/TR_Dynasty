@@ -179,6 +179,24 @@ func taxingAmount(profit int, ta string) int {
 	return taxedFrom(profit, mapTaxRate()[ta][taxinGrade])
 }
 
+func TaxingAmount(profit int, ta string) int {
+	taxinGrade := -1
+	if profit <= 0 {
+		return 0
+	}
+	for _, val := range []int{0, 1000, 5000, 10000, 25000, 50000, 75000, 100000, 250000, 1000000} {
+		if profit > val {
+			taxinGrade++
+		}
+	}
+	taxingMap := mapTaxRate()
+	taxShare := taxingMap[ta][taxinGrade]
+	if taxShare == -1 {
+		taxShare = 0
+	}
+	return taxedFrom(profit, mapTaxRate()[ta][taxinGrade])
+}
+
 func taxedFrom(base int, proc int) int {
 	return int(float64(base) * (float64(proc) / 100.0))
 }

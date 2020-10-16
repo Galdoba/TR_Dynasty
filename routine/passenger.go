@@ -876,3 +876,14 @@ func passengersDesignatedTo(w wrld.World) int {
 	}
 	return d
 }
+
+func countHeads() int {
+	pm := loadPassengerManifest()
+	d := 0
+	for _, val := range pm.entry {
+		if val.Stateroom() != stroomLB {
+			d++
+		}
+	}
+	return d
+}

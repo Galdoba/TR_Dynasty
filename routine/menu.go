@@ -2,8 +2,12 @@ package routine
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"strconv"
+	"time"
 
+	starport "github.com/Galdoba/TR_Dynasty/Starport"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/profile"
 
@@ -45,12 +49,17 @@ func enterMenu(menu string) {
 	case "MARKET":
 		clrScrn()
 		marketMenu()
+	case "DEPART":
+		clrScrn()
+		depart()
+		if userConfirm("End program") {
+		}
 	}
 
 }
 
 func startMenu() {
-	opt, action := menu("Select Action:", "Disconnect", "Input Data", "Search", "Hangar", "Information", "Market")
+	opt, action := menu("Select Action:", "Disconnect", "Input Data", "Search", "Hangar", "Information", "Market", "Depart")
 	switch opt {
 	default:
 	case 0:
@@ -65,6 +74,8 @@ func startMenu() {
 		menuPosition = "INFORMATION"
 	case 5:
 		menuPosition = "MARKET"
+	case 6:
+		menuPosition = "DEPART"
 	}
 	lastAction = action
 	fmt.Println("\033[F'" + action + "' action was chosen...")
@@ -256,26 +267,39 @@ func marketMenu() {
 	time := dice.Roll("1d6").Sum()
 	switch i {
 	case 1:
-		suplTypes := []string{}
+		clrScrn()
 		sup, _ := menu("Select Supplier Type:", "Common-goods Supplier", "Trade Supplier", "Morally Neutral Supplier", "Black Market Supplier")
 		switch sup {
 		case 0:
 			//fmt.Println("Enter Effect of a Broker (6), EDU or SOC, 1–6 days:")
+			fmt.Println("Search might take 1-6 days...")
 			input := userInputIntSlice("Enter Effect of Broker (6), EDU or SOC check (limit in days after '/' if nesessary): ")
 			eff, timeLimit = getEffTime(input)
 		case 1:
 			//fmt.Println("Enter Effect of a Broker (6), EDU or SOC, 1–6 days:")
+			fmt.Println("Search might take 1-6 days...")
 			input := userInputIntSlice("Enter Effect of Broker (8), EDU or SOC check (limit in days after '/' if nesessary): ")
 			eff, timeLimit = getEffTime(input)
 		case 2:
 			//fmt.Println("Enter Effect of a Broker (6), EDU or SOC, 1–6 days:")
+			fmt.Println("Search might take 2-12 days...")
 			input := userInputIntSlice("Enter Effect of Streetwise or Investigate (10), EDU or SOC check (limit in days after '/' if nesessary): ")
 			eff, timeLimit = getEffTime(input)
 			time = dice.Roll("1d6").Sum() * 2
 		case 3:
 			//fmt.Println("Enter Effect of a Broker (6), EDU or SOC, 1–6 days:")
+			fmt.Println("Search might take 1-6 days and WILL CAUSE negaive events if failed.")
 			input := userInputIntSlice("Enter Effect of Streetwise (8), EDU or SOC check (limit in days after '/' if nesessary): ")
 			eff, timeLimit = getEffTime(input)
+		}
+		prf, _ := profile.NewUWP(sourceWorld.UWP())
+		switch prf.Starport() {
+		case "A":
+			eff += 6
+		case "B":
+			eff += 4
+		case "C":
+			eff += 2
 		}
 		eff, time, abort := mutateTestResultsByTime(eff, time, timeLimit)
 
@@ -288,21 +312,24 @@ func marketMenu() {
 			longestSearchTime = time
 		}
 		advanceTime(longestSearchTime)
-		fmt.Println(eff, suplTypes)
+		menu("--------------------------------------------------------------------------------", "Continue")
+
 		if eff >= 0 {
 			newLocalSupplier(sup)
+			menuPosition = "MARKET"
 			return
 		}
-		prf, _ := profile.NewUWP(sourceWorld.UWP())
+
 		r := dice.Roll("2d6").Sum()
 		if r-eff > TrvCore.EhexToDigit(prf.Laws()) {
 			fmt.Println(r, eff, TrvCore.EhexToDigit(prf.Laws()))
-			menu("TODO: NEGATIVE EVENT", "Continue")
+			menu("TODO: NEGATIVE EVENT Report To Referee", "Next")
 		}
 
 	case 2:
 		fmt.Println("Purchase:")
 		if len(localMarket) == 0 {
+			clrScrn()
 			menu("Local Supplier not Found", "Return")
 			menuPosition = "MARKET"
 			return
@@ -310,7 +337,13 @@ func marketMenu() {
 		purchase()
 	case 3:
 		fmt.Println("Sale:")
-		menu("TODO: Sale", "TODO")
+		if len(localMarket) == 0 {
+			clrScrn()
+			menu("Local Supplier not Found", "Return")
+			menuPosition = "MARKET"
+			return
+		}
+		sellTradeGoods()
 		menuPosition = "MARKET"
 	}
 }
@@ -325,4 +358,55 @@ func getEffTime(input []int) (int, int) {
 		timeLim = input[1]
 	}
 	return eff, timeLim
+}
+
+func depart() {
+	fmt.Println("Preaparing for Depart:")
+	sp, _ := starport.From(sourceWorld)
+	total := 0
+	bf, err := sp.BerthingFee(day - startDay)
+	reportErr(err)
+	total += bf
+	fmt.Println(bf, "Cr was charged for Berthing Servises")
+	lsPayment := countHeads() * 250
+	total += lsPayment
+	fmt.Println(lsPayment, "Cr was charged for Life Support Supplies")
+	prf, err := profile.NewUWP(sourceWorld.UWP())
+	reportErr(err)
+	popDM := TrvCore.EhexToDigit(prf.Pops())
+	lawsDM := TrvCore.EhexToDigit(prf.Laws())
+	r := dice.Roll("2d6").DM(popDM).Sum()
+	if r < lawsDM {
+		fmt.Println("------------------------------")
+		fmt.Println("Departure delayed for", (r-lawsDM)*-1, "hours")
+		fmt.Println("------------------------------")
+	}
+	if userConfirm("Exit") {
+
+	}
+	tm := time.Now().Format("2006102150405")
+	reportErr(copyFile(cargofile, "CargoManifestArhive"+tm+".txt"))
+	reportErr(copyFile(passengerfile, "PassengerManifestArhive"+tm+".txt"))
+
+	os.Exit(1)
+}
+
+func copyFile(src, dst string) error {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, in)
+	if err != nil {
+		return err
+	}
+	return out.Close()
 }

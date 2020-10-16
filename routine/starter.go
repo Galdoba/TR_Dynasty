@@ -53,6 +53,8 @@ var quit bool
 var exPath string
 var Cargofile string
 var Passengerfile string
+var startDay int
+var startYear int
 
 func init() {
 	printSlow("Initialisation...\n")
@@ -147,6 +149,8 @@ func userInputDate() string {
 	}
 	output = output + strconv.Itoa(day) + "-" + strconv.Itoa(year)
 	rawDay = day + (year * 365)
+	startDay = day
+	startYear = year
 	return output
 }
 
@@ -422,7 +426,7 @@ func helloWorld() {
 func printHead() {
 	fmt.Println("----Ship data----------------------------------------")
 	fmt.Println("Cargo volume available:", freeCargoVolume())
-	fmt.Println("  Staterooms available:", freeCargoVolume())
+	fmt.Println("  Staterooms available:", freeStateRooms())
 	fmt.Println("----Sourceworld data---------------------------------")
 	fmt.Println("         Date: ", formatDate(day, year))
 	fmt.Println("Current World: ", sourceWorld.Hex()+" - "+sourceWorld.Name()+"  ("+sourceWorld.UWP()+")  "+sourceWorld.TradeClassifications()+"  "+sourceWorld.TravelZone())
