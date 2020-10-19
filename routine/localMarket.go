@@ -22,7 +22,7 @@ func newLocalSupplier(supType int) {
 		merchType = constant.MerchantTypeTrade
 	case 0:
 		merchType = constant.MerchantTypeCommon
-	case 1:
+	case 1, 4:
 		merchType = constant.MerchantTypeTrade
 	case 2:
 		merchType = constant.MerchantTypeNeutral
@@ -31,9 +31,11 @@ func newLocalSupplier(supType int) {
 	}
 	d := dice.New(utils.SeedFromString(sourceWorld.Name() + formatDate(day, year)))
 	if localMarket == nil {
-		tdie := dice.Roll("3d6").DM(-1 * sTryes).Sum()
-		sTryes++
-		localSupplier = trade.NewMerchant().SetLocalUWP(sourceWorld.UWP()).SetTraderDice(tdie).SetLocalTC(sourceWorld.TradeCodes()).SetMType(merchType).DetermineGoodsAvailable()
+		//tdie := dice.Roll("3d6").DM(-1 * sTryes).Sum()
+		//sTryes++ .SetTraderDice(tdie)
+		fmt.Println("lTC := ", sourceWorld.TradeCodes())
+		//panic(1)
+		localSupplier = trade.NewMerchant().SetLocalUWP(sourceWorld.UWP()).SetLocalTC(sourceWorld.TradeCodes()).SetMType(merchType).DetermineGoodsAvailable()
 		for _, val0 := range localSupplier.AvailableTradeGoods() {
 			val := val0 + d.RollNext("2d6").SumStr()
 			marketLot := newCargoLot()
@@ -55,24 +57,12 @@ func newLocalSupplier(supType int) {
 		}
 	}
 	//fmt.Println(localMarket)
-	//	testTrader()
+	testTrader()
 }
 
 func testTrader() {
-	initialTD := localSupplier.TraderDice()
-	for i, val := range localMarket {
-
-		localSupplier = localSupplier.SetTraderDice(initialTD)
-		fmt.Println(localSupplier.TraderDice())
-		fmt.Println(i, "val.GetCost()", val.GetCost(), val.GetDescr())
-		fmt.Println(i, localSupplier.CostSale(val.GetTGCode()))
-		for d := 0; d < 20; d++ {
-			localSupplier = localSupplier.SetTraderDice(d)
-			fmt.Println(d, localSupplier.CostSale(val.GetTGCode()), localSupplier.CostPurchase(val.GetTGCode()))
-		}
-
-	}
-
+	fmt.Println(localSupplier)
+	//	panic(0)
 }
 
 func purchase() {
@@ -98,11 +88,17 @@ func purchase() {
 			menu("Nothing to load...", "Return")
 			break
 		}
+		//fmt.Println("Test cargo:", localMarket[0], localSupplier.TraderDice())
+		//	fmt.Println(trade.GetBasePrice(localMarket[0].GetTGCode()))
+		fmt.Println("Purchase For ", localSupplier.CostPurchase(localMarket[0].GetTGCode()))
+		fmt.Println("Sell For ", localSupplier.CostSale(localMarket[0].GetTGCode()))
+
 		selected, _ := menu("Load Cargo:", allLots...)
 		if selected == 0 {
 			done = true
 			continue
 		}
+
 		purchased := localMarket[selected-1]
 		purchased.SetID(int(time.Now().UnixNano()))
 		canBuy := utils.Min(freeVolume, localMarket[selected-1].GetVolume())
@@ -187,7 +183,10 @@ func sellTradeGoods() {
 				taxes := trade.TaxingAmount(profit, taxingAgent())
 				fmt.Println(taxes, "Cr was charged as Taxes")
 				fmt.Println("------------")
-				fmt.Println("Pure profit:", salePosition.GetVolume()*localSupplier.CostSale(salePosition.GetTGCode())-taxes, "Cr")
+				crRecived := salePosition.GetVolume()*localSupplier.CostSale(salePosition.GetTGCode()) - taxes
+				crPayed := salePosition.GetCost() * salePosition.GetVolume()
+				//fmt.Println("Pure profit:", salePosition.GetVolume()*localSupplier.CostSale(salePosition.GetTGCode())-taxes, "Cr")
+				fmt.Println("Pure profit:", crRecived-crPayed, "Cr")
 				if cm.entry[i].GetVolume() <= 0 {
 					cm = deleteFromCargoManifest(salePosition.GetID())
 				}

@@ -357,7 +357,7 @@ func (cl *cargoLot) detailsFreight(code string, volume int, fee int) {
 	cl.SetLegality(true)
 	cl.SetOrigin(sourceWorld.Hex())
 	cl.SetSupplierType(constant.MerchantTypeTrade)
-	cl.SetETA(integerToEhexCode(rawDay + (dice.Roll("2d6").Sum() * len(jumpRoute)) + longestSearchTime))
+	cl.SetETA("NOETA")
 	cl.SetDescr(trade.GetDescription(code))
 	cl.SetInsurance(dice.Roll("1d10").Sum() * 10)
 	cl.SetComment("Freight fee " + strconv.Itoa(fee) + " Cr")

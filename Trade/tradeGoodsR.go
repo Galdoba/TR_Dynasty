@@ -428,9 +428,9 @@ func TGoodsData() map[string][]string {
 	tgrMap["4412"] = []string{"Precious Metals", "Platinum/Rhodium", "As, De, Ic, Fl", "1d6 x 0", "100000", "As +3, De +1, Ic +2, Fl +0", "Ri +3, In +2, Ht +1", "+3", "+4", "1d6 x 1"}
 
 	tgrMap["452"] = []string{"Radioactives", "Nuclear Waste/Deactivated Materials", "As, De, Lo", "1d6 x 1 + 3", "500000", "Ass +2, De +0, Lo +2", "In +3, Ht +1, Ni -2, Ag -3", "+4", "+3", "1d6 x 1"}
-	tgrMap["453"] = []string{"Radioactives", "In Isotopes", "As, De, Lo", "1d6 x 1 + 2", "750000", "Ass +2, De +0, Lo +2", "In +3, Ht +1, Ni -2, Ag -3", "+4", "+3", "1d6 x 1"}
-	tgrMap["454"] = []string{"Radioactives", "In Isotopes", "As, De, Lo", "1d6 x 1 + 2", "750000", "Ass +2, De +0, Lo +2", "In +3, Ht +1, Ni -2, Ag -3", "+4", "+3", "1d6 x 1"}
-	tgrMap["455"] = []string{"Radioactives", "In Isotopes", "As, De, Lo", "1d6 x 1 + 2", "750000", "Ass +2, De +0, Lo +2", "In +3, Ht +1, Ni -2, Ag -3", "+4", "+3", "1d6 x 1"}
+	tgrMap["453"] = []string{"Radioactives", "Industrial Isotopes", "As, De, Lo", "1d6 x 1 + 2", "750000", "Ass +2, De +0, Lo +2", "In +3, Ht +1, Ni -2, Ag -3", "+4", "+3", "1d6 x 1"}
+	tgrMap["454"] = []string{"Radioactives", "Industrial Isotopes", "As, De, Lo", "1d6 x 1 + 2", "750000", "Ass +2, De +0, Lo +2", "In +3, Ht +1, Ni -2, Ag -3", "+4", "+3", "1d6 x 1"}
+	tgrMap["455"] = []string{"Radioactives", "Industrial Isotopes", "As, De, Lo", "1d6 x 1 + 2", "750000", "Ass +2, De +0, Lo +2", "In +3, Ht +1, Ni -2, Ag -3", "+4", "+3", "1d6 x 1"}
 	tgrMap["456"] = []string{"Radioactives", "Medical Isotopes/Reactor-Grade Uranium", "As, De, Lo", "1d6 x 1", "1000000", "Ass +2, De +0, Lo +2", "In +3, Ht +1, Ni -2, Ag -3", "+4", "+3", "1d6 x 1"}
 	tgrMap["457"] = []string{"Radioactives", "Medical Isotopes/Reactor-Grade Uranium", "As, De, Lo", "1d6 x 1", "1000000", "Ass +2, De +0, Lo +2", "In +3, Ht +1, Ni -2, Ag -3", "+4", "+3", "1d6 x 1"}
 	tgrMap["458"] = []string{"Radioactives", "Medical Isotopes/Reactor-Grade Uranium", "As, De, Lo", "1d6 x 1", "1000000", "Ass +2, De +0, Lo +2", "In +3, Ht +1, Ni -2, Ag -3", "+4", "+3", "1d6 x 1"}
@@ -440,9 +440,9 @@ func TGoodsData() map[string][]string {
 	tgrMap["4512"] = []string{"Radioactives", "Superweapon-grade Isotopes", "As, De, Lo", "1d6 x 0 + 1", "1500000", "Ass +2, De +0, Lo +2", "In +3, Ht +1, Ni -2, Ag -3", "+4", "+3", "1d6 x 1"}
 
 	tgrMap["462"] = []string{"Robots", "Automated Robotics/Cargo Drones", "In", "1d6 x 7", "150000", "In +0", "Ag +2, Ht +1", "2", "1", "1d6 x 5"}
-	tgrMap["463"] = []string{"Robots", "In or Personal Drones", "In", "1d6 x 6", "300000", "In +0", "Ag +2, Ht +1", "2", "1", "1d6 x 5"}
-	tgrMap["464"] = []string{"Robots", "In or Personal Drones", "In", "1d6 x 6", "300000", "In +0", "Ag +2, Ht +1", "2", "1", "1d6 x 5"}
-	tgrMap["465"] = []string{"Robots", "In or Personal Drones", "In", "1d6 x 6", "300000", "In +0", "Ag +2, Ht +1", "2", "1", "1d6 x 5"}
+	tgrMap["463"] = []string{"Robots", "Industrial or Personal Drones", "In", "1d6 x 6", "300000", "In +0", "Ag +2, Ht +1", "2", "1", "1d6 x 5"}
+	tgrMap["464"] = []string{"Robots", "Industrial or Personal Drones", "In", "1d6 x 6", "300000", "In +0", "Ag +2, Ht +1", "2", "1", "1d6 x 5"}
+	tgrMap["465"] = []string{"Robots", "Industrial or Personal Drones", "In", "1d6 x 6", "300000", "In +0", "Ag +2, Ht +1", "2", "1", "1d6 x 5"}
 	tgrMap["466"] = []string{"Robots", "Combat or Guardian Drones", "In", "1d6 x 5", "400000", "In +0", "Ag +2, Ht +1", "2", "1", "1d6 x 5"}
 	tgrMap["467"] = []string{"Robots", "Combat or Guardian Drones", "In", "1d6 x 5", "400000", "In +0", "Ag +2, Ht +1", "2", "1", "1d6 x 5"}
 	tgrMap["468"] = []string{"Robots", "Combat or Guardian Drones", "In", "1d6 x 5", "400000", "In +0", "Ag +2, Ht +1", "2", "1", "1d6 x 5"}

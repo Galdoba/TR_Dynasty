@@ -358,3 +358,27 @@ func Roll5D(dm ...int) int {
 	}
 	return Roll("5d6").DM(mod).Sum()
 }
+
+func Flux() int {
+	d1 := Roll1D()
+	d2 := Roll1D()
+	return d1 - d2
+}
+
+func FluxGOOD() int {
+	d1 := Roll1D()
+	d2 := Roll1D()
+	if d1 >= d2 {
+		return d1 - d2
+	}
+	return d2 - d1
+}
+
+func FluxBAD() int {
+	d1 := Roll1D()
+	d2 := Roll1D()
+	if d1 <= d2 {
+		return d1 - d2
+	}
+	return d2 - d1
+}

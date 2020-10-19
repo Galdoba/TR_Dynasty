@@ -2,9 +2,6 @@ package wrld
 
 import (
 	"strings"
-
-	"github.com/Galdoba/TR_Dynasty/TrvCore"
-	"github.com/Galdoba/TR_Dynasty/constant"
 )
 
 // //TCer - механика контроля данных торговых кодов
@@ -27,19 +24,17 @@ func (w World) TradeCodes() []string {
 		}
 		tc = append(tc, data[i])
 	}
-	for _, val := range checkLtHtTradeCodes(w) {
-		tc = append(tc, val)
-	}
+
 	return tc
 }
 
-func checkLtHtTradeCodes(w World) []string {
-	add := []string{}
-	if w.GetСharacteristic(constant.PrTL).Value() <= TrvCore.EhexToDigit("5") {
-		add = append(add, constant.TradeCodeLowTech)
-	}
-	if w.GetСharacteristic(constant.PrTL).Value() >= TrvCore.EhexToDigit("C") {
-		add = append(add, constant.TradeCodeHighTech)
-	}
-	return add
-}
+// func checkLtHtTradeCodes(w World) []string {
+// 	add := []string{}
+// 	if w.GetСharacteristic(constant.PrTL).Value() <= TrvCore.EhexToDigit("5") {
+// 		add = append(add, constant.TradeCodeLowTech)
+// 	}
+// 	if w.GetСharacteristic(constant.PrTL).Value() >= TrvCore.EhexToDigit("C") {
+// 		add = append(add, constant.TradeCodeHighTech)
+// 	}
+// 	return add
+// }

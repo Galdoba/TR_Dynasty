@@ -5,7 +5,6 @@ import (
 	"io"
 	"os"
 	"strconv"
-	"time"
 
 	starport "github.com/Galdoba/TR_Dynasty/Starport"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
@@ -263,12 +262,18 @@ func marketMenu() {
 	}
 	eff := 0
 	timeLimit := 999
-	longestSearchTime = 0
+
 	time := dice.Roll("1d6").Sum()
 	switch i {
 	case 1:
 		clrScrn()
-		sup, _ := menu("Select Supplier Type:", "Common-goods Supplier", "Trade Supplier", "Morally Neutral Supplier", "Black Market Supplier")
+		options := []string{"Common-goods Supplier", "Trade Supplier", "Morally Neutral Supplier", "Black Market Supplier"}
+		prf, _ := profile.NewUWP(sourceWorld.UWP())
+		tl := TrvCore.EhexToDigit(prf.TL())
+		if tl >= 8 {
+			options = append(options, "Finding an online supplier")
+		}
+		sup, _ := menu("Select Supplier Type:", options...)
 		switch sup {
 		case 0:
 			//fmt.Println("Enter Effect of a Broker (6), EDU or SOC, 1–6 days:")
@@ -291,8 +296,13 @@ func marketMenu() {
 			fmt.Println("Search might take 1-6 days and WILL CAUSE negaive events if failed.")
 			input := userInputIntSlice("Enter Effect of Streetwise (8), EDU or SOC check (limit in days after '/' if nesessary): ")
 			eff, timeLimit = getEffTime(input)
+		case 4:
+			//fmt.Println("Enter Effect of a Broker (6), EDU or SOC, 1–6 days:")
+			fmt.Println("Search will take few hours...")
+			input := userInputInt("Enter Effect of Computers (8), EDU check: ")
+			eff = input
+
 		}
-		prf, _ := profile.NewUWP(sourceWorld.UWP())
 		switch prf.Starport() {
 		case "A":
 			eff += 6
@@ -308,10 +318,7 @@ func marketMenu() {
 		} else {
 			fmt.Println("Search took", time, "days...")
 		}
-		if longestSearchTime < time {
-			longestSearchTime = time
-		}
-		advanceTime(longestSearchTime)
+
 		menu("--------------------------------------------------------------------------------", "Continue")
 
 		if eff >= 0 {
@@ -362,6 +369,8 @@ func getEffTime(input []int) (int, int) {
 
 func depart() {
 	fmt.Println("Preaparing for Depart:")
+	timeSpent := userInputInt("Enter number of days spent on the planet: ")
+	advanceTime(timeSpent)
 	sp, _ := starport.From(sourceWorld)
 	total := 0
 	bf, err := sp.BerthingFee(day - startDay)
@@ -375,6 +384,9 @@ func depart() {
 	reportErr(err)
 	popDM := TrvCore.EhexToDigit(prf.Pops())
 	lawsDM := TrvCore.EhexToDigit(prf.Laws())
+
+	calculateETA()
+
 	r := dice.Roll("2d6").DM(popDM).Sum()
 	if r < lawsDM {
 		fmt.Println("------------------------------")
@@ -384,9 +396,9 @@ func depart() {
 	if userConfirm("Exit") {
 
 	}
-	tm := time.Now().Format("2006102150405")
-	reportErr(copyFile(cargofile, "CargoManifestArhive"+tm+".txt"))
-	reportErr(copyFile(passengerfile, "PassengerManifestArhive"+tm+".txt"))
+	//tm := time.Now().Format("2006102150405")
+	//reportErr(copyFile(cargofile, "CargoManifestArhive"+tm+".txt"))
+	//reportErr(copyFile(passengerfile, "PassengerManifestArhive"+tm+".txt"))
 
 	os.Exit(1)
 }
@@ -409,4 +421,17 @@ func copyFile(src, dst string) error {
 		return err
 	}
 	return out.Close()
+}
+
+func calculateETA() {
+	cm := loadCargoManifest()
+	for i, val := range cm.entry {
+		if val.GetETA() == "NOETA" {
+			etaDay := day + len(jumpRoute)*8 + dice.Flux()
+			newRawDay := etaDay + 365*year
+			//newEta := formatDate(etaDay, year)
+			cm.entry[i].SetETA(integerToEhexCode(newRawDay))
+		}
+	}
+	saveCargoManifest(cm)
 }

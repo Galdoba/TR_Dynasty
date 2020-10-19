@@ -44,9 +44,6 @@ func PassengerRoutine() {
 		fmt.Println("Search aborted after", time, "days...")
 	}
 	fmt.Println("Search took", time, "days...")
-	if longestSearchTime < time {
-		longestSearchTime = time
-	}
 	low, basic, middle, high := availablePassengers(ptValue + playerEffect1 + localBroker.DM())
 	passQty := make(map[int]int)
 	passPrices := make(map[int]int)

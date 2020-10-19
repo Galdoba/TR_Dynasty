@@ -451,6 +451,7 @@ func printHead() {
 
 	}
 	fmt.Println("-----------------------------------------------------")
+	fmt.Println("Local Trader Dice:", localSupplier.TraderDice())
 }
 
 func formatDate(day, year int) string {

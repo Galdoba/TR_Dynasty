@@ -38,7 +38,7 @@ func MailRoutine() {
 }
 
 func (mailLot *cargoLot) FillMailData(qty, fee int) {
-	mailLot.SetETA(integerToEhexCode(eta))
+	mailLot.SetETA("NOETA")
 	mailLot.SetTGCode("MAIL")
 	mailLot.SetDescr("Universal mail containers")
 	mailLot.SetVolume(qty * 5)
