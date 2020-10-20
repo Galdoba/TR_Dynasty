@@ -45,6 +45,7 @@ func PassengerRoutine() {
 	}
 	fmt.Println("Search took", time, "days...")
 	low, basic, middle, high := availablePassengers(ptValue + playerEffect1 + localBroker.DM())
+	pr := newPassReq(low, basic, middle, high)
 	passQty := make(map[int]int)
 	passPrices := make(map[int]int)
 	passPrices[lowPassenger] = lowPassCost(jumpRoute) - localBroker.CutFrom(lowPassCost(jumpRoute))
@@ -74,7 +75,9 @@ func PassengerRoutine() {
 	}
 	fmt.Println("-----------------------------------------------------")
 	if userConfirm("Take Passengers?") {
-		takePassengers(passPrices, passQty)
+		//takePassengers(passPrices, passQty)
+
+		takePassengers(pr)
 	}
 }
 
@@ -496,18 +499,19 @@ TranzitHazardDM - Следует использовать в прыжковой 
 // 	return n
 // }
 
-func takePassengers(passPrices map[int]int, passQty map[int]int) {
+func takePassengers(pr passRequest) {
 	//err := errors.New("No Value for 'pQty'")
 	done := false
 	for !done {
 		clrScrn()
+		fmt.Print(pr.String())
 		fstr := freeStateRooms()
 		if fstr < 1 {
 			fmt.Print("Not enough Free Staterooms\n")
 			return
 		}
 		ptype, _ := menu("Select Passenger Type:", "High", "Middle", "Basic", "Low", "[End Operation]")
-		if ptype == 5 {
+		if ptype == 4 {
 			clrScrn()
 			return
 		}
@@ -517,7 +521,7 @@ func takePassengers(passPrices map[int]int, passQty map[int]int) {
 		err := errors.New("Not valid number")
 		num := 0
 		for err != nil {
-			canTake := utils.Min(fstr, passQty[ptype])
+			canTake := utils.Min(fstr, pr.passQty[ptype])
 			if canTake < 0 {
 				canTake = 0
 			}
@@ -540,7 +544,7 @@ func takePassengers(passPrices map[int]int, passQty map[int]int) {
 			}
 			reportErr(err)
 		}
-		pickUpPassengers(num, ptype, passPrices[ptype])
+		pickUpPassengers(num, ptype, pr.passPrices[ptype])
 	}
 
 }
@@ -883,4 +887,50 @@ func countHeads() int {
 		}
 	}
 	return d
+}
+
+type passRequest struct {
+	destination string
+	passPrices  map[int]int
+	passQty     map[int]int
+}
+
+/*
+passQty := make(map[int]int)
+	passPrices := make(map[int]int)
+	passPrices[lowPassenger] = lowPassCost(jumpRoute) - localBroker.CutFrom(lowPassCost(jumpRoute))
+	passQty[lowPassenger] = low
+	passPrices[basPassenger] = basicPassCost(jumpRoute) - localBroker.CutFrom(basicPassCost(jumpRoute))
+	passQty[midPassenger] = middle
+	passPrices[midPassenger] = middlePassCost(jumpRoute) - localBroker.CutFrom(middlePassCost(jumpRoute))
+	passQty[basPassenger] = basic
+	passPrices[highPassenger] = highPassCost(jumpRoute) - localBroker.CutFrom(highPassCost(jumpRoute))
+	passQty[highPassenger] = high
+*/
+
+func newPassReq(lp, bp, mp, hp int) passRequest {
+	pr := passRequest{}
+	pr.destination = targetWorld.Name()
+	pr.passPrices = make(map[int]int)
+	pr.passPrices[lowPassenger] = lowPassCost(jumpRoute) - localBroker.CutFrom(lowPassCost(jumpRoute))
+	pr.passPrices[basPassenger] = basicPassCost(jumpRoute) - localBroker.CutFrom(basicPassCost(jumpRoute))
+	pr.passPrices[midPassenger] = middlePassCost(jumpRoute) - localBroker.CutFrom(middlePassCost(jumpRoute))
+	pr.passPrices[highPassenger] = highPassCost(jumpRoute) - localBroker.CutFrom(highPassCost(jumpRoute))
+	pr.passQty = make(map[int]int)
+	pr.passQty[lowPassenger] = lp
+	pr.passQty[basPassenger] = bp
+	pr.passQty[midPassenger] = mp
+	pr.passQty[highPassenger] = hp
+
+	return pr
+}
+
+func (pr *passRequest) String() string {
+	str := ""
+	str += "Destination: " + pr.destination + "\n"
+	str += "High-class Passengers: " + strconv.Itoa(pr.passQty[highPassenger]) + "\n"
+	str += "Middle-class Passengers: " + strconv.Itoa(pr.passQty[midPassenger]) + "\n"
+	str += "Basic-class Passengers: " + strconv.Itoa(pr.passQty[basPassenger]) + "\n"
+	str += "Low-class Passengers: " + strconv.Itoa(pr.passQty[lowPassenger]) + "\n"
+	return str
 }

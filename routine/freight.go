@@ -70,7 +70,9 @@ func FreightRoutine() {
 		fmt.Println("Lot", i, "	"+lot.GetTGCode()+"	", lot.GetVolume(), "tons  	", lot.GetComment()+"	", lot.GetDescr())
 	}
 	fmt.Println("-----------------------------------------------------")
-
+	if userConfirm("Load Cargo?") {
+		loadCargo()
+	}
 }
 
 func lotInfo(lot cargoLot) string {

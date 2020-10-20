@@ -154,10 +154,7 @@ func trafficMenu() {
 		autoMod = false
 
 	}
-	advanceTime(longestSearchTime)
-	if userConfirm("Load Cargo?") {
-		loadCargo()
-	}
+
 	lastAction = action
 	menuPosition = ""
 	//fmt.Println("\033[F'" + action + "' action was chosen...")
@@ -196,7 +193,6 @@ func hangarMenu() {
 
 	case 3:
 		menuPosition = "HANGAR: EDIT CARGO SPACE"
-
 		i, _ := menu("Select Action:", "Reserve Cargo Space", "Edit Cargo Space")
 		switch i {
 		case 0:
@@ -220,7 +216,6 @@ func arrival() {
 		unload = true
 		unloadCargo()
 	}
-
 	if unload {
 		userConfirm("Continue")
 	}
