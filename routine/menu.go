@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"time"
 
 	starport "github.com/Galdoba/TR_Dynasty/Starport"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
@@ -391,9 +392,9 @@ func depart() {
 	if userConfirm("Exit") {
 
 	}
-	//tm := time.Now().Format("2006102150405")
-	//reportErr(copyFile(cargofile, "CargoManifestArhive"+tm+".txt"))
-	//reportErr(copyFile(passengerfile, "PassengerManifestArhive"+tm+".txt"))
+	tm := time.Now().Format("2006102150405")
+	reportErr(copyFile(cargofile, "CargoManifestArhive"+tm+".txt"))
+	reportErr(copyFile(passengerfile, "PassengerManifestArhive"+tm+".txt"))
 
 	os.Exit(1)
 }
