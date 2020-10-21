@@ -6,6 +6,12 @@ import (
 	"github.com/Galdoba/TR_Dynasty/dice"
 )
 
+func AutoGM() {
+	//RunACFlowchart(9)
+
+	EncounterMgT2Core()
+}
+
 func RunACFlowchart(tn int) {
 	var event []string
 	event = append(event, "1. Job Hunting (Planetside Events, page 7)")
@@ -27,3 +33,17 @@ func RunACFlowchart(tn int) {
 		}
 	}
 }
+
+type shipEncounter struct {
+	code          string
+	encounter     string
+	suggestedShip string
+}
+
+/*
+PlanetSideEvent{
+	type (Urban/Rural/Wilderness)
+}
+
+
+*/

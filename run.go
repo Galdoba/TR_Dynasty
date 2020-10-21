@@ -3,14 +3,14 @@ package main
 import (
 	"fmt"
 
+	"github.com/Galdoba/TR_Dynasty/autoGM"
 	"github.com/Galdoba/TR_Dynasty/otu"
-	"github.com/Galdoba/TR_Dynasty/routine"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/devtools/cli/user"
 )
 
 func main() {
-	routine.StartRoutine()
+	//routine.StartRoutine()
 	// propose := npcmakerv2.SearchCareers("Agent")
 	// for i := range propose {
 	// 	fmt.Println(propose[i])
@@ -20,6 +20,8 @@ func main() {
 	//entity.Test()
 	// hyperjump.StartJumpEvent(w)
 	// starport.FullInfo(w)
+
+	autoGM.AutoGM()
 }
 
 func pickWorld() wrld.World {

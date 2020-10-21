@@ -97,6 +97,10 @@ func NewSecurityFromProfile(profile string) *Security {
 	return sp
 }
 
+func (sp *Security) OrbitalPresence() int {
+	return sp.orbitalPresence
+}
+
 //Profile - returns string with Security Profile and Security Codes
 func (sp *Security) Profile() string {
 	if sp.profile == "" {
