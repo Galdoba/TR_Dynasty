@@ -7,9 +7,30 @@ import (
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/devtools/cli/user"
+	"github.com/hajimehoshi/ebiten"
 )
 
+type Game struct{}
+
+func (g *Game) Update() error {
+	return nil
+}
+
+func (g *Game) Draw(screen *ebiten.Image) {
+
+}
+
+func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
+	return 320, 240
+}
+
 func main() {
+	ebiten.SetWindowSize(640, 480)
+	ebiten.SetWindowTitle("Title thing")
+	game := &Game{}
+	if err := ebiten.RunGame(game); err != nil {
+		panic(err)
+	}
 	//routine.StartRoutine()
 	// propose := npcmakerv2.SearchCareers("Agent")
 	// for i := range propose {
