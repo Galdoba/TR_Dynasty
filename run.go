@@ -12,7 +12,7 @@ import (
 
 func main() {
 
-	routine.StartRoutine()
+	//routine.StartRoutine()
 	// propose := npcmakerv2.SearchCareers("Agent")
 	// for i := range propose {
 	// 	fmt.Println(propose[i])
@@ -23,7 +23,7 @@ func main() {
 	//hyperjump.StartJumpEvent(w)
 	// starport.FullInfo(w)
 
-	autoGM.AutoGM()
+	//autoGM.AutoGM()
 }
 
 func pickWorld() wrld.World {
