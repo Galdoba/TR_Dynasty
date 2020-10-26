@@ -563,3 +563,46 @@ func byID(id int) cargoLot {
 	}
 	return cargoLot{}
 }
+
+func addCargoByCode() {
+	clrScrn()
+	cm := loadCargoManifest()
+	newLot := newCargoLot()
+	//add code
+	goodCode := false
+	for !goodCode {
+		code := userInputStr("Set Code for Cargo: ")
+		if !trade.CodeValid(code) {
+			fmt.Println("Code Invalid")
+			continue
+		}
+		newLot.SetTGCode(code)
+		goodCode = true
+	}
+	//add volume
+	goodVolume := false
+	for !goodVolume {
+		vol := userInputInt("Set Volume: ")
+		if vol > freeCargoVolume() || vol < 0 {
+			fmt.Println("Error: Volume Incorect")
+			continue
+		}
+		newLot.SetVolume(vol)
+		goodVolume = true
+	}
+	newLot.SetDescr(trade.GetDescription(newLot.GetTGCode()))
+	//newLot.SetLegality(trade.GetDescription(newLot.GetTGCode()))
+	newLot.SetOrigin("Unknown")
+	newLot.SetCost(0)
+	newLot.SetDangerDM(trade.GetDangerousGoodsDM(newLot.GetTGCode()))
+	newLot.SetRiskDM(trade.GetMaximumRiskAssessment(newLot.GetTGCode()))
+	newLot.SetDescr(trade.GetDescription(newLot.GetTGCode()))
+	newLot.SetLegality(true)
+	newLot.SetComment("Found in Space on day " + formatDate(day, year))
+	switch trade.GetCategory(newLot.GetTGCode()) {
+	case "61", "62", "63", "64", "65":
+		newLot.SetLegality(false)
+	}
+	cm.entry = append(cm.entry, newLot)
+	saveCargoManifest(cm)
+}

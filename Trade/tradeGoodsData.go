@@ -216,3 +216,11 @@ func IncreseTG(code string) int {
 // 	up := utils.RollDiceRandom(qty+"d6", convert.StoI(add))
 // 	return up
 // }
+
+//CodeValid - Проверяет валидность кода
+func CodeValid(code string) bool {
+	if _, ok := tgDB[code]; ok {
+		return true
+	}
+	return false
+}

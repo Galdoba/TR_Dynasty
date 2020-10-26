@@ -194,12 +194,14 @@ func hangarMenu() {
 
 	case 3:
 		menuPosition = "HANGAR: EDIT CARGO SPACE"
-		i, _ := menu("Select Action:", "Reserve Cargo Space", "Edit Cargo Space")
+		i, _ := menu("Select Action:", "Reserve Cargo Space", "Edit Cargo Space", "Add Cargo by Code")
 		switch i {
 		case 0:
 			reserveCargoSpace()
 		case 1:
 			editCargoEntryVolume()
+		case 2:
+			addCargoByCode()
 		}
 		menuPosition = "HANGAR"
 	}
