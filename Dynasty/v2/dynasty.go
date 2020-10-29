@@ -92,23 +92,9 @@ type dynasty struct {
 	boonsHinders    []string
 	archetype       string
 	powerBase       string
+	fgBonus         string
 	managment       string
 }
-
-/*
-1. Roll Characteristics and determine Characteristic modifiers.
-2.  a. Choose a Power Base.
-    b. Gain Trait and Aptitude Modifiers.
-3.  a. Choose a Dynasty Archetype.
-	b. Determine Base Traits and Aptitudes.
-	c. Gain First Generation bonuses.
-	d. Determine Dynasty Boons and Hinders.
-4.  a. Determine Management Assets.
-	b. Gain Management Asset Benefits.
-5.  Calculate First Generation Values.
-6. Move on to the Background and Historic Events process.
-
-*/
 
 func NewDynasty(name string) dynasty {
 	d := dynasty{}
@@ -130,15 +116,19 @@ func NewDynasty(name string) dynasty {
 		d.characteristics[val] = d.dicepool.RollNext("2d6").Sum()
 	}
 	//2
-	d.applyPowerBase("")
+	d.choosePowerBase("")
+	d.gainPowerBaseBonuses()
 	//3
 	vArch := validArchetypes(d)
 	for len(vArch) == 0 {
 		d = NewDynasty("")
 		vArch = validArchetypes(d)
 	}
-	a := dice.Roll("1d" + strconv.Itoa(len(vArch))).DM(-1).Sum()
-	d.applyArchetypeBase(vArch[a])
+	arch := vArch[d.dicepool.RollNext("1d"+lenStr(vArch)).DM(-1).Sum()]
+	d.chooseArchetype(arch)
+	d.determineBaseTraitsAndAptitudes()
+	//
+	d.gainFirstGenerationBonuses()
 	//
 	d.chooseBoons()
 	return d
@@ -288,17 +278,26 @@ func listArchetypes() []string {
 
 //POWER BASE
 
-func (d *dynasty) applyPowerBase(pb string) error {
+func lenStr(sl []string) string {
+	return strconv.Itoa(len(sl))
+}
+
+func (d *dynasty) choosePowerBase(pb string) error {
 	if d.powerBase != "" {
 		return errors.New("Power Base already chosen")
 	}
 	if pb == "" {
-		i := dice.Roll("1d10").DM(-1).Sum()
+		i := dice.Roll("1d" + lenStr(listPowerBase())).DM(-1).Sum()
 		pb = listPowerBase()[i]
 	}
-	switch pb {
+	d.powerBase = pb
+	return nil
+}
+
+func (d *dynasty) gainPowerBaseBonuses() error {
+	switch d.powerBase {
 	default:
-		return errors.New("Unknown Power Base '" + pb + "'")
+		return errors.New("Unknown bonuses for Power Base '" + d.powerBase + "'")
 	case ColonySettlement:
 		d.traits[Culture]++
 		d.traits[TerritorialDfnce]--
@@ -414,7 +413,6 @@ func (d *dynasty) applyPowerBase(pb string) error {
 		d.aptitudes[PublicRelations]++
 		d.aptitudes[Tutelage]++
 	}
-	d.powerBase = pb
 	return nil
 }
 
@@ -444,17 +442,22 @@ func validArchetypes(d dynasty) []string {
 	return vArch
 }
 
-func (d *dynasty) applyArchetypeBase(arch string) error {
+func (d *dynasty) chooseArchetype(arch string) error {
 	if d.archetype != "" {
 		return errors.New("Archetype already chosen")
 	}
 	if arch == "" {
-		i := dice.Roll("1d7").DM(-1).Sum()
+		i := dice.Roll("1d" + lenStr(listArchetypes())).DM(-1).Sum()
 		arch = listArchetypes()[i]
 	}
-	switch arch {
+	d.archetype = arch
+	return nil
+}
+
+func (d *dynasty) determineBaseTraitsAndAptitudes() error {
+	switch d.archetype {
 	default:
-		return nil
+		return errors.New("Unknown base for Archetype '" + d.archetype + "'")
 	case Conglomerate:
 		//APT
 		d.ensureAptitude(Acquisition, 1)
@@ -564,7 +567,6 @@ func (d *dynasty) applyArchetypeBase(arch string) error {
 		d.traits[Technology] = d.traits[Technology] + DM(d.characteristics[Mil]) + 2
 		d.traits[TerritorialDfnce] = d.traits[TerritorialDfnce] + DM(d.characteristics[Lty]) + DM(d.characteristics[Mil]) + 1
 	}
-	d.archetype = arch
 	return nil
 }
 
@@ -677,4 +679,81 @@ func (d *dynasty) chooseBoons() {
 		selected = utils.AppendUniqueStr(selected, utils.RandomFromList(listBoons(*d)))
 	}
 	d.boonsHinders = selected
+}
+
+func (d *dynasty) gainFirstGenerationBonuses() error {
+	r := d.dicepool.RollNext("2d6").Sum()
+	fmt.Print("First Generation Bonus: ")
+	fgbM := fgbMap()
+	switch r {
+	case 2:
+		d.fgBonus = fgbM[d.archetype][0]
+	case 3, 4:
+		d.fgBonus = fgbM[d.archetype][1]
+	case 5, 6:
+		d.fgBonus = fgbM[d.archetype][2]
+	case 7:
+		d.fgBonus = fgbM[d.archetype][3]
+	case 8, 9:
+		d.fgBonus = fgbM[d.archetype][4]
+	case 10, 11:
+		d.fgBonus = fgbM[d.archetype][5]
+	case 12:
+		d.fgBonus = fgbM[d.archetype][6]
+	}
+
+}
+
+func fgbMap() map[string][]string {
+	fgbM := make(map[string][]string)
+	fgbM[Conglomerate] = []string{
+		"University Board Members",
+		"Monopoly",
+		"Shipyard Access",
+		"Noble Investors",
+		"Inherited Pride",
+		"Multi-stellar Benefactor",
+		"Royal Backing",
+	}
+	fgbM[MediaEmpire] = []string{
+		"Psionic Investigators",
+		"Pyramid Structure",
+		"High-Tech Communications",
+		"Noble Investors",
+		"Military Reporters",
+		"Interstellar Cover Story",
+		"Total Media Monopoly",
+	}
+	fgbM[MerchantMarket] = []string{
+		"Barter Over Sales",
+		"Monopoly",
+		"Intense Collegiate Training",
+		"Patents Upon Patents",
+		"Governmental Acquisitions",
+		"A Republic in Good Fortune",
+		"Perfect Economy",
+	}
+	fgbM[MilitaryCharter] = []string{
+		"Intense Generational Training",
+		"War Coffers",
+		"Naval Partners",
+		"An Armed Populace",
+		"Victory over Invasion",
+		"War Colleges",
+		"Noble Armada",
+	}
+	fgbM[NobleLine] = []string{
+		"Royal Guard",
+		"Of Pawns and Kings",
+		"The Love of the People",
+		"Order of Protectors",
+		"Military Honour",
+		"Interstellar Marriages",
+		"No Peers In Sight",
+	}
+	fgbM[MilitaryCharter] = []string{}
+
+	fgbM[MilitaryCharter] = []string{}
+
+	return fgbM
 }
