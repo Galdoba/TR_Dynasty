@@ -80,6 +80,14 @@ func (dp *Dicepool) RollNext(code string) *Dicepool {
 	return dp
 }
 
+func (dp *Dicepool) RollFromList(sl []string) string {
+	dp.result = nil
+	dp.dice, dp.edges = 1, len(sl)
+	dp.modPerDie = 0
+	dp.modTotal = 0
+	return sl[dp.rand.Intn(dp.edges)]
+}
+
 func decodeDiceCode(code string) (int, int) {
 	code = strings.ToUpper(code)
 	data := strings.Split(code, "D")

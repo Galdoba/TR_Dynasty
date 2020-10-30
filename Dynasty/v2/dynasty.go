@@ -127,9 +127,7 @@ func NewDynasty(name string) dynasty {
 	arch := vArch[d.dicepool.RollNext("1d"+lenStr(vArch)).DM(-1).Sum()]
 	d.chooseArchetype(arch)
 	d.determineBaseTraitsAndAptitudes()
-	//
 	d.gainFirstGenerationBonuses()
-	//
 	d.chooseBoons()
 	return d
 }
@@ -162,6 +160,7 @@ func (d dynasty) Info() string {
 	st := d.name + "\n"
 	st += "POWER BASE: " + d.powerBase + "\n"
 	st += "ARCHETYPE: " + d.archetype + "\n"
+	st += "FIRST GENERATION BONUS: " + d.fgBonus + "\n"
 	st += "CHARACTERISTICS:\n"
 	for _, val := range listCharacteristics() {
 		st += val + ": " + strconv.Itoa(d.characteristics[val]) + " (" + strconv.Itoa(DM(d.characteristics[val])) + ")\n"
@@ -301,117 +300,117 @@ func (d *dynasty) gainPowerBaseBonuses() error {
 	case ColonySettlement:
 		d.traits[Culture]++
 		d.traits[TerritorialDfnce]--
-		d.aptitudes[Expression]++
-		d.aptitudes[Recruit]++
-		d.aptitudes[Maintenance]++
-		d.aptitudes[Propaganda]++
-		d.aptitudes[Tutelage]++
+		d.raiseApttitude(Expression)
+		d.raiseApttitude(Recruit)
+		d.raiseApttitude(Maintenance)
+		d.raiseApttitude(Propaganda)
+		d.raiseApttitude(Tutelage)
 	case ConflictZone:
 		d.traits[TerritorialDfnce]++
 		d.traits[TerritorialDfnce]++
 		d.traits[FiscalDfnce]--
 		d.traits[Fleet]--
-		d.aptitudes[Hostility]++
-		d.aptitudes[Hostility]++
-		d.aptitudes[Posturing]++
-		d.aptitudes[Security]++
-		d.aptitudes[Tactical]++
+		d.raiseApttitude(Hostility)
+		d.raiseApttitude(Hostility)
+		d.raiseApttitude(Posturing)
+		d.raiseApttitude(Security)
+		d.raiseApttitude(Tactical)
 	case Megalopolis:
 		d.traits[FiscalDfnce]++
 		d.traits[Technology]++
 		d.traits[Culture]--
 		d.traits[Culture]--
-		d.aptitudes[Bureaucracy]++
-		d.aptitudes[Bureaucracy]++
-		d.aptitudes[Economics]++
-		d.aptitudes[PublicRelations]++
-		d.aptitudes[Research]++
+		d.raiseApttitude(Bureaucracy)
+		d.raiseApttitude(Bureaucracy)
+		d.raiseApttitude(Economics)
+		d.raiseApttitude(PublicRelations)
+		d.raiseApttitude(Research)
 	case MilitaryCompound:
 		d.traits[TerritorialDfnce]++
 		d.traits[TerritorialDfnce]++
 		d.traits[Fleet]++
 		d.traits[FiscalDfnce]--
 		d.traits[FiscalDfnce]--
-		d.aptitudes[Conquest]++
-		d.aptitudes[Conquest]++
-		d.aptitudes[Tactical]++
-		d.aptitudes[Tactical]++
-		d.aptitudes[Politics]++
-		d.aptitudes[Posturing]++
-		d.aptitudes[Security]++
+		d.raiseApttitude(Conquest)
+		d.raiseApttitude(Conquest)
+		d.raiseApttitude(Tactical)
+		d.raiseApttitude(Tactical)
+		d.raiseApttitude(Politics)
+		d.raiseApttitude(Posturing)
+		d.raiseApttitude(Security)
 	case NobleEstate:
 		d.traits[Culture]++
 		d.traits[FiscalDfnce]++
 		d.traits[TerritorialDfnce]--
 		d.traits[TerritorialDfnce]--
 		d.traits[Fleet]--
-		d.aptitudes[Bureaucracy]++
-		d.aptitudes[Bureaucracy]++
-		d.aptitudes[Politics]++
-		d.aptitudes[Politics]++
-		d.aptitudes[Expression]++
-		d.aptitudes[Posturing]++
-		d.aptitudes[Security]++
+		d.raiseApttitude(Bureaucracy)
+		d.raiseApttitude(Bureaucracy)
+		d.raiseApttitude(Politics)
+		d.raiseApttitude(Politics)
+		d.raiseApttitude(Expression)
+		d.raiseApttitude(Posturing)
+		d.raiseApttitude(Security)
 	case StarshipFlotilla:
 		d.traits[Fleet]++
 		d.traits[Fleet]++
 		d.traits[Technology]++
 		d.traits[TerritorialDfnce]--
 		d.traits[TerritorialDfnce]--
-		d.aptitudes[Intel]++
-		d.aptitudes[Intel]++
-		d.aptitudes[Conquest]++
-		d.aptitudes[Economics]++
-		d.aptitudes[Maintenance]++
-		d.aptitudes[Posturing]++
-		d.aptitudes[Research]++
-		d.aptitudes[Tactical]++
+		d.raiseApttitude(Intel)
+		d.raiseApttitude(Intel)
+		d.raiseApttitude(Conquest)
+		d.raiseApttitude(Economics)
+		d.raiseApttitude(Maintenance)
+		d.raiseApttitude(Posturing)
+		d.raiseApttitude(Research)
+		d.raiseApttitude(Tactical)
 	case TempleHolyLand:
 		d.traits[Culture]++
 		d.traits[Culture]++
 		d.traits[Technology]--
 		d.traits[Technology]--
-		d.aptitudes[Expression]++
-		d.aptitudes[Expression]++
-		d.aptitudes[Recruit]++
-		d.aptitudes[Recruit]++
-		d.aptitudes[Maintenance]++
-		d.aptitudes[Propaganda]++
-		d.aptitudes[PublicRelations]++
-		d.aptitudes[Tutelage]++
+		d.raiseApttitude(Expression)
+		d.raiseApttitude(Expression)
+		d.raiseApttitude(Recruit)
+		d.raiseApttitude(Recruit)
+		d.raiseApttitude(Maintenance)
+		d.raiseApttitude(Propaganda)
+		d.raiseApttitude(PublicRelations)
+		d.raiseApttitude(Tutelage)
 	case UnchartedWilderness:
 		d.traits[TerritorialDfnce]++
 		d.traits[Technology]--
-		d.aptitudes[Security]++
-		d.aptitudes[Security]++
-		d.aptitudes[Entertain]++
-		d.aptitudes[Illicit]++
-		d.aptitudes[Security]++ //или Conquest/Hostility?
+		d.raiseApttitude(Security)
+		d.raiseApttitude(Security)
+		d.raiseApttitude(Entertain)
+		d.raiseApttitude(Illicit)
+		d.raiseApttitude(Security) //или Conquest/Hostility?
 	case UnderworldSlum:
 		d.traits[FiscalDfnce]++
 		d.traits[TerritorialDfnce]++
 		d.traits[Culture]--
 		d.traits[Culture]--
-		d.aptitudes[Illicit]++
-		d.aptitudes[Illicit]++
-		d.aptitudes[Sabotage]++
-		d.aptitudes[Sabotage]++
-		d.aptitudes[Entertain]++
-		d.aptitudes[Intel]++
-		d.aptitudes[Posturing]++
-		d.aptitudes[Security]++
+		d.raiseApttitude(Illicit)
+		d.raiseApttitude(Illicit)
+		d.raiseApttitude(Sabotage)
+		d.raiseApttitude(Sabotage)
+		d.raiseApttitude(Entertain)
+		d.raiseApttitude(Intel)
+		d.raiseApttitude(Posturing)
+		d.raiseApttitude(Security)
 	case UrbanOffices:
 		d.traits[Culture]++
 		d.traits[FiscalDfnce]++
 		d.traits[Fleet]--
-		d.aptitudes[Acquisition]++
-		d.aptitudes[Acquisition]++
-		d.aptitudes[Economics]++
-		d.aptitudes[Economics]++
-		d.aptitudes[Bureaucracy]++
-		d.aptitudes[Intel]++
-		d.aptitudes[PublicRelations]++
-		d.aptitudes[Tutelage]++
+		d.raiseApttitude(Acquisition)
+		d.raiseApttitude(Acquisition)
+		d.raiseApttitude(Economics)
+		d.raiseApttitude(Economics)
+		d.raiseApttitude(Bureaucracy)
+		d.raiseApttitude(Intel)
+		d.raiseApttitude(PublicRelations)
+		d.raiseApttitude(Tutelage)
 	}
 	return nil
 }
@@ -679,6 +678,104 @@ func (d *dynasty) chooseBoons() {
 		selected = utils.AppendUniqueStr(selected, utils.RandomFromList(listBoons(*d)))
 	}
 	d.boonsHinders = selected
+	d.initialBoonsEffect()
+}
+
+func (d *dynasty) initialBoonsEffect() {
+	for _, val := range d.boonsHinders {
+		switch val {
+		case "Commercial Psions":
+			d.characteristics[Pop]--
+		case "Endless Funds":
+			d.traits[FiscalDfnce]--
+			d.traits[FiscalDfnce]--
+		case "Governmental Backing":
+			d.characteristics[Tra]--
+		case "Military Contracts":
+			d.characteristics[Pop]--
+			d.characteristics[Grd]--
+		case "Total Control":
+			d.traits[TerritorialDfnce]--
+			d.traits[TerritorialDfnce]--
+		case "Alien Extortions":
+			d.characteristics[Grd]++
+		case "Market Mercenaries":
+			d.characteristics[Clv]++
+			d.characteristics[Mil]++
+		case "Spies in the Network":
+			d.characteristics[Sch]++
+		case "Underworld Loans":
+			d.traits[FiscalDfnce]++
+			d.traits[FiscalDfnce]++
+		case "Bureaucratic Roots":
+			d.characteristics[Grd]--
+		case "Gossip Rags":
+			d.traits[Culture]--
+		case "Politics Engine":
+			d.characteristics[Lty]--
+			d.characteristics[Sch]--
+		case "Sports Contracts":
+			d.characteristics[Pop]--
+			d.traits[Culture]--
+		case "Voice of a Generation":
+			d.characteristics[Pop]--
+		case "Hostile Paparazzi":
+			d.traits[Culture]++
+			d.traits[Culture]++
+		case "Pirate Comms Station":
+			d.characteristics[Pop]++
+			d.characteristics[Tcy]++
+		case "Rumours of Corruption":
+			d.characteristics[Clv]++
+		case "Translation Troubles":
+			d.traits[TerritorialDfnce]++
+		case "Interstellar Funding":
+		case "Naval Escorts":
+		case "Secure Production":
+		case "Vaulted Technologies":
+		case "Charitable Causes":
+		case "Depression Debts":
+		case "Pirate Problems":
+		case "Resource Mercenaries":
+		case "Aggressive Politics":
+		case "Homeland Foundation":
+		case "Laurels of Victory":
+		case "Martial Law":
+		case "War Hero":
+		case "Enemies on All Fronts":
+		case "Gun Runner Gambles":
+		case "Tech Problems":
+		case "War Eternal":
+		case "Breeding Eugenics":
+		case "Inherited Fortunes":
+		case "Pocket Government":
+		case "Royal Family":
+		case "Secret Society":
+		case "Disease in the Genes":
+		case "Inbred Rumours":
+		case "Primitive Subjects":
+		case "Revolution in the Future":
+		case "Alien Congregation":
+		case "Defenders of the Faith":
+		case "Holy Missionaries":
+		case "Tithes and Donations":
+		case "Words of Gods":
+		case "Atheist Coalition":
+		case "Controversial Clergy":
+		case "Superstitions Abound":
+		case "War Between Heavens":
+		case "Deadly Reputation":
+		case "Family of Crime":
+		case "Law Enforcement Spies":
+		case "Pirate Shipyard":
+		case "Rule Through Fear":
+		case "Bounty Hunters":
+		case "Grudges and Vendettas":
+		case "Most Wanted":
+		case "Question of Authority":
+
+		}
+	}
 }
 
 func (d *dynasty) gainFirstGenerationBonuses() error {
@@ -701,7 +798,8 @@ func (d *dynasty) gainFirstGenerationBonuses() error {
 	case 12:
 		d.fgBonus = fgbM[d.archetype][6]
 	}
-
+	d.applyFGB()
+	return nil
 }
 
 func fgbMap() map[string][]string {
@@ -751,9 +849,244 @@ func fgbMap() map[string][]string {
 		"Interstellar Marriages",
 		"No Peers In Sight",
 	}
-	fgbM[MilitaryCharter] = []string{}
-
-	fgbM[MilitaryCharter] = []string{}
+	fgbM[ReligiousFaith] = []string{
+		"Clergy Scholars",
+		"Knights and Templars",
+		"Holy Treasures",
+		"Family Comes First",
+		"Online Scripture",
+		"Blessings from Beyond",
+		"Living Legends",
+	}
+	fgbM[Syndicate] = []string{
+		"Undeniable Success",
+		"Art Thieves and Extortions",
+		"Pirate Captains",
+		"Gangs Upon Gangs",
+		"Tougher than the Street",
+		"Empire of Crime",
+		"Intergalactic Mafia",
+	}
 
 	return fgbM
+}
+
+func (d *dynasty) applyFGB() {
+	switch d.fgBonus {
+	case "University Board Members":
+		d.raiseAny3AptitudesToLevel1()
+	case "Monopoly":
+		d.traits[FiscalDfnce]++
+	case "Shipyard Access":
+		d.traits[Fleet]++
+	case "Noble Investors":
+		d.values[Wealth]++
+	case "Inherited Pride":
+		d.traits[Culture]++
+	case "Multi-stellar Benefactor":
+		d.raiseAny2TraitsBy1()
+	case "Royal Backing":
+		d.add1d6PointsToValues()
+	case "Psionic Investigators":
+		d.raiseAny2AptitudesBy1()
+	case "Pyramid Structure":
+		switch d.dicepool.RollNext("1d2").Sum() {
+		case 1:
+			d.values[Wealth] = d.values[Wealth] + d.dicepool.RollNext("1d6").Sum()
+		case 2:
+			d.characteristics[Grd]++
+		}
+	case "High-Tech Communications":
+		d.traits[Technology]++
+	case "Military Reporters":
+		d.ensureAptitude(Conquest, 1)
+		d.ensureAptitude(Security, 1)
+	case "Interstellar Cover Story":
+		d.ensureAptitude(Expression, 1)
+		d.ensureAptitude(Politics, 1)
+		d.ensureAptitude(Posturing, 1)
+	case "Total Media Monopoly":
+		d.add1d6PointsToValues()
+	case "Barter Over Sales":
+		d.raiseAnyLevel0AptitudeTo1()
+		d.raiseAnyLevel0AptitudeTo1()
+	case "Intense Collegiate Training":
+		d.raiseApttitude(d.dicepool.RollFromList(listAptitudes()))
+	case "Patents Upon Patents":
+		d.values[Wealth]++
+	case "Governmental Acquisitions":
+		d.traits[Fleet]++
+	case "A Republic in Good Fortune":
+		d.values[Wealth] = d.values[Wealth] + d.dicepool.RollNext("1d6").Sum()
+	case "Perfect Economy":
+		d.add1d6PointsToValues()
+	case "Intense Generational Training":
+		d.raiseAny3AptitudesToLevel1()
+	case "War Coffers":
+		d.values[Wealth]++
+	case "Naval Partners":
+		d.traits[Fleet]++
+	case "An Armed Populace":
+		d.traits[TerritorialDfnce]++
+	case "Victory over Invasion":
+		switch d.dicepool.RollNext("1d2").Sum() {
+		case 1:
+			d.traits[Culture] = d.traits[Culture] + 2
+		case 2:
+			d.characteristics[Tra]++
+		}
+	case "War Colleges":
+		switch d.dicepool.RollNext("1d2").Sum() {
+		case 1:
+			d.raiseAnyLevel0AptitudeTo1()
+			d.raiseAnyLevel0AptitudeTo1()
+			d.raiseAnyLevel0AptitudeTo1()
+		case 2:
+			d.raiseAnyLevel1AptitudeBy1()
+			d.raiseAnyLevel1AptitudeBy1()
+		}
+	case "Noble Armada":
+		d.characteristics[Tra]++
+		d.traits[Fleet]++
+		d.traits[Fleet]++
+	case "Royal Guard":
+		d.characteristics[Mil]++
+		d.traits[TerritorialDfnce]++
+	case "Of Pawns and Kings":
+		d.characteristics[Sch]++
+	case "The Love of the People":
+		d.values[Morale]++
+	case "Order of Protectors":
+		d.traits[TerritorialDfnce]++
+	case "Military Honour":
+		d.characteristics[Mil]++
+	case "Interstellar Marriages":
+		d.traits[Culture]++
+		d.traits[Fleet]++
+	case "No Peers In Sight":
+		d.add1d6PointsToValues()
+	case "Clergy Scholars":
+		d.raiseAny3AptitudesToLevel1()
+	case "Knights and Templars":
+		d.traits[TerritorialDfnce]++
+	case "Holy Treasures":
+		d.values[Wealth]++
+	case "Family Comes First":
+		d.values[Populance]++
+	case "Online Scripture":
+		d.traits[Technology]++
+	case "Blessings from Beyond":
+		d.traits[d.dicepool.RollFromList(listTraits())]++
+		d.traits[d.dicepool.RollFromList(listTraits())]++
+	case "Living Legends":
+		d.add1d6PointsToValues()
+	case "Undeniable Success":
+		d.raiseAny3AptitudesToLevel1()
+	case "Art Thieves and Extortions":
+		d.traits[FiscalDfnce]++
+	case "Pirate Captains":
+		switch d.dicepool.RollNext("1d2").Sum() {
+		case 1:
+			d.traits[Fleet]++
+		case 2:
+			d.characteristics[Mil]++
+		}
+	case "Gangs Upon Gangs":
+		d.values[Populance]++
+	case "Tougher than the Street":
+		d.traits[TerritorialDfnce]++
+		d.traits[Technology]++
+	case "Empire of Crime":
+		d.traits[d.dicepool.RollFromList(listTraits())]++
+		d.traits[d.dicepool.RollFromList(listTraits())]++
+	case "Intergalactic Mafia":
+		d.add1d6PointsToValues()
+	}
+}
+
+func (d *dynasty) raiseAny3AptitudesToLevel1() {
+	validToRaise := []string{}
+	for _, apt := range listAptitudes() {
+		if val, ok := d.aptitudes[apt]; !ok {
+			if val < 1 {
+				validToRaise = append(validToRaise, apt)
+			}
+		} else {
+			validToRaise = append(validToRaise, apt)
+		}
+	}
+	for len(validToRaise) > 3 {
+		r := d.dicepool.RollNext("1d" + lenStr(validToRaise)).DM(-1).Sum()
+		validToRaise = remove(validToRaise, r)
+	}
+	for _, val := range validToRaise {
+		d.aptitudes[val] = 1
+	}
+}
+
+func remove(slice []string, s int) []string {
+	return append(slice[:s], slice[s+1:]...)
+}
+
+func (d *dynasty) raiseAny2TraitsBy1() {
+	for i := 0; i < 2; i++ {
+		d.traits[d.dicepool.RollFromList(listTraits())]++
+	}
+}
+
+func (d *dynasty) add1d6PointsToValues() {
+	r := d.dicepool.RollNext("1d6").Sum()
+	for i := 0; i < r; i++ {
+		d.values[utils.RandomFromList(listValues())]++
+	}
+}
+
+func (d *dynasty) raiseApttitude(apt string) {
+	if _, ok := d.aptitudes[apt]; ok {
+		d.aptitudes[apt]++
+		return
+	}
+	d.aptitudes[apt] = 0
+}
+
+func (d *dynasty) raiseAny2AptitudesBy1() {
+	for i := 0; i < 2; i++ {
+		d.raiseApttitude(utils.RandomFromList(listAptitudes()))
+	}
+}
+
+func (d *dynasty) raiseAnyLevel0AptitudeTo1() {
+	validToRaise := []string{}
+	for _, apt := range listAptitudes() {
+		if val, ok := d.aptitudes[apt]; !ok {
+			if val == 0 {
+				validToRaise = append(validToRaise, apt)
+			}
+		}
+	}
+	for len(validToRaise) > 1 {
+		r := d.dicepool.RollNext("1d" + lenStr(validToRaise)).DM(-1).Sum()
+		validToRaise = remove(validToRaise, r)
+	}
+	for _, val := range validToRaise {
+		d.aptitudes[val] = 1
+	}
+}
+
+func (d *dynasty) raiseAnyLevel1AptitudeBy1() {
+	validToRaise := []string{}
+	for _, apt := range listAptitudes() {
+		if val, ok := d.aptitudes[apt]; !ok {
+			if val == 1 {
+				validToRaise = append(validToRaise, apt)
+			}
+		}
+	}
+	for len(validToRaise) > 1 {
+		r := d.dicepool.RollNext("1d" + lenStr(validToRaise)).DM(-1).Sum()
+		validToRaise = remove(validToRaise, r)
+	}
+	for _, val := range validToRaise {
+		d.aptitudes[val] = 2
+	}
 }
