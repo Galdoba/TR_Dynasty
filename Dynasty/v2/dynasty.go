@@ -129,7 +129,12 @@ func NewDynasty(name string) dynasty {
 	d.determineBaseTraitsAndAptitudes()
 	d.gainFirstGenerationBonuses()
 	d.chooseBoons()
+
 	return d
+}
+
+func (d *dynasty) chooseManagementAsset() {
+
 }
 
 func DM(i int) int {
@@ -577,8 +582,8 @@ func (d *dynasty) ensureAptitude(apt string, val int) {
 	d.aptitudes[apt] = val
 }
 
-func listBoons(d dynasty) []string {
-	switch d.archetype {
+func listBoons(arch string) []string {
+	switch arch {
 	default:
 		return []string{}
 	case Conglomerate:
@@ -675,8 +680,9 @@ func (d *dynasty) chooseBoons() {
 	}
 	selected := []string{}
 	for i := 0; i < pick; i++ {
-		selected = utils.AppendUniqueStr(selected, utils.RandomFromList(listBoons(*d)))
+		selected = utils.AppendUniqueStr(selected, d.dicepool.RollFromList(listBoons(d.archetype)))
 	}
+
 	d.boonsHinders = selected
 	d.initialBoonsEffect()
 }
@@ -712,8 +718,12 @@ func (d *dynasty) initialBoonsEffect() {
 		case "Gossip Rags":
 			d.traits[Culture]--
 		case "Politics Engine":
-			d.characteristics[Lty]--
-			d.characteristics[Sch]--
+			switch d.randomAction("-1 Lty", "-1 Sch") {
+			case 1:
+				d.characteristics[Lty]--
+			case 2:
+				d.characteristics[Sch]--
+			}
 		case "Sports Contracts":
 			d.characteristics[Pop]--
 			d.traits[Culture]--
@@ -730,50 +740,119 @@ func (d *dynasty) initialBoonsEffect() {
 		case "Translation Troubles":
 			d.traits[TerritorialDfnce]++
 		case "Interstellar Funding":
+			switch d.randomAction("-1 Tra", "-2 Culture") {
+			case 1:
+				d.characteristics[Tra]--
+			case 2:
+				d.traits[Culture]--
+				d.traits[Culture]--
+			}
 		case "Naval Escorts":
+			d.characteristics[Mil]--
 		case "Secure Production":
+			d.traits[FiscalDfnce]--
+			d.traits[TerritorialDfnce]--
 		case "Vaulted Technologies":
+			d.traits[Technology]--
 		case "Charitable Causes":
+			d.traits[Culture]++
 		case "Depression Debts":
+			d.characteristics[Grd]++
 		case "Pirate Problems":
+			d.traits[TerritorialDfnce]++
+			d.traits[TerritorialDfnce]++
 		case "Resource Mercenaries":
+			d.characteristics[Clv]++
+			d.characteristics[Mil]++
 		case "Aggressive Politics":
+			d.characteristics[Pop]--
 		case "Homeland Foundation":
+			d.traits[Fleet]--
 		case "Laurels of Victory":
+			d.characteristics[Tcy]--
 		case "Martial Law":
+			d.characteristics[Lty]--
+			d.traits[Culture]--
 		case "War Hero":
+			d.characteristics[Sch]--
 		case "Enemies on All Fronts":
+			d.characteristics[Clv]++
+			d.characteristics[Mil]++
 		case "Gun Runner Gambles":
+			d.traits[Technology]++
 		case "Tech Problems":
+			d.characteristics[Tcy]++
 		case "War Eternal":
+			d.traits[TerritorialDfnce]++
+			d.traits[TerritorialDfnce]++
 		case "Breeding Eugenics":
+			d.traits[Technology]--
 		case "Inherited Fortunes":
+			d.traits[FiscalDfnce]--
 		case "Pocket Government":
+			d.traits[Fleet]--
 		case "Royal Family":
+			d.characteristics[Lty]--
+			d.traits[Technology]--
 		case "Secret Society":
+			d.characteristics[Sch]--
 		case "Disease in the Genes":
+			d.characteristics[Tra]++
 		case "Inbred Rumours":
+			d.traits[Culture]++
 		case "Primitive Subjects":
+			d.traits[FiscalDfnce]++
+			d.traits[FiscalDfnce]++
 		case "Revolution in the Future":
+			d.characteristics[Sch]++
+			d.characteristics[Mil]++
 		case "Alien Congregation":
+			d.characteristics[Pop]--
+			d.traits[Culture]--
 		case "Defenders of the Faith":
+			d.characteristics[Sch]--
 		case "Holy Missionaries":
+			d.characteristics[Mil]--
 		case "Tithes and Donations":
+			d.traits[Culture]--
 		case "Words of Gods":
+			d.characteristics[Tra]--
 		case "Atheist Coalition":
+			d.characteristics[Tcy]++
+			d.traits[Culture]++
 		case "Controversial Clergy":
+			d.characteristics[Lty]++
 		case "Superstitions Abound":
+			d.traits[Culture]++
 		case "War Between Heavens":
+			switch d.randomAction("+2 Td", "+1 Mil") {
+			case 1:
+				d.traits[TerritorialDfnce]++
+				d.traits[TerritorialDfnce]++
+			case 2:
+				d.characteristics[Mil]++
+			}
 		case "Deadly Reputation":
+			d.characteristics[Pop]--
 		case "Family of Crime":
+			d.characteristics[Lty]--
 		case "Law Enforcement Spies":
+			d.characteristics[Mil]--
 		case "Pirate Shipyard":
+			d.characteristics[Grd]--
+			d.traits[FiscalDfnce]++
 		case "Rule Through Fear":
+			d.characteristics[Lty]++
 		case "Bounty Hunters":
+			d.characteristics[Clv]++
+			d.characteristics[Mil]++
 		case "Grudges and Vendettas":
+			d.characteristics[Lty]++
 		case "Most Wanted":
+			d.characteristics[Sch]++
+			d.traits[Culture]++
 		case "Question of Authority":
-
+			d.characteristics[Grd]++
 		}
 	}
 }
@@ -1088,5 +1167,18 @@ func (d *dynasty) raiseAnyLevel1AptitudeBy1() {
 	}
 	for _, val := range validToRaise {
 		d.aptitudes[val] = 2
+	}
+}
+
+func (d *dynasty) randomAction(act ...string) int {
+	l := strconv.Itoa(len(act))
+	r := d.dicepool.RollNext("1d" + l).Sum()
+	return r
+}
+
+func reportErr(err error) {
+	if err != nil {
+		fmt.Println(err.Error())
+		panic(err)
 	}
 }
