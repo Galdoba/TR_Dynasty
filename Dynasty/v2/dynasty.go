@@ -69,17 +69,32 @@ const (
 	NobleLine           = "Noble Line"
 	ReligiousFaith      = "Religious Faith"
 	Syndicate           = "Syndicate"
+	BoardofDirectors    = "Board of Directors"
+	CommandStaff        = "Command Staff"
+	HeroicLeaders       = "Heroic Leaders"
+	MatriarchPatriarch  = "Matriarch/Patriarch"
+	Overlord            = "Overlord"
+	Theocrat            = "Theocrat"
 )
 
 func Test() {
-	for i := 0; i < 100; i++ {
+	i := 0
+	suc := 0
+	for i < 10 {
+		i++
 		d := NewDynasty("")
-		fmt.Println(i, d.powerBase)
-		fmt.Println(d)
-		fmt.Println(d.Info())
+		//fmt.Println(i, d.powerBase)
+		//fmt.Println(d)
+
+		if Survived(d) {
+			//fmt.Println("Proseed To BGEvents")
+			suc++
+			fmt.Println(i, suc)
+			fmt.Print(d.Info())
+		}
+
 	}
-	d := NewDynasty("")
-	fmt.Print(d)
+	fmt.Println(i, suc)
 }
 
 type dynasty struct {
@@ -94,6 +109,9 @@ type dynasty struct {
 	powerBase       string
 	fgBonus         string
 	managment       string
+	birthDate       string
+	nextEventDate   string
+	nextActionDate  string
 }
 
 func NewDynasty(name string) dynasty {
@@ -102,7 +120,7 @@ func NewDynasty(name string) dynasty {
 
 	if name == "" {
 		seed = time.Now().UnixNano()
-		name = "[RANDOM NAME]" + strconv.Itoa(int(seed))
+		name = "[RANDOM NAME] seed=" + strconv.Itoa(int(seed))
 	}
 	d.name = name
 
@@ -129,12 +147,106 @@ func NewDynasty(name string) dynasty {
 	d.determineBaseTraitsAndAptitudes()
 	d.gainFirstGenerationBonuses()
 	d.chooseBoons()
-
+	d.chooseManagementAsset()
+	d.finalizeFirstGeneration()
 	return d
 }
 
-func (d *dynasty) chooseManagementAsset() {
+func (d *dynasty) finalizeFirstGeneration() {
+	d.fgStep1() //train characteristics
+	d.fgStep2() //train management
+	d.fgStep3() //train aptitudes
+	d.fgStep4() //Final Values Adjustments
+}
 
+func (d *dynasty) fgStep1() {
+	characteristicsPractice := []string{}
+	for len(characteristicsPractice) < 3 {
+		characteristicsPractice = append(characteristicsPractice, d.dicepool.RollFromList(listCharacteristics()))
+	}
+	for _, val := range characteristicsPractice {
+		r := d.dicepool.RollNext("2d6").Sum()
+		switch r {
+		case 2:
+			d.characteristics[val]--
+		case 12:
+			d.characteristics[val]++
+		default:
+			if DM(d.characteristics[val])+r > d.characteristics[val] {
+				d.characteristics[val]++
+			}
+		}
+	}
+}
+
+func (d *dynasty) fgStep2() {
+	max := DM(d.characteristics[Clv]) + 1
+	for i := 0; i < max; i++ {
+		moveFrom := d.dicepool.RollFromList(listTraits())
+		moveTo := d.dicepool.RollFromList(listTraits())
+		if d.traits[moveFrom] < 2 {
+			continue
+		}
+		d.traits[moveFrom]--
+		d.traits[moveTo]++
+	}
+}
+
+func (d *dynasty) fgStep3() {
+	aptPractice := []string{}
+	for len(aptPractice) < 5 {
+		aptPractice = utils.AppendUniqueStr(aptPractice, d.dicepool.RollFromList(listAptitudes()))
+	}
+	for _, val := range aptPractice {
+		r := d.dicepool.RollNext("2d6").DM(-8).Sum()
+		e := -2
+		if apt, ok := d.aptitudes[val]; ok {
+			e = apt
+		}
+		r = r + e
+		if r > d.aptitudes[val] {
+			d.raiseApttitude(val)
+		}
+	}
+}
+
+func (d *dynasty) fgStep4() {
+	d.values[Morale] = d.values[Morale] + DM(d.characteristics[Pop]) + d.traits[Culture]
+	d.values[Populance] = d.values[Populance] + DM(d.characteristics[Tra]) + d.traits[Technology]
+	d.values[Wealth] = d.values[Wealth] + DM(d.characteristics[Clv]) + d.traits[FiscalDfnce]
+	for _, val := range listValues() {
+		if d.values[val] < 1 {
+			continue
+		}
+		d.values[val]--
+		d.values[d.dicepool.RollFromList(listValues())]++
+	}
+}
+
+func (d *dynasty) chooseManagementAsset() {
+	selected := -1
+	for selected == -1 {
+		r := d.dicepool.RollNext("2d6").Sum()
+		switch r {
+		case 3, 4:
+			selected = 0
+		case 5, 6:
+			selected = 1
+		case 7, 8, 9:
+			selected = 2
+		case 10, 11:
+			selected = 3
+		}
+	}
+	managementMap := make(map[string][]string)
+	managementMap[Conglomerate] = []string{HeroicLeaders, Overlord, BoardofDirectors, CommandStaff}
+	managementMap[MediaEmpire] = []string{Overlord, MatriarchPatriarch, BoardofDirectors, Theocrat}
+	managementMap[MerchantMarket] = []string{HeroicLeaders, MatriarchPatriarch, BoardofDirectors, CommandStaff}
+	managementMap[MilitaryCharter] = []string{Theocrat, HeroicLeaders, CommandStaff, Overlord}
+	managementMap[NobleLine] = []string{HeroicLeaders, Overlord, MatriarchPatriarch, Theocrat}
+	managementMap[ReligiousFaith] = []string{CommandStaff, HeroicLeaders, Theocrat, Overlord}
+	managementMap[Syndicate] = []string{CommandStaff, BoardofDirectors, Overlord, MatriarchPatriarch}
+	d.managment = managementMap[d.archetype][selected]
 }
 
 func DM(i int) int {
@@ -162,7 +274,7 @@ func DM(i int) int {
 }
 
 func (d dynasty) Info() string {
-	st := d.name + "\n"
+	st := "DYNASTY: " + d.name + "\n"
 	st += "POWER BASE: " + d.powerBase + "\n"
 	st += "ARCHETYPE: " + d.archetype + "\n"
 	st += "FIRST GENERATION BONUS: " + d.fgBonus + "\n"
@@ -859,7 +971,7 @@ func (d *dynasty) initialBoonsEffect() {
 
 func (d *dynasty) gainFirstGenerationBonuses() error {
 	r := d.dicepool.RollNext("2d6").Sum()
-	fmt.Print("First Generation Bonus: ")
+	//fmt.Print("First Generation Bonus: ")
 	fgbM := fgbMap()
 	switch r {
 	case 2:

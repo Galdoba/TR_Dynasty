@@ -1,11 +1,5 @@
 package DateManager
 
-import (
-	"strconv"
-
-	"github.com/Galdoba/convert"
-)
-
 const (
 	tFrameSeconds     = "Second"
 	tFrameRoundCombat = "Combat Round"
@@ -40,182 +34,200 @@ const (
 месяцы и дни недели фиксированы
 количество недель идет по схеме 5-4-4-5-4-4-5-4-4-5-4-4 (первый месяц квартала имеет 5 недель)
 первое число года не является днем недели и называется "праздник"
+исчисление идет с точки зрения Астрономии - см. статью о астрономическом летоисчислении
 */
+
+type Date struct {
+	day int
+}
+
+func FormatToDate(day int) string {
+	//чтобы не тормозить
+	//TODO: выяснить б
+	if day == 0 {
+		day = 1
+	}
+	year := day / 365
+	if year == 0 {
+		year = 1
+	}
+	return "ddd-yyyy"
+}
 
 //ImperialDate - дата и время (должно стать частью "События")
 
-type ImperialDate struct {
-	timeVal int64
-	//YYYY:DDD:HH:MM:SS
-	//DCBA 987 65 43 21
-}
+// type ImperialDate struct {
+// 	timeVal int64
+// 	//YYYY:DDD:HH:MM:SS
+// 	//DCBA 987 65 43 21
+// }
 
-func NewImperialDate(timeVal int64) *ImperialDate {
-	iDate := &ImperialDate{}
-	iDate.timeVal = timeVal
-	iDate.validate()
-	return iDate
-}
+// func NewImperialDate(timeVal int64) *ImperialDate {
+// 	iDate := &ImperialDate{}
+// 	iDate.timeVal = timeVal
+// 	iDate.validate()
+// 	return iDate
+// }
 
-func disassembleTimeval(timeval int64) (int64, int64, int64, int64, int64) {
-	ss := timeval % 100
-	mm := timeval % 10000 / 100
-	hh := timeval % 1000000 / 10000
-	ddd := timeval % 1000000000 / 1000000
-	yyyy := timeval /*% 10000000000000000*/ / 1000000000
-	return ss, mm, hh, ddd, yyyy
-}
+// func disassembleTimeval(timeval int64) (int64, int64, int64, int64, int64) {
+// 	ss := timeval % 100
+// 	mm := timeval % 10000 / 100
+// 	hh := timeval % 1000000 / 10000
+// 	ddd := timeval % 1000000000 / 1000000
+// 	yyyy := timeval /*% 10000000000000000*/ / 1000000000
+// 	return ss, mm, hh, ddd, yyyy
+// }
 
-func assembleTimeval(ss, mm, hh, ddd, yyyy int64) (timeVal int64) {
-	return ss + mm*100 + hh*10000 + ddd*1000000 + yyyy*1000000000
-}
+// func assembleTimeval(ss, mm, hh, ddd, yyyy int64) (timeVal int64) {
+// 	return ss + mm*100 + hh*10000 + ddd*1000000 + yyyy*1000000000
+// }
 
-func (iDate *ImperialDate) validate() {
-	//fmt.Print("\033[1A", iDate.timeVal, " ")
-	ss, mm, hh, ddd, yyyy := disassembleTimeval(iDate.timeVal)
-	for ss > 59 {
-		ss = ss - 60
-		mm++
-	}
-	for mm > 59 {
-		mm = mm - 60
-		hh++
-	}
-	for hh > 23 {
-		hh = hh - 24
-		ddd++
-	}
-	// if ddd == 0 {
-	// 	ddd = 1
-	// }
-	for ddd > 365 {
-		ddd = ddd - 365
-		yyyy++
-	}
-	iDate.timeVal = assembleTimeval(ss, mm, hh, ddd, yyyy)
+// func (iDate *ImperialDate) validate() {
+// 	//fmt.Print("\033[1A", iDate.timeVal, " ")
+// 	ss, mm, hh, ddd, yyyy := disassembleTimeval(iDate.timeVal)
+// 	for ss > 59 {
+// 		ss = ss - 60
+// 		mm++
+// 	}
+// 	for mm > 59 {
+// 		mm = mm - 60
+// 		hh++
+// 	}
+// 	for hh > 23 {
+// 		hh = hh - 24
+// 		ddd++
+// 	}
+// 	// if ddd == 0 {
+// 	// 	ddd = 1
+// 	// }
+// 	for ddd > 365 {
+// 		ddd = ddd - 365
+// 		yyyy++
+// 	}
+// 	iDate.timeVal = assembleTimeval(ss, mm, hh, ddd, yyyy)
 
-}
+// }
 
-func (iDate *ImperialDate) PassTime(timeVal int64) {
-	iDate.timeVal = iDate.timeVal + timeVal
-	iDate.validate()
-}
+// func (iDate *ImperialDate) PassTime(timeVal int64) {
+// 	iDate.timeVal = iDate.timeVal + timeVal
+// 	iDate.validate()
+// }
 
-func (iDate *ImperialDate) Time() string {
-	ss, mm, hh, _, _ := disassembleTimeval(iDate.timeVal)
-	sec := convert.ItoS(int(ss))
-	if ss < 10 {
-		sec = "0" + sec
-	}
-	min := convert.ItoS(int(mm))
-	if mm < 10 {
-		min = "0" + min
-	}
-	hour := convert.ItoS(int(hh))
-	if hh < 10 {
-		hour = "0" + hour
-	}
-	return hour + ":" + min + ":" + sec
-}
+// func (iDate *ImperialDate) Time() string {
+// 	ss, mm, hh, _, _ := disassembleTimeval(iDate.timeVal)
+// 	sec := convert.ItoS(int(ss))
+// 	if ss < 10 {
+// 		sec = "0" + sec
+// 	}
+// 	min := convert.ItoS(int(mm))
+// 	if mm < 10 {
+// 		min = "0" + min
+// 	}
+// 	hour := convert.ItoS(int(hh))
+// 	if hh < 10 {
+// 		hour = "0" + hour
+// 	}
+// 	return hour + ":" + min + ":" + sec
+// }
 
-func (iDate *ImperialDate) Date() string {
-	_, _, _, ddd, yyyy := disassembleTimeval(iDate.timeVal)
-	day := convert.ItoS(int(ddd))
-	if ddd < 100 {
-		day = "0" + day
-	}
-	if ddd < 10 {
-		day = "0" + day
-	}
-	year := convert.ItoS(int(yyyy))
-	if yyyy < 1000 {
-		year = "0" + year
-	}
-	if yyyy < 100 {
-		year = "0" + year
-	}
-	if yyyy < 10 {
-		year = "0" + year
-	}
-	if yyyy < 0 {
-		year = convert.ItoS(int(yyyy))
-	}
-	return day + "-" + year
-}
+// func (iDate *ImperialDate) Date() string {
+// 	_, _, _, ddd, yyyy := disassembleTimeval(iDate.timeVal)
+// 	day := convert.ItoS(int(ddd))
+// 	if ddd < 100 {
+// 		day = "0" + day
+// 	}
+// 	if ddd < 10 {
+// 		day = "0" + day
+// 	}
+// 	year := convert.ItoS(int(yyyy))
+// 	if yyyy < 1000 {
+// 		year = "0" + year
+// 	}
+// 	if yyyy < 100 {
+// 		year = "0" + year
+// 	}
+// 	if yyyy < 10 {
+// 		year = "0" + year
+// 	}
+// 	if yyyy < 0 {
+// 		year = convert.ItoS(int(yyyy))
+// 	}
+// 	return day + "-" + year
+// }
 
-func (iDate *ImperialDate) TimeStamp() string {
-	return iDate.Date() + " " + iDate.Time()
-}
+// func (iDate *ImperialDate) TimeStamp() string {
+// 	return iDate.Date() + " " + iDate.Time()
+// }
 
-func TimeframeSecond() (ss int64) {
-	ss = 1
-	return ss
-}
+// func TimeframeSecond() (ss int64) {
+// 	ss = 1
+// 	return ss
+// }
 
-func TimeframeMinute() (mm int64) {
-	mm = 100
-	return mm
-}
+// func TimeframeMinute() (mm int64) {
+// 	mm = 100
+// 	return mm
+// }
 
-func TimeframeHour() (hh int64) {
-	hh = 10000
-	return hh
-}
+// func TimeframeHour() (hh int64) {
+// 	hh = 10000
+// 	return hh
+// }
 
-func TimeframeDay() (ddd int64) {
-	ddd = 1000000
-	return ddd
-}
+// func TimeframeDay() (ddd int64) {
+// 	ddd = 1000000
+// 	return ddd
+// }
 
-func TimeframeWeek() (ddd int64) {
-	ddd = 1000000
-	return ddd * 7
-}
+// func TimeframeWeek() (ddd int64) {
+// 	ddd = 1000000
+// 	return ddd * 7
+// }
 
-func TimeframeYear() (yyyy int64) {
-	yyyy = 1000000000
-	return yyyy
-}
+// func TimeframeYear() (yyyy int64) {
+// 	yyyy = 1000000000
+// 	return yyyy
+// }
 
-//DateManager - управляет датой
-type DateManager interface {
-	PassTime(int64)
-}
+// //DateManager - управляет датой
+// type DateManager interface {
+// 	PassTime(int64)
+// }
 
-func (iDate *ImperialDate) TimeValReached(timeVal int64) bool {
-	if iDate.timeVal >= timeVal {
-		return true
-	}
-	return false
-}
+// func (iDate *ImperialDate) TimeValReached(timeVal int64) bool {
+// 	if iDate.timeVal >= timeVal {
+// 		return true
+// 	}
+// 	return false
+// }
 
-func SecondsToTimeval(seconds int64) int64 {
-	ss := seconds % 60
-	mm := seconds / 60
-	hh := mm / 60
-	ddd := hh / 24
-	yyyy := ddd / 365
-	timeVal := assembleTimeval(ss, mm, hh, ddd, yyyy)
-	return timeVal
-}
+// func SecondsToTimeval(seconds int64) int64 {
+// 	ss := seconds % 60
+// 	mm := seconds / 60
+// 	hh := mm / 60
+// 	ddd := hh / 24
+// 	yyyy := ddd / 365
+// 	timeVal := assembleTimeval(ss, mm, hh, ddd, yyyy)
+// 	return timeVal
+// }
 
-func TimeToString(timeVal int64) string {
-	date := NewImperialDate(timeVal)
-	time := date.TimeStamp()
-	return "DEBUG: " + time
-}
+// func TimeToString(timeVal int64) string {
+// 	date := NewImperialDate(timeVal)
+// 	time := date.TimeStamp()
+// 	return "DEBUG: " + time
+// }
 
-func TimeToHuman(hr float64) string {
-	hours := int(hr)
-	minutes := int((hr - float64(hours)) * 60)
-	days := hours / 24
-	rep := ""
-	if days == 1 {
-		rep = "1 day "
-	}
-	if days > 1 {
-		rep = strconv.Itoa(days) + " days "
-	}
-	rep = rep + strconv.Itoa(hours) + " hours " + strconv.Itoa(minutes) + " minutes"
-	return rep
-}
+// func TimeToHuman(hr float64) string {
+// 	hours := int(hr)
+// 	minutes := int((hr - float64(hours)) * 60)
+// 	days := hours / 24
+// 	rep := ""
+// 	if days == 1 {
+// 		rep = "1 day "
+// 	}
+// 	if days > 1 {
+// 		rep = strconv.Itoa(days) + " days "
+// 	}
+// 	rep = rep + strconv.Itoa(hours) + " hours " + strconv.Itoa(minutes) + " minutes"
+// 	return rep
+// }
