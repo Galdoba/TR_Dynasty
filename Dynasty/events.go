@@ -1,0 +1,288 @@
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+/*
+timeframe = 1 Month = 24 + 2d6
+
+
+
+*/
+
+type event struct {
+	date        string
+	lenght      string
+	name        string
+	description string
+	outcome     string
+	rollDescr   string
+	rollEffect  int
+}
+
+func (d *dynasty) BackGroundEvent(code string) {
+	switch d.archetype {
+	case Conglomerate:
+		d.bgEventConglomerate(code)
+	}
+}
+
+func (d *dynasty) HistoricEvent() event {
+	//story string
+	//changes string
+	//rollDescr string
+	ev := event{}
+	r := d.dicepool.RollNext("2d6").DM(d.historicEvents).Sum()
+	d.historicEvents++
+	switch r {
+	default:
+		ev.name = "Antient Visitor"
+		ev.description = "A truly ancient and powerful being with abilities bordering on ‘magic’ comes forward to lend aid to the Dynasty for its own mysterious reasons."
+		switch d.dicepool.RollNext("1d6").Sum() {
+		case 1:
+			ev.outcome = "+1 to all Traits"
+			d.increaseAllTraits()
+		case 2:
+			ev.outcome = "+1 to all Values"
+			d.increaseAllValues()
+		case 3:
+			ev.outcome = "+1 to "
+			apts := []string{}
+			for len(apts) < 3 {
+				apts = append(apts, d.dicepool.RollFromList(listAptitudes()))
+			}
+			for _, val := range apts {
+				d.raiseApttitude(val)
+				ev.outcome += val + ", "
+			}
+			ev.outcome = strings.TrimSuffix(ev.outcome, ", ")
+		case 4:
+			ev.outcome = "+1 to "
+			shr := []string{}
+			for len(shr) < 1 {
+				shr = append(shr, d.dicepool.RollFromList(listCharacteristics()))
+			}
+			for _, val := range shr {
+				d.characteristics[val]++
+				ev.outcome += val + ", "
+			}
+			ev.outcome = strings.TrimSuffix(ev.outcome, ", ")
+		case 5:
+			ev.outcome = "+2 to "
+			shr := []string{}
+			for len(shr) < 2 {
+				shr = append(shr, d.dicepool.RollFromList(listCharacteristics()))
+			}
+			for _, val := range shr {
+				d.characteristics[val]++
+				ev.outcome += val + ", "
+			}
+			ev.outcome = strings.TrimSuffix(ev.outcome, ", ")
+		case 6:
+			ev.outcome = "+3 to "
+			shr := []string{}
+			for len(shr) < 3 {
+				shr = append(shr, d.dicepool.RollFromList(listCharacteristics()))
+			}
+			for _, val := range shr {
+				d.characteristics[val]++
+				ev.outcome += val + ", "
+			}
+			ev.outcome = strings.TrimSuffix(ev.outcome, ", ")
+		}
+	case 2:
+		ev.name = "War of the Worlds!"
+		ev.description = "There is an interstellar war between planetary forces, sweeping them into the dangerous realm of battles and destruction."
+		apts := []string{Conquest, Hostility, Security}
+		for _, val := range apts {
+			if d.rollAptitude(val) >= 8 {
+				d.increaseAllTraits()
+				ev.outcome += "Increase All Traits by 1\n"
+			} else {
+				d.decreaseAllValues()
+				ev.outcome += "Decrease All Values by 1\n"
+			}
+		}
+	case 3, 4:
+		ev.name = "Foes on all Sides"
+		ev.description = "A consolidation of enemies have targeted the Dynasty and are coming at them from all directions."
+		apts := []string{Intel, Posturing, Security}
+		for _, val := range apts {
+			if d.rollAptitude(val) >= 8 {
+				d.increaseAllValues()
+				ev.outcome += "Increase All Values by 1\n"
+			} else {
+				d.traits[FiscalDfnce]--
+				d.traits[TerritorialDfnce]--
+				d.traits[Fleet]--
+				ev.outcome += "Decrease All Fiscal Defence, Territorial Defence and Fleet by 1\n"
+			}
+		}
+	case 5, 6:
+		ev.name = "An Unlikely Hero Rises"
+		ev.description = "One of the Dynasty’s inner members is given an opportunity to do something truly amazing – and does."
+		chr := []string{}
+		for len(chr) < 2 {
+			chr = append(chr, d.dicepool.RollFromList(listCharacteristics()))
+		}
+		for _, val := range chr {
+			d.characteristics[val]++
+			ev.outcome += "Raise " + val + " by 1"
+		}
+		d.values[Morale]++
+		ev.outcome += "Raise Morale by 1"
+	}
+	return ev
+}
+
+func (d *dynasty) bgEventConglomerate(code string) string {
+	ev := ""
+	switch code {
+	case "14", "24", "34", "44", "54", "64":
+		ev = "Historic Event – Roll on the Dynasty Historic Event Table. "
+		stage := d.HistoricEvent()
+		fmt.Println(stage)
+		//
+	case "11":
+		ev = "Stocks are falling all over the galaxy for years; roll Greed 8+ or lose 1 point of Wealth. "
+		if d.rollCharacteristic(Grd) < 8 {
+			d.values[Wealth]--
+		}
+	case "12":
+		ev = "Scandal rocks the shareholders’ memo meetings and prices hit an all time low; roll Loyalty 8+ or lose 1 point of Morale. "
+	case "13":
+		ev = "Hostile takeovers try to devour the weak initial generation; roll Bureaucracy or Tenacity 8+ or lose 1 point of Wealth. "
+	case "15":
+		ev = "New ideas on the market test the Conglomerate’s ingenuity and adaptability; roll Economics or Research 7+ or lose 1 point of Fiscal Defence. "
+	case "16":
+		ev = "A rival has been moving in on your workers, roll Security 8+ or lose 1 point of Populace. "
+	case "21":
+		ev = "Heavy competition in the interplanetary market has really toughened things up around the power base; roll 1d6: 1–4, Gain +1 Territorial Defence; 5–6: Gain +1 Tenacity. "
+	case "22":
+		ev = "A massive media event provides management with a chance to make a name for itself; Gain +1 Popularity or +2 Morale. "
+	case "23":
+		ev = "Big business is good business these days; roll Bureaucracy 7+ to gain one Level in Wealth. "
+	case "25":
+		ev = "The territories are wearing your logo and there are not many locals who do not know your name. Gain +1 Popularity. "
+	case "26":
+		ev = "A major coup in the local government risks sweeping in the Conglomerate. Join in and roll Conquest 8+ to help the new regime. Avoid the conflict and roll Security 8+ to keep out of the line of fire. Succeed in either roll and gain +1 to any Value; fail and lose 1 point of Loyalty and Militarism. "
+	case "31":
+		ev = "Labour unions are not happy about the solidification of the management entities through the Conglomerate. Roll Propaganda and Security 7+; succeed in both and gain +1 to the Characteristic of the Player’s choice. "
+	case "32":
+		ev = "The management of the Conglomerate are contacted by tremendously powerful alien benefactors; Gain +1 Bureaucracy, Expression or Recruit. "
+	case "33":
+		ev = "Everything goes as planned for decades; add +1 to any Trait or Value. "
+	case "35":
+		ev = "The power base suffers a major natural disaster and the Conglomerate can lend charitable aid; you may spend 1 point of Wealth to increase Popularity by +1. "
+	case "36":
+		ev = "A sickness plagues the population and the workforce, putting the Conglomerate at risk but giving them a good idea to back medical resources. Roll Acquisition 8+ to gain 1 point of any Value. "
+	case "41":
+		ev = "A powerful client puts the Conglomerate through a vicious courtroom drama that lasts months, if not years; roll Politics or Security 8+ to avoid losing 1 point of Wealth. "
+	case "42":
+		ev = "A university grant is created in the Conglomerate’s honour; Gain +1 Popularity. "
+	case "43":
+		ev = "Everything goes as planned for decades; add +1 to any Aptitude or Trait. "
+	case "45":
+		ev = "High-credit gambling establishments become not only legal but encouraged among big businesses; Roll Illicit 7+ to gain +1 Wealth. "
+	case "46":
+		ev = "Primitives are in great supply to be exploited. If the Conglomerate treats them with respect, it gains +1 Popularity. If it uses them harshly, gain +1 Wealth and +1 Populace. "
+	case "51":
+		ev = "Industrial sabotage is rumoured to be targeting the Conglomerate; roll Security 8+ to protect itself, gaining +1 Territorial Defence. "
+	case "52":
+		ev = "Advanced aliens have chosen the Conglomerate to fabricate their devices, adding their tooling to their own; Roll Maintenance 8+ to gain +1 Technology. "
+	case "53":
+		ev = "Everything goes as planned for decades; add +1 to any Aptitude or Value. "
+	case "55":
+		ev = "War profiteers are looking to launder their ill-gotten gains through the Conglomerate; you may spend 1 point of Loyalty to gain 1 point of Scheming before rolling Illicit 9+; succeed in the Aptitude check to gain 1d6-4 Wealth (minimum of 1). "
+	case "56":
+		ev = "A celebrity enjoys associating on a business level with the Conglomerate; gain +1 Morale or blackmail the Celebrity with Illicit 8+ to gain +1 Wealth and +1 Scheming. "
+	case "61":
+		ev = "The government names a holiday after the Conglomerate’s founder(s); Gain +1 Loyalty, Popularity or Tradition. "
+	case "62":
+		ev = "An interstellar sports team needs a sponsor right before a major multi-planet tournament; buy the team by spending 1 point of Wealth, gaining +1 Culture and +1 Morale. "
+	case "63":
+		ev = "Things could not go any better for the Dynasty; add +1 to any Characteristic, Aptitude, Trait or Value. "
+	case "65":
+		ev = "An unexpected territory shift puts a new planet in the Conglomerate’s control, adding +1 to all Values. "
+	case "66":
+		ev = "A formerly powerful Conglomerate folds, leaving its resources and assets for the new one to claim unchallenged; Gain +1 to any one Characteristic and +1 to any two Aptitudes."
+
+	}
+	return ev
+}
+
+func Survived(d dynasty) bool {
+	for _, val := range listValues() {
+		if d.values[val] < 1 {
+			//fmt.Println("Dynasty have crumbled and is no more...")
+			return false
+		}
+	}
+	zeroTraits := []string{}
+	for _, val := range listTraits() {
+		if d.traits[val] < 1 {
+			zeroTraits = append(zeroTraits, val)
+		}
+	}
+	if len(zeroTraits) > 1 {
+		//fmt.Println("Dynasty is too weak to defend itself from the normal dangers it would face and is swiftly torn asunder by rivals...")
+		return false
+	}
+	vitalChars := []string{Lty, Pop, Tra}
+	for _, val := range vitalChars {
+		if d.characteristics[val] < 1 {
+			//	fmt.Println("Dynasty members riot and rise up from within, destroying the Dynasty’s power base until it cannot stand on its own...")
+			return false
+		}
+	}
+	return true
+}
+
+func (d *dynasty) rollCharacteristic(chr string) int {
+	dm := DM(d.characteristics[chr])
+	return d.dicepool.RollNext("2d6").DM(dm).Sum()
+}
+
+func (d *dynasty) rollAptitude(apt string) int {
+	dm := -2
+	if val, ok := d.aptitudes[apt]; ok {
+		dm = val
+	}
+	return d.dicepool.RollNext("2d6").DM(dm).Sum()
+}
+
+func (d *dynasty) increaseAllTraits() {
+	for _, val := range listTraits() {
+		d.traits[val]++
+	}
+}
+
+func (d *dynasty) decreaseAllTraits() {
+	for _, val := range listTraits() {
+		d.traits[val]--
+	}
+}
+
+func (d *dynasty) increaseAllValues() {
+	for _, val := range listValues() {
+		d.values[val]++
+	}
+}
+
+func (d *dynasty) decreaseAllValues() {
+	for _, val := range listValues() {
+		d.values[val]--
+	}
+}
+
+func NewEvent(name string) event {
+	ev := event{}
+	ev.name = name
+	return ev
+}
+
+func (ev *event) SetDescription(descr string) {
+	ev.description = descr
+}

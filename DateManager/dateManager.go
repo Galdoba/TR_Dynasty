@@ -1,5 +1,11 @@
 package DateManager
 
+import (
+	"errors"
+	"strconv"
+	"strings"
+)
+
 const (
 	tFrameSeconds     = "Second"
 	tFrameRoundCombat = "Combat Round"
@@ -35,23 +41,55 @@ const (
 количество недель идет по схеме 5-4-4-5-4-4-5-4-4-5-4-4 (первый месяц квартала имеет 5 недель)
 первое число года не является днем недели и называется "праздник"
 исчисление идет с точки зрения Астрономии - см. статью о астрономическом летоисчислении
+нулевой год был
 */
 
 type Date struct {
 	day int
 }
 
-func FormatToDate(day int) string {
+func FormatToDate(d int) string {
 	//чтобы не тормозить
 	//TODO: выяснить б
-	if day == 0 {
-		day = 1
+	day := strconv.Itoa(d % 365)
+	year := strconv.Itoa(d / 365)
+	postFix := " AFE"
+	if d <= 0 {
+		day = strconv.Itoa(365 + (d % 365))
+		year = strconv.Itoa(-1 * (d / 365))
+		postFix = " BFE"
 	}
-	year := day / 365
-	if year == 0 {
-		year = 1
+	for len(day) < 3 {
+		day = "0" + day
 	}
-	return "ddd-yyyy"
+	for len(year) < 4 {
+		year = "0" + year
+	}
+	return day + "-" + year + postFix
+}
+
+func FormatToDay(timestamp string) (int, error) {
+	data := strings.Split(timestamp, " ")
+	if len(data) != 2 {
+		return 0, errors.New("Wrong data format '" + timestamp + "'")
+	}
+	dy := strings.Split(data[0], "-")
+	if len(dy) != 2 {
+		return 0, errors.New("Wrong data format '" + timestamp + "'")
+	}
+	day, errD := strconv.Atoi(dy[0])
+	if errD != nil {
+		return 0, errors.New("Wrong data format '" + timestamp + "' - " + dy[0])
+	}
+	year, errY := strconv.Atoi(dy[1])
+	if errY != nil {
+		return 0, errors.New("Wrong data format '" + timestamp + "' - " + dy[1])
+	}
+	if data[1] == "BFE" {
+		day = day // - 365
+		year = (year * -1) - 1
+	}
+	return day + (year * 365), nil
 }
 
 //ImperialDate - дата и время (должно стать частью "События")
