@@ -3,14 +3,16 @@ package main
 import (
 	"fmt"
 
-	dynasty "github.com/Galdoba/TR_Dynasty/Dynasty"
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/devtools/cli/user"
+	"github.com/Galdoba/devtools/code"
 )
 
 func main() {
-	dynasty.Test()
+	code.ConstructStandardMethods()
+
+	//dynasty.Test()
 
 	//skimming.Test()
 	//routine.StartRoutine()
