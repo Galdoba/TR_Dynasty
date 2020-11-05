@@ -1,4 +1,4 @@
-package main
+package dynasty
 
 /*
 1. Roll Characteristics and determine Characteristic modifiers.

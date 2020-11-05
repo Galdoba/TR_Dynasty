@@ -1,4 +1,4 @@
-package main
+package dynasty
 
 import (
 	"errors"
@@ -7,14 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Galdoba/TR_Dynasty/DateManager"
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/utils"
 )
-
-func main() {
-	Test()
-}
 
 const (
 	Clv                 = "Cleverness"
@@ -79,17 +74,36 @@ const (
 )
 
 func Test() {
-	validDyn := false
-	d := dynasty{}
-	for !validDyn {
-		d = NewDynasty("")
-		validDyn = Survived(d)
-	}
-	fmt.Print(d.Info())
-	curentDay := 403700
-	date := DateManager.FormatToDate(curentDay)
-	reverseDay, err := DateManager.FormatToDay(date)
-	fmt.Println(reverseDay, err, date)
+	//validDyn := false
+	dynMap := make(map[int]dynasty)
+	dynMap[0] = NewDynasty("")
+	dynMap[1] = NewDynasty("")
+	// for len(dyns) < 2 {
+	// 	d := dynasty{}
+	// 	for !validDyn {
+	// 		d = NewDynasty("")
+	// 		validDyn = Survived(d)
+	// 	}
+	// 	fmt.Print(d.Info())
+	// 	dyns = append(dyns, d)
+	// }
+
+	//curentDay := 402000
+	//for i := range dynMap {
+	//dynMap[i].nextActionDay = curentDay
+	//}
+
+	// for i := curentDay; i < 402500; i++ {
+	// 	for d := range dyns {
+	// 		if dyns[d].TrackEvent(i) {
+	// 			d2 := 0
+	// 			if d == 1 {
+	// 				d2 = 0
+	// 			}
+	// 			InitiateAction(&dyns[d], &dyns[d2], "Claiming neutral territory or resources", i)
+	// 		}
+	// 	}
+	// }
 }
 
 type dynasty struct {
@@ -105,8 +119,8 @@ type dynasty struct {
 	fgBonus         string
 	managment       string
 	birthDate       string
-	nextEventDate   string
-	nextActionDate  string
+	nextEventDay    int
+	nextActionDay   int
 	historicEvents  int
 }
 

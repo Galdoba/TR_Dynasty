@@ -3,14 +3,16 @@ package main
 import (
 	"fmt"
 
+	dynasty "github.com/Galdoba/TR_Dynasty/Dynasty"
 	"github.com/Galdoba/TR_Dynasty/otu"
-	"github.com/Galdoba/TR_Dynasty/skimming"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/devtools/cli/user"
 )
 
 func main() {
-	skimming.Test()
+	dynasty.Test()
+
+	//skimming.Test()
 	//routine.StartRoutine()
 	// propose := npcmakerv2.SearchCareers("Agent")
 	// for i := range propose {

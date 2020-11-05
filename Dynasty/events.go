@@ -1,8 +1,11 @@
-package main
+package dynasty
 
 import (
 	"fmt"
 	"strings"
+
+	"github.com/Galdoba/TR_Dynasty/DateManager"
+	"github.com/Galdoba/TR_Dynasty/dice"
 )
 
 /*
@@ -285,4 +288,69 @@ func NewEvent(name string) event {
 
 func (ev *event) SetDescription(descr string) {
 	ev.description = descr
+}
+
+type EventTracker interface {
+	TrackEvent(day int) bool
+}
+
+func (d *dynasty) TrackEvent(currentDay int) bool {
+	if currentDay < d.nextActionDay {
+		return false
+	}
+	//d.nextActionDay = currentDay + dice.Roll("2d6").DM(28).Sum()
+	fmt.Println("Date: ", DateManager.FormatToDate(currentDay))
+	fmt.Println("Launch Action until:", DateManager.FormatToDate(d.nextActionDay))
+	fmt.Println("----------------------")
+	return true
+}
+
+const (
+	DifficultyVeryEasy      = 6
+	DifficultyEasy          = 4
+	DifficultyRoutine       = 2
+	DifficultyAverage       = 0
+	DifficultyDifficult     = -2
+	DifficultyVeryDifficult = -4
+	DifficultyFormidable    = -6
+)
+
+type apttAction struct {
+	name          string
+	sourceApt     string
+	sourceChr     []string
+	opposedBy     []string
+	difficulty    int
+	source        dynasty
+	target        dynasty
+	startDay      int
+	conclusionDay int
+}
+
+func InitiateAction(source, target *dynasty, name string, currentDay int) {
+	aAct := apttAction{}
+	aAct.name = name
+	switch name {
+	default:
+		fmt.Println("TODO: ", name)
+		//return aAct
+	case "Claiming neutral territory or resources":
+		aAct.difficulty = DifficultyVeryEasy
+		aAct.startDay = currentDay
+		aAct.conclusionDay = currentDay + dice.Roll1D()*months()
+		aAct.sourceApt = Conquest
+		aAct.sourceChr = []string{Grd, Mil}
+		aAct.source = *source
+		aAct.target = *source
+		//return aAct
+
+	}
+	source.nextActionDay = aAct.conclusionDay
+	fmt.Println(aAct)
+	fmt.Println(source.name, " DO ", name, " AGAINST ", target.name)
+	fmt.Println("EFFECT NULL")
+}
+
+func months() int {
+	return 31 + dice.Flux()
 }
