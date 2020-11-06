@@ -9,7 +9,15 @@ import (
 )
 
 /*
-timeframe = 1 Month = 24 + 2d6
+событие:		// умеет менять данные
+время старта	// данные
+длительность	// данные
+субъект			// умеет Выбирать объект и Решать
+объект			// данные
+имя				// данные
+описание		// данные
+метод решения	// данные - скорее функция
+исход			// данные
 
 
 
@@ -25,14 +33,14 @@ type event struct {
 	rollEffect  int
 }
 
-func (d *dynasty) BackGroundEvent(code string) {
+func (d *Dynasty) BackGroundEvent(code string) {
 	switch d.archetype {
 	case Conglomerate:
 		d.bgEventConglomerate(code)
 	}
 }
 
-func (d *dynasty) HistoricEvent() event {
+func (d *Dynasty) HistoricEvent() event {
 	//story string
 	//changes string
 	//rollDescr string
@@ -140,7 +148,7 @@ func (d *dynasty) HistoricEvent() event {
 	return ev
 }
 
-func (d *dynasty) bgEventConglomerate(code string) string {
+func (d *Dynasty) bgEventConglomerate(code string) string {
 	ev := ""
 	switch code {
 	case "14", "24", "34", "44", "54", "64":
@@ -216,7 +224,7 @@ func (d *dynasty) bgEventConglomerate(code string) string {
 	return ev
 }
 
-func Survived(d dynasty) bool {
+func Survived(d Dynasty) bool {
 	for _, val := range listValues() {
 		if d.values[val] < 1 {
 			//fmt.Println("Dynasty have crumbled and is no more...")
@@ -243,12 +251,12 @@ func Survived(d dynasty) bool {
 	return true
 }
 
-func (d *dynasty) rollCharacteristic(chr string) int {
+func (d *Dynasty) rollCharacteristic(chr string) int {
 	dm := DM(d.characteristics[chr])
 	return d.dicepool.RollNext("2d6").DM(dm).Sum()
 }
 
-func (d *dynasty) rollAptitude(apt string) int {
+func (d *Dynasty) rollAptitude(apt string) int {
 	dm := -2
 	if val, ok := d.aptitudes[apt]; ok {
 		dm = val
@@ -256,25 +264,25 @@ func (d *dynasty) rollAptitude(apt string) int {
 	return d.dicepool.RollNext("2d6").DM(dm).Sum()
 }
 
-func (d *dynasty) increaseAllTraits() {
+func (d *Dynasty) increaseAllTraits() {
 	for _, val := range listTraits() {
 		d.traits[val]++
 	}
 }
 
-func (d *dynasty) decreaseAllTraits() {
+func (d *Dynasty) decreaseAllTraits() {
 	for _, val := range listTraits() {
 		d.traits[val]--
 	}
 }
 
-func (d *dynasty) increaseAllValues() {
+func (d *Dynasty) increaseAllValues() {
 	for _, val := range listValues() {
 		d.values[val]++
 	}
 }
 
-func (d *dynasty) decreaseAllValues() {
+func (d *Dynasty) decreaseAllValues() {
 	for _, val := range listValues() {
 		d.values[val]--
 	}
@@ -294,7 +302,7 @@ type EventTracker interface {
 	TrackEvent(day int) bool
 }
 
-func (d *dynasty) TrackEvent(currentDay int) bool {
+func (d *Dynasty) TrackEvent(currentDay int) bool {
 	if currentDay < d.nextActionDay {
 		return false
 	}
@@ -321,13 +329,13 @@ type apttAction struct {
 	sourceChr     []string
 	opposedBy     []string
 	difficulty    int
-	source        dynasty
-	target        dynasty
+	source        Dynasty
+	target        Dynasty
 	startDay      int
 	conclusionDay int
 }
 
-func InitiateAction(source, target *dynasty, name string, currentDay int) {
+func InitiateAction(source, target *Dynasty, name string, currentDay int) {
 	aAct := apttAction{}
 	aAct.name = name
 	switch name {

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/devtools/code"
 	"github.com/Galdoba/utils"
 )
 
@@ -74,12 +75,13 @@ const (
 )
 
 func Test() {
+	code.ConstructStandardMethods()
 	//validDyn := false
-	dynMap := make(map[int]dynasty)
+	dynMap := make(map[int]Dynasty)
 	dynMap[0] = NewDynasty("")
 	dynMap[1] = NewDynasty("")
 	// for len(dyns) < 2 {
-	// 	d := dynasty{}
+	// 	d := Dynasty{}
 	// 	for !validDyn {
 	// 		d = NewDynasty("")
 	// 		validDyn = Survived(d)
@@ -106,7 +108,7 @@ func Test() {
 	// }
 }
 
-type dynasty struct {
+type Dynasty struct {
 	name            string
 	dicepool        dice.Dicepool
 	characteristics map[string]int
@@ -124,8 +126,8 @@ type dynasty struct {
 	historicEvents  int
 }
 
-func NewDynasty(name string) dynasty {
-	d := dynasty{}
+func NewDynasty(name string) Dynasty {
+	d := Dynasty{}
 	seed := utils.SeedFromString(name)
 
 	if name == "" {
@@ -163,14 +165,14 @@ func NewDynasty(name string) dynasty {
 	return d
 }
 
-func (d *dynasty) finalizeFirstGeneration() {
+func (d *Dynasty) finalizeFirstGeneration() {
 	d.fgStep1() //train characteristics
 	d.fgStep2() //train management
 	d.fgStep3() //train aptitudes
 	d.fgStep4() //Final Values Adjustments
 }
 
-func (d *dynasty) fgStep1() {
+func (d *Dynasty) fgStep1() {
 	characteristicsPractice := []string{}
 	for len(characteristicsPractice) < 3 {
 		characteristicsPractice = append(characteristicsPractice, d.dicepool.RollFromList(listCharacteristics()))
@@ -190,7 +192,7 @@ func (d *dynasty) fgStep1() {
 	}
 }
 
-func (d *dynasty) fgStep2() {
+func (d *Dynasty) fgStep2() {
 	max := DM(d.characteristics[Clv]) + 1
 	for i := 0; i < max; i++ {
 		moveFrom := d.dicepool.RollFromList(listTraits())
@@ -203,7 +205,7 @@ func (d *dynasty) fgStep2() {
 	}
 }
 
-func (d *dynasty) fgStep3() {
+func (d *Dynasty) fgStep3() {
 	aptPractice := []string{}
 	for len(aptPractice) < 5 {
 		aptPractice = utils.AppendUniqueStr(aptPractice, d.dicepool.RollFromList(listAptitudes()))
@@ -221,7 +223,7 @@ func (d *dynasty) fgStep3() {
 	}
 }
 
-func (d *dynasty) fgStep4() {
+func (d *Dynasty) fgStep4() {
 	d.values[Morale] = d.values[Morale] + DM(d.characteristics[Pop]) + d.traits[Culture]
 	d.values[Populance] = d.values[Populance] + DM(d.characteristics[Tra]) + d.traits[Technology]
 	d.values[Wealth] = d.values[Wealth] + DM(d.characteristics[Clv]) + d.traits[FiscalDfnce]
@@ -234,7 +236,7 @@ func (d *dynasty) fgStep4() {
 	}
 }
 
-func (d *dynasty) chooseManagementAsset() {
+func (d *Dynasty) chooseManagementAsset() {
 	selected := -1
 	for selected == -1 {
 		r := d.dicepool.RollNext("2d6").Sum()
@@ -284,7 +286,7 @@ func DM(i int) int {
 	}
 }
 
-func (d dynasty) Info() string {
+func (d Dynasty) Info() string {
 	st := "DYNASTY: " + d.name + "\n"
 	st += "POWER BASE: " + d.powerBase + "\n"
 	st += "ARCHETYPE: " + d.archetype + "\n"
@@ -409,7 +411,7 @@ func lenStr(sl []string) string {
 	return strconv.Itoa(len(sl))
 }
 
-func (d *dynasty) choosePowerBase(pb string) error {
+func (d *Dynasty) choosePowerBase(pb string) error {
 	if d.powerBase != "" {
 		return errors.New("Power Base already chosen")
 	}
@@ -421,7 +423,7 @@ func (d *dynasty) choosePowerBase(pb string) error {
 	return nil
 }
 
-func (d *dynasty) gainPowerBaseBonuses() error {
+func (d *Dynasty) gainPowerBaseBonuses() error {
 	switch d.powerBase {
 	default:
 		return errors.New("Unknown bonuses for Power Base '" + d.powerBase + "'")
@@ -543,7 +545,7 @@ func (d *dynasty) gainPowerBaseBonuses() error {
 	return nil
 }
 
-func validArchetypes(d dynasty) []string {
+func validArchetypes(d Dynasty) []string {
 	vArch := []string{}
 	if d.characteristics[Grd] >= 8 && d.characteristics[Pop] >= 6 && d.characteristics[Tcy] >= 5 {
 		vArch = append(vArch, Conglomerate)
@@ -569,7 +571,7 @@ func validArchetypes(d dynasty) []string {
 	return vArch
 }
 
-func (d *dynasty) chooseArchetype(arch string) error {
+func (d *Dynasty) chooseArchetype(arch string) error {
 	if d.archetype != "" {
 		return errors.New("Archetype already chosen")
 	}
@@ -581,7 +583,7 @@ func (d *dynasty) chooseArchetype(arch string) error {
 	return nil
 }
 
-func (d *dynasty) determineBaseTraitsAndAptitudes() error {
+func (d *Dynasty) determineBaseTraitsAndAptitudes() error {
 	switch d.archetype {
 	default:
 		return errors.New("Unknown base for Archetype '" + d.archetype + "'")
@@ -697,7 +699,7 @@ func (d *dynasty) determineBaseTraitsAndAptitudes() error {
 	return nil
 }
 
-func (d *dynasty) ensureAptitude(apt string, val int) {
+func (d *Dynasty) ensureAptitude(apt string, val int) {
 	if v, ok := d.aptitudes[apt]; ok {
 		d.aptitudes[apt] = v + val
 		return
@@ -796,7 +798,7 @@ func listBoons(arch string) []string {
 	}
 }
 
-func (d *dynasty) chooseBoons() {
+func (d *Dynasty) chooseBoons() {
 	pick := d.dicepool.RollNext("1d6").DM(-2).Sum()
 	if pick < 0 {
 		pick = 0
@@ -810,7 +812,7 @@ func (d *dynasty) chooseBoons() {
 	d.initialBoonsEffect()
 }
 
-func (d *dynasty) initialBoonsEffect() {
+func (d *Dynasty) initialBoonsEffect() {
 	for _, val := range d.boonsHinders {
 		switch val {
 		case "Commercial Psions":
@@ -980,7 +982,7 @@ func (d *dynasty) initialBoonsEffect() {
 	}
 }
 
-func (d *dynasty) gainFirstGenerationBonuses() error {
+func (d *Dynasty) gainFirstGenerationBonuses() error {
 	r := d.dicepool.RollNext("2d6").Sum()
 	//fmt.Print("First Generation Bonus: ")
 	fgbM := fgbMap()
@@ -1073,7 +1075,7 @@ func fgbMap() map[string][]string {
 	return fgbM
 }
 
-func (d *dynasty) applyFGB() {
+func (d *Dynasty) applyFGB() {
 	switch d.fgBonus {
 	case "University Board Members":
 		d.raiseAny3AptitudesToLevel1()
@@ -1206,7 +1208,7 @@ func (d *dynasty) applyFGB() {
 	}
 }
 
-func (d *dynasty) raiseAny3AptitudesToLevel1() {
+func (d *Dynasty) raiseAny3AptitudesToLevel1() {
 	validToRaise := []string{}
 	for _, apt := range listAptitudes() {
 		if val, ok := d.aptitudes[apt]; !ok {
@@ -1230,20 +1232,20 @@ func remove(slice []string, s int) []string {
 	return append(slice[:s], slice[s+1:]...)
 }
 
-func (d *dynasty) raiseAny2TraitsBy1() {
+func (d *Dynasty) raiseAny2TraitsBy1() {
 	for i := 0; i < 2; i++ {
 		d.traits[d.dicepool.RollFromList(listTraits())]++
 	}
 }
 
-func (d *dynasty) add1d6PointsToValues() {
+func (d *Dynasty) add1d6PointsToValues() {
 	r := d.dicepool.RollNext("1d6").Sum()
 	for i := 0; i < r; i++ {
 		d.values[utils.RandomFromList(listValues())]++
 	}
 }
 
-func (d *dynasty) raiseApttitude(apt string) {
+func (d *Dynasty) raiseApttitude(apt string) {
 	if _, ok := d.aptitudes[apt]; ok {
 		d.aptitudes[apt]++
 		return
@@ -1251,13 +1253,13 @@ func (d *dynasty) raiseApttitude(apt string) {
 	d.aptitudes[apt] = 0
 }
 
-func (d *dynasty) raiseAny2AptitudesBy1() {
+func (d *Dynasty) raiseAny2AptitudesBy1() {
 	for i := 0; i < 2; i++ {
 		d.raiseApttitude(utils.RandomFromList(listAptitudes()))
 	}
 }
 
-func (d *dynasty) raiseAnyLevel0AptitudeTo1() {
+func (d *Dynasty) raiseAnyLevel0AptitudeTo1() {
 	validToRaise := []string{}
 	for _, apt := range listAptitudes() {
 		if val, ok := d.aptitudes[apt]; !ok {
@@ -1275,7 +1277,7 @@ func (d *dynasty) raiseAnyLevel0AptitudeTo1() {
 	}
 }
 
-func (d *dynasty) raiseAnyLevel1AptitudeBy1() {
+func (d *Dynasty) raiseAnyLevel1AptitudeBy1() {
 	validToRaise := []string{}
 	for _, apt := range listAptitudes() {
 		if val, ok := d.aptitudes[apt]; !ok {
@@ -1293,7 +1295,7 @@ func (d *dynasty) raiseAnyLevel1AptitudeBy1() {
 	}
 }
 
-func (d *dynasty) randomAction(act ...string) int {
+func (d *Dynasty) randomAction(act ...string) int {
 	l := strconv.Itoa(len(act))
 	r := d.dicepool.RollNext("1d" + l).Sum()
 	return r

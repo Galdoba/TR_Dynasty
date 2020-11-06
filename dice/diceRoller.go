@@ -373,6 +373,18 @@ func Flux() int {
 	return d1 - d2
 }
 
+func FluxMicro() int {
+	d1 := Roll1D()
+	switch d1 {
+	default:
+		return 0
+	case 1:
+		return -1
+	case 6:
+		return 1
+	}
+}
+
 func FluxGOOD() int {
 	d1 := Roll1D()
 	d2 := Roll1D()
