@@ -7,8 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Galdoba/TR_Dynasty/DateManager"
+
 	"github.com/Galdoba/TR_Dynasty/dice"
-	"github.com/Galdoba/devtools/code"
 	"github.com/Galdoba/utils"
 )
 
@@ -75,11 +76,15 @@ const (
 )
 
 func Test() {
-	code.ConstructStandardMethods()
+	//code.ConstructStandardMethods()
 	//validDyn := false
-	dynMap := make(map[int]Dynasty)
-	dynMap[0] = NewDynasty("")
-	dynMap[1] = NewDynasty("")
+	dynMap := make(map[int]*Dynasty)
+	d1 := NewDynasty("")
+	//d1.name = "Dynasty 1"
+	dynMap[0] = &d1
+	d2 := NewDynasty("")
+	//d2.name = "Dynasty 2"
+	dynMap[1] = &d2
 	// for len(dyns) < 2 {
 	// 	d := Dynasty{}
 	// 	for !validDyn {
@@ -90,10 +95,19 @@ func Test() {
 	// 	dyns = append(dyns, d)
 	// }
 
-	//curentDay := 402000
-	//for i := range dynMap {
-	//dynMap[i].nextActionDay = curentDay
-	//}
+	curentDay := 402000
+	for d := 0; d < 1000; d++ {
+		curentDay++
+
+		for i := range dynMap {
+			if dynMap[i].nextActionDay <= curentDay {
+				val := dynMap[i]
+				val.DecrlareAction(curentDay)
+			}
+
+		}
+
+	}
 
 	// for i := curentDay; i < 402500; i++ {
 	// 	for d := range dyns {
@@ -106,6 +120,26 @@ func Test() {
 	// 		}
 	// 	}
 	// }
+}
+
+func (d *Dynasty) DecrlareAction(curentDay int) {
+	dp := dice.New(int64(curentDay))
+	r := dp.RollFromList([]string{"Action 1", "Action 2", "Action 3", "Action 4"})
+	fmt.Println("on day ", DateManager.FormatToDate(curentDay))
+	fmt.Println(r + " declared by " + d.name)
+	timeFactor := 1
+	switch r {
+	case "Action 1":
+		timeFactor = dice.Roll("1d6").Sum() * (28 + dice.Flux())
+	case "Action 2":
+		timeFactor = dice.Roll("2d6").Sum() * (28 + dice.Flux())
+	case "Action 3":
+		timeFactor = dice.Roll("3d6").Sum() * (28 + dice.Flux())
+	case "Action 4":
+		timeFactor = dice.Roll("4d6").Sum() * (28 + dice.Flux())
+	}
+	fmt.Println("It took", timeFactor, "days")
+	d.nextActionDay = curentDay + timeFactor
 }
 
 type Dynasty struct {
@@ -124,10 +158,12 @@ type Dynasty struct {
 	nextEventDay    int
 	nextActionDay   int
 	historicEvents  int
+	eventMap        map[int]string
 }
 
 func NewDynasty(name string) Dynasty {
 	d := Dynasty{}
+	d.eventMap = make(map[int]string)
 	seed := utils.SeedFromString(name)
 
 	if name == "" {

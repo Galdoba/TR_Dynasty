@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-
 	dynasty.Test()
 
 	//skimming.Test()

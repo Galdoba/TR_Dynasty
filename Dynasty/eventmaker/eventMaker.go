@@ -153,10 +153,20 @@ type conflict struct {
 	engine      *dice.Dicepool
 	timeFactor  int
 	effect      int
+	resolved    bool
 	log         string
 }
 
-func Resolve(c conflict) conflict {
+func SetupConflict(ev event) conflict {
+	c := conflict{}
+
+	return c
+}
+
+func (c *conflict) Resolve() {
+	if c.resolved {
+		return
+	}
 	if c.engine == nil {
 		c.engine = dice.New(time.Now().UnixNano())
 	}
@@ -167,7 +177,7 @@ func Resolve(c conflict) conflict {
 	if c.timeFactor < 1 {
 		c.timeFactor = 1
 	}
-	return c
+	c.resolved = true
 }
 
 //Invade another Dynasty’s territory and claim it: Militarism, 8–48 Months, Difficult (–2), Opposed by Tenacity.
@@ -178,32 +188,16 @@ subjDM		Militarism										//string - k
 time		8 Months										//string - p
 difficulty	Difficult										//string - k
 opposedDM 	Tenacity										//string - k
-Acquisition
-Bureaucracy
-Conquest
-Economics
-Entertain
-Expression
-Hostility
-Illicit
-Intel
-Maintenance
-Politics
-Posturing
-Propaganda
+
 Public Relations  Militarism  10-60 Months + 70  VeryDifficult  Militarism  Invade another Dynasty’s territory and claim it
-Recruit
-Research
-Sabotage
-Security
-Tactical
-Tutelage
-Cleverness
-Greed
-Loyalty
-Militarism
-Popularity
-Scheming
-Tenacity
-Tradition
+
 */
+
+type aptCheck struct {
+	name        string
+	sourceDM    string
+	timeFrame   string
+	difficulty  string
+	oppDM       string
+	gameEffects string
+}
