@@ -143,22 +143,25 @@ func (d *Dynasty) DecrlareAction(curentDay int) {
 }
 
 type Dynasty struct {
-	name            string
-	dicepool        dice.Dicepool
-	characteristics map[string]int
-	traits          map[string]int
-	aptitudes       map[string]int
-	values          map[string]int
-	boonsHinders    []string
-	archetype       string
-	powerBase       string
-	fgBonus         string
-	managment       string
-	birthDate       string
-	nextEventDay    int
-	nextActionDay   int
-	historicEvents  int
-	eventMap        map[int]string
+	name     string
+	dicepool dice.Dicepool
+	//characteristics map[string]int
+	//traits          map[string]int
+	//aptitudes       map[string]int
+	//values          map[string]int
+	stat           map[string]int
+	boonsHinders   []string
+	archetype      string
+	powerBase      string
+	fgBonus        string
+	managment      string
+	birthDate      string
+	nextEventDay   int
+	nextActionDay  int
+	historicEvents int
+	eventMap       map[int]string
+	goals          []goal
+	story          string
 }
 
 func NewDynasty(name string) Dynasty {
@@ -173,13 +176,14 @@ func NewDynasty(name string) Dynasty {
 	d.name = name
 
 	d.dicepool = *dice.New(seed)
-	d.characteristics = make(map[string]int)
-	d.traits = make(map[string]int)
-	d.aptitudes = make(map[string]int)
-	d.values = make(map[string]int)
+	//d.characteristics = make(map[string]int)
+	//d.traits = make(map[string]int)
+	//d.aptitudes = make(map[string]int)
+	//d.values = make(map[string]int)
+	d.stat = make(map[string]int)
 	//1
 	for _, val := range listCharacteristics() {
-		d.characteristics[val] = d.dicepool.RollNext("2d6").Sum()
+		d.stat[val] = d.dicepool.RollNext("2d6").Sum()
 	}
 	//2
 	d.choosePowerBase("")
@@ -217,27 +221,27 @@ func (d *Dynasty) fgStep1() {
 		r := d.dicepool.RollNext("2d6").Sum()
 		switch r {
 		case 2:
-			d.characteristics[val]--
+			d.stat[val]--
 		case 12:
-			d.characteristics[val]++
+			d.stat[val]++
 		default:
-			if DM(d.characteristics[val])+r > d.characteristics[val] {
-				d.characteristics[val]++
+			if DM(d.stat[val])+r > d.stat[val] {
+				d.stat[val]++
 			}
 		}
 	}
 }
 
 func (d *Dynasty) fgStep2() {
-	max := DM(d.characteristics[Clv]) + 1
+	max := DM(d.stat[Clv]) + 1
 	for i := 0; i < max; i++ {
 		moveFrom := d.dicepool.RollFromList(listTraits())
 		moveTo := d.dicepool.RollFromList(listTraits())
-		if d.traits[moveFrom] < 2 {
+		if d.stat[moveFrom] < 2 {
 			continue
 		}
-		d.traits[moveFrom]--
-		d.traits[moveTo]++
+		d.stat[moveFrom]--
+		d.stat[moveTo]++
 	}
 }
 
@@ -249,26 +253,26 @@ func (d *Dynasty) fgStep3() {
 	for _, val := range aptPractice {
 		r := d.dicepool.RollNext("2d6").DM(-8).Sum()
 		e := -2
-		if apt, ok := d.aptitudes[val]; ok {
+		if apt, ok := d.stat[val]; ok {
 			e = apt
 		}
 		r = r + e
-		if r > d.aptitudes[val] {
+		if r > d.stat[val] {
 			d.raiseApttitude(val)
 		}
 	}
 }
 
 func (d *Dynasty) fgStep4() {
-	d.values[Morale] = d.values[Morale] + DM(d.characteristics[Pop]) + d.traits[Culture]
-	d.values[Populance] = d.values[Populance] + DM(d.characteristics[Tra]) + d.traits[Technology]
-	d.values[Wealth] = d.values[Wealth] + DM(d.characteristics[Clv]) + d.traits[FiscalDfnce]
+	d.stat[Morale] = d.stat[Morale] + DM(d.stat[Pop]) + d.stat[Culture]
+	d.stat[Populance] = d.stat[Populance] + DM(d.stat[Tra]) + d.stat[Technology]
+	d.stat[Wealth] = d.stat[Wealth] + DM(d.stat[Clv]) + d.stat[FiscalDfnce]
 	for _, val := range listValues() {
-		if d.values[val] < 1 {
+		if d.stat[val] < 1 {
 			continue
 		}
-		d.values[val]--
-		d.values[d.dicepool.RollFromList(listValues())]++
+		d.stat[val]--
+		d.stat[d.dicepool.RollFromList(listValues())]++
 	}
 }
 
@@ -329,15 +333,15 @@ func (d Dynasty) Info() string {
 	st += "FIRST GENERATION BONUS: " + d.fgBonus + "\n"
 	st += "CHARACTERISTICS:\n"
 	for _, val := range listCharacteristics() {
-		st += val + ": " + strconv.Itoa(d.characteristics[val]) + " (" + strconv.Itoa(DM(d.characteristics[val])) + ")\n"
+		st += val + ": " + strconv.Itoa(d.stat[val]) + " (" + strconv.Itoa(DM(d.stat[val])) + ")\n"
 	}
 	st += "TRAITS:\n"
 	for _, val := range listTraits() {
-		st += val + ": " + strconv.Itoa(d.traits[val]) + "\n"
+		st += val + ": " + strconv.Itoa(d.stat[val]) + "\n"
 	}
 	st += "APTITUDES:\n"
 	for _, val := range listAptitudes() {
-		if data, ok := d.aptitudes[val]; ok {
+		if data, ok := d.stat[val]; ok {
 			st += val + ": " + strconv.Itoa(data) + "\n"
 		} else {
 			st += val + ": ---\n"
@@ -345,7 +349,7 @@ func (d Dynasty) Info() string {
 	}
 	st += "VALUES:\n"
 	for _, val := range listValues() {
-		st += val + ": " + strconv.Itoa(d.values[val]) + "\n"
+		st += val + ": " + strconv.Itoa(d.stat[val]) + "\n"
 	}
 	st += "BOONS&HINDERS: "
 	for i := range d.boonsHinders {
@@ -357,6 +361,15 @@ func (d Dynasty) Info() string {
 }
 
 //LISTS:
+
+func listALL() []string {
+	masterList := []string{}
+	masterList = append(masterList, listCharacteristics()...)
+	masterList = append(masterList, listTraits()...)
+	masterList = append(masterList, listAptitudes()...)
+	masterList = append(masterList, listValues()...)
+	return masterList
+}
 
 func listCharacteristics() []string {
 	return []string{
@@ -464,39 +477,39 @@ func (d *Dynasty) gainPowerBaseBonuses() error {
 	default:
 		return errors.New("Unknown bonuses for Power Base '" + d.powerBase + "'")
 	case ColonySettlement:
-		d.traits[Culture]++
-		d.traits[TerritorialDfnce]--
+		d.stat[Culture]++
+		d.stat[TerritorialDfnce]--
 		d.raiseApttitude(Expression)
 		d.raiseApttitude(Recruit)
 		d.raiseApttitude(Maintenance)
 		d.raiseApttitude(Propaganda)
 		d.raiseApttitude(Tutelage)
 	case ConflictZone:
-		d.traits[TerritorialDfnce]++
-		d.traits[TerritorialDfnce]++
-		d.traits[FiscalDfnce]--
-		d.traits[Fleet]--
+		d.stat[TerritorialDfnce]++
+		d.stat[TerritorialDfnce]++
+		d.stat[FiscalDfnce]--
+		d.stat[Fleet]--
 		d.raiseApttitude(Hostility)
 		d.raiseApttitude(Hostility)
 		d.raiseApttitude(Posturing)
 		d.raiseApttitude(Security)
 		d.raiseApttitude(Tactical)
 	case Megalopolis:
-		d.traits[FiscalDfnce]++
-		d.traits[Technology]++
-		d.traits[Culture]--
-		d.traits[Culture]--
+		d.stat[FiscalDfnce]++
+		d.stat[Technology]++
+		d.stat[Culture]--
+		d.stat[Culture]--
 		d.raiseApttitude(Bureaucracy)
 		d.raiseApttitude(Bureaucracy)
 		d.raiseApttitude(Economics)
 		d.raiseApttitude(PublicRelations)
 		d.raiseApttitude(Research)
 	case MilitaryCompound:
-		d.traits[TerritorialDfnce]++
-		d.traits[TerritorialDfnce]++
-		d.traits[Fleet]++
-		d.traits[FiscalDfnce]--
-		d.traits[FiscalDfnce]--
+		d.stat[TerritorialDfnce]++
+		d.stat[TerritorialDfnce]++
+		d.stat[Fleet]++
+		d.stat[FiscalDfnce]--
+		d.stat[FiscalDfnce]--
 		d.raiseApttitude(Conquest)
 		d.raiseApttitude(Conquest)
 		d.raiseApttitude(Tactical)
@@ -505,11 +518,11 @@ func (d *Dynasty) gainPowerBaseBonuses() error {
 		d.raiseApttitude(Posturing)
 		d.raiseApttitude(Security)
 	case NobleEstate:
-		d.traits[Culture]++
-		d.traits[FiscalDfnce]++
-		d.traits[TerritorialDfnce]--
-		d.traits[TerritorialDfnce]--
-		d.traits[Fleet]--
+		d.stat[Culture]++
+		d.stat[FiscalDfnce]++
+		d.stat[TerritorialDfnce]--
+		d.stat[TerritorialDfnce]--
+		d.stat[Fleet]--
 		d.raiseApttitude(Bureaucracy)
 		d.raiseApttitude(Bureaucracy)
 		d.raiseApttitude(Politics)
@@ -518,11 +531,11 @@ func (d *Dynasty) gainPowerBaseBonuses() error {
 		d.raiseApttitude(Posturing)
 		d.raiseApttitude(Security)
 	case StarshipFlotilla:
-		d.traits[Fleet]++
-		d.traits[Fleet]++
-		d.traits[Technology]++
-		d.traits[TerritorialDfnce]--
-		d.traits[TerritorialDfnce]--
+		d.stat[Fleet]++
+		d.stat[Fleet]++
+		d.stat[Technology]++
+		d.stat[TerritorialDfnce]--
+		d.stat[TerritorialDfnce]--
 		d.raiseApttitude(Intel)
 		d.raiseApttitude(Intel)
 		d.raiseApttitude(Conquest)
@@ -532,10 +545,10 @@ func (d *Dynasty) gainPowerBaseBonuses() error {
 		d.raiseApttitude(Research)
 		d.raiseApttitude(Tactical)
 	case TempleHolyLand:
-		d.traits[Culture]++
-		d.traits[Culture]++
-		d.traits[Technology]--
-		d.traits[Technology]--
+		d.stat[Culture]++
+		d.stat[Culture]++
+		d.stat[Technology]--
+		d.stat[Technology]--
 		d.raiseApttitude(Expression)
 		d.raiseApttitude(Expression)
 		d.raiseApttitude(Recruit)
@@ -545,18 +558,18 @@ func (d *Dynasty) gainPowerBaseBonuses() error {
 		d.raiseApttitude(PublicRelations)
 		d.raiseApttitude(Tutelage)
 	case UnchartedWilderness:
-		d.traits[TerritorialDfnce]++
-		d.traits[Technology]--
+		d.stat[TerritorialDfnce]++
+		d.stat[Technology]--
 		d.raiseApttitude(Security)
 		d.raiseApttitude(Security)
 		d.raiseApttitude(Entertain)
 		d.raiseApttitude(Illicit)
 		d.raiseApttitude(Security) //или Conquest/Hostility?
 	case UnderworldSlum:
-		d.traits[FiscalDfnce]++
-		d.traits[TerritorialDfnce]++
-		d.traits[Culture]--
-		d.traits[Culture]--
+		d.stat[FiscalDfnce]++
+		d.stat[TerritorialDfnce]++
+		d.stat[Culture]--
+		d.stat[Culture]--
 		d.raiseApttitude(Illicit)
 		d.raiseApttitude(Illicit)
 		d.raiseApttitude(Sabotage)
@@ -566,9 +579,9 @@ func (d *Dynasty) gainPowerBaseBonuses() error {
 		d.raiseApttitude(Posturing)
 		d.raiseApttitude(Security)
 	case UrbanOffices:
-		d.traits[Culture]++
-		d.traits[FiscalDfnce]++
-		d.traits[Fleet]--
+		d.stat[Culture]++
+		d.stat[FiscalDfnce]++
+		d.stat[Fleet]--
 		d.raiseApttitude(Acquisition)
 		d.raiseApttitude(Acquisition)
 		d.raiseApttitude(Economics)
@@ -583,25 +596,25 @@ func (d *Dynasty) gainPowerBaseBonuses() error {
 
 func validArchetypes(d Dynasty) []string {
 	vArch := []string{}
-	if d.characteristics[Grd] >= 8 && d.characteristics[Pop] >= 6 && d.characteristics[Tcy] >= 5 {
+	if d.stat[Grd] >= 8 && d.stat[Pop] >= 6 && d.stat[Tcy] >= 5 {
 		vArch = append(vArch, Conglomerate)
 	}
-	if d.characteristics[Clv] >= 6 && d.characteristics[Pop] >= 8 && d.characteristics[Sch] >= 5 {
+	if d.stat[Clv] >= 6 && d.stat[Pop] >= 8 && d.stat[Sch] >= 5 {
 		vArch = append(vArch, MediaEmpire)
 	}
-	if d.characteristics[Clv] >= 6 && d.characteristics[Grd] >= 8 && d.characteristics[Pop] >= 5 {
+	if d.stat[Clv] >= 6 && d.stat[Grd] >= 8 && d.stat[Pop] >= 5 {
 		vArch = append(vArch, MerchantMarket)
 	}
-	if d.characteristics[Lty] >= 5 && d.characteristics[Mil] >= 8 && d.characteristics[Tra] >= 6 {
+	if d.stat[Lty] >= 5 && d.stat[Mil] >= 8 && d.stat[Tra] >= 6 {
 		vArch = append(vArch, MilitaryCharter)
 	}
-	if d.characteristics[Lty] >= 6 && d.characteristics[Tcy] >= 5 && d.characteristics[Tra] >= 8 {
+	if d.stat[Lty] >= 6 && d.stat[Tcy] >= 5 && d.stat[Tra] >= 8 {
 		vArch = append(vArch, NobleLine)
 	}
-	if d.characteristics[Lty] >= 8 && d.characteristics[Pop] >= 5 && d.characteristics[Tra] >= 6 {
+	if d.stat[Lty] >= 8 && d.stat[Pop] >= 5 && d.stat[Tra] >= 6 {
 		vArch = append(vArch, ReligiousFaith)
 	}
-	if d.characteristics[Grd] >= 6 && d.characteristics[Sch] >= 8 && d.characteristics[Tcy] >= 5 {
+	if d.stat[Grd] >= 6 && d.stat[Sch] >= 8 && d.stat[Tcy] >= 5 {
 		vArch = append(vArch, Syndicate)
 	}
 	return vArch
@@ -635,11 +648,11 @@ func (d *Dynasty) determineBaseTraitsAndAptitudes() error {
 		d.ensureAptitude(Recruit, 0)
 		d.ensureAptitude(Tutelage, 1)
 		//TRA
-		d.traits[Culture] = d.traits[Culture] + DM(d.characteristics[Grd]) + DM(d.characteristics[Tra])
-		d.traits[FiscalDfnce] = d.traits[FiscalDfnce] + DM(d.characteristics[Grd]) + DM(d.characteristics[Tcy]) + 1
-		d.traits[Fleet] = d.traits[Fleet] + DM(d.characteristics[Mil]) + 1
-		d.traits[Technology] = d.traits[Technology] + DM(d.characteristics[Grd]) + DM(d.characteristics[Lty])
-		d.traits[TerritorialDfnce] = d.traits[TerritorialDfnce] + DM(d.characteristics[Lty]) + DM(d.characteristics[Pop])
+		d.stat[Culture] = d.stat[Culture] + DM(d.stat[Grd]) + DM(d.stat[Tra])
+		d.stat[FiscalDfnce] = d.stat[FiscalDfnce] + DM(d.stat[Grd]) + DM(d.stat[Tcy]) + 1
+		d.stat[Fleet] = d.stat[Fleet] + DM(d.stat[Mil]) + 1
+		d.stat[Technology] = d.stat[Technology] + DM(d.stat[Grd]) + DM(d.stat[Lty])
+		d.stat[TerritorialDfnce] = d.stat[TerritorialDfnce] + DM(d.stat[Lty]) + DM(d.stat[Pop])
 	case MediaEmpire:
 		d.ensureAptitude(Economics, 0)
 		d.ensureAptitude(Entertain, 1)
@@ -650,11 +663,11 @@ func (d *Dynasty) determineBaseTraitsAndAptitudes() error {
 		d.ensureAptitude(Propaganda, 2)
 		d.ensureAptitude(PublicRelations, 1)
 		//TRA
-		d.traits[Culture] = d.traits[Culture] + DM(d.characteristics[Pop]) + DM(d.characteristics[Tra])
-		d.traits[FiscalDfnce] = d.traits[FiscalDfnce] + DM(d.characteristics[Lty]) + 2
-		d.traits[Fleet] = d.traits[Fleet] + DM(d.characteristics[Mil]) + 1
-		d.traits[Technology] = d.traits[Technology] + DM(d.characteristics[Grd]) + DM(d.characteristics[Pop]) + 1
-		d.traits[TerritorialDfnce] = d.traits[TerritorialDfnce] + DM(d.characteristics[Clv]) + DM(d.characteristics[Lty])
+		d.stat[Culture] = d.stat[Culture] + DM(d.stat[Pop]) + DM(d.stat[Tra])
+		d.stat[FiscalDfnce] = d.stat[FiscalDfnce] + DM(d.stat[Lty]) + 2
+		d.stat[Fleet] = d.stat[Fleet] + DM(d.stat[Mil]) + 1
+		d.stat[Technology] = d.stat[Technology] + DM(d.stat[Grd]) + DM(d.stat[Pop]) + 1
+		d.stat[TerritorialDfnce] = d.stat[TerritorialDfnce] + DM(d.stat[Clv]) + DM(d.stat[Lty])
 	case MerchantMarket:
 		d.ensureAptitude(Acquisition, 1)
 		d.ensureAptitude(Bureaucracy, 0)
@@ -666,11 +679,11 @@ func (d *Dynasty) determineBaseTraitsAndAptitudes() error {
 		d.ensureAptitude(Recruit, 0)
 		d.ensureAptitude(Research, 0)
 		//TRA
-		d.traits[Culture] = d.traits[Culture] + DM(d.characteristics[Grd]) + DM(d.characteristics[Pop])
-		d.traits[FiscalDfnce] = d.traits[FiscalDfnce] + DM(d.characteristics[Grd]) + DM(d.characteristics[Lty]) + 1
-		d.traits[Fleet] = d.traits[Fleet] + DM(d.characteristics[Lty]) + DM(d.characteristics[Mil])
-		d.traits[Technology] = d.traits[Technology] + DM(d.characteristics[Clv]) + DM(d.characteristics[Tra])
-		d.traits[TerritorialDfnce] = d.traits[TerritorialDfnce] + DM(d.characteristics[Lty]) + 2
+		d.stat[Culture] = d.stat[Culture] + DM(d.stat[Grd]) + DM(d.stat[Pop])
+		d.stat[FiscalDfnce] = d.stat[FiscalDfnce] + DM(d.stat[Grd]) + DM(d.stat[Lty]) + 1
+		d.stat[Fleet] = d.stat[Fleet] + DM(d.stat[Lty]) + DM(d.stat[Mil])
+		d.stat[Technology] = d.stat[Technology] + DM(d.stat[Clv]) + DM(d.stat[Tra])
+		d.stat[TerritorialDfnce] = d.stat[TerritorialDfnce] + DM(d.stat[Lty]) + 2
 	case MilitaryCharter:
 		d.ensureAptitude(Conquest, 1)
 		d.ensureAptitude(Intel, 1)
@@ -680,11 +693,11 @@ func (d *Dynasty) determineBaseTraitsAndAptitudes() error {
 		d.ensureAptitude(Security, 0)
 		d.ensureAptitude(Tactical, 2)
 		//TRA
-		d.traits[Culture] = d.traits[Culture] + DM(d.characteristics[Tra]) + 1
-		d.traits[FiscalDfnce] = d.traits[FiscalDfnce] + DM(d.characteristics[Grd]) + DM(d.characteristics[Mil])
-		d.traits[Fleet] = d.traits[Fleet] + DM(d.characteristics[Mil]) + DM(d.characteristics[Tcy]) + 1
-		d.traits[Technology] = d.traits[Technology] + DM(d.characteristics[Mil]) + 1
-		d.traits[TerritorialDfnce] = d.traits[TerritorialDfnce] + DM(d.characteristics[Mil]) + DM(d.characteristics[Pop]) + 1
+		d.stat[Culture] = d.stat[Culture] + DM(d.stat[Tra]) + 1
+		d.stat[FiscalDfnce] = d.stat[FiscalDfnce] + DM(d.stat[Grd]) + DM(d.stat[Mil])
+		d.stat[Fleet] = d.stat[Fleet] + DM(d.stat[Mil]) + DM(d.stat[Tcy]) + 1
+		d.stat[Technology] = d.stat[Technology] + DM(d.stat[Mil]) + 1
+		d.stat[TerritorialDfnce] = d.stat[TerritorialDfnce] + DM(d.stat[Mil]) + DM(d.stat[Pop]) + 1
 	case NobleLine:
 		d.ensureAptitude(Bureaucracy, 1)
 		d.ensureAptitude(Economics, 0)
@@ -695,11 +708,11 @@ func (d *Dynasty) determineBaseTraitsAndAptitudes() error {
 		d.ensureAptitude(Security, 0)
 		d.ensureAptitude(Tutelage, 1)
 		//TRA
-		d.traits[Culture] = d.traits[Culture] + DM(d.characteristics[Lty]) + DM(d.characteristics[Tra]) + 2
-		d.traits[FiscalDfnce] = d.traits[FiscalDfnce] + DM(d.characteristics[Grd]) + DM(d.characteristics[Tcy])
-		d.traits[Fleet] = d.traits[Fleet] + DM(d.characteristics[Mil]) + 1
-		d.traits[Technology] = d.traits[Technology] + DM(d.characteristics[Tcy]) + 1
-		d.traits[TerritorialDfnce] = d.traits[TerritorialDfnce] + DM(d.characteristics[Lty]) + DM(d.characteristics[Mil])
+		d.stat[Culture] = d.stat[Culture] + DM(d.stat[Lty]) + DM(d.stat[Tra]) + 2
+		d.stat[FiscalDfnce] = d.stat[FiscalDfnce] + DM(d.stat[Grd]) + DM(d.stat[Tcy])
+		d.stat[Fleet] = d.stat[Fleet] + DM(d.stat[Mil]) + 1
+		d.stat[Technology] = d.stat[Technology] + DM(d.stat[Tcy]) + 1
+		d.stat[TerritorialDfnce] = d.stat[TerritorialDfnce] + DM(d.stat[Lty]) + DM(d.stat[Mil])
 	case ReligiousFaith:
 		d.ensureAptitude(Conquest, 0)
 		d.ensureAptitude(Entertain, 0)
@@ -710,11 +723,11 @@ func (d *Dynasty) determineBaseTraitsAndAptitudes() error {
 		d.ensureAptitude(Security, 0)
 		d.ensureAptitude(Tutelage, 1)
 		//TRA
-		d.traits[Culture] = d.traits[Culture] + DM(d.characteristics[Lty]) + DM(d.characteristics[Tra]) + 2
-		d.traits[FiscalDfnce] = d.traits[FiscalDfnce] + DM(d.characteristics[Grd]) + 1
-		d.traits[Fleet] = d.traits[Fleet] + DM(d.characteristics[Lty]) + 1
-		d.traits[Technology] = d.traits[Technology] + DM(d.characteristics[Clv]) + DM(d.characteristics[Tcy])
-		d.traits[TerritorialDfnce] = d.traits[TerritorialDfnce] + DM(d.characteristics[Lty]) + DM(d.characteristics[Mil]) + 1
+		d.stat[Culture] = d.stat[Culture] + DM(d.stat[Lty]) + DM(d.stat[Tra]) + 2
+		d.stat[FiscalDfnce] = d.stat[FiscalDfnce] + DM(d.stat[Grd]) + 1
+		d.stat[Fleet] = d.stat[Fleet] + DM(d.stat[Lty]) + 1
+		d.stat[Technology] = d.stat[Technology] + DM(d.stat[Clv]) + DM(d.stat[Tcy])
+		d.stat[TerritorialDfnce] = d.stat[TerritorialDfnce] + DM(d.stat[Lty]) + DM(d.stat[Mil]) + 1
 	case Syndicate:
 		d.ensureAptitude(Conquest, 1)
 		d.ensureAptitude(Entertain, 0)
@@ -726,21 +739,21 @@ func (d *Dynasty) determineBaseTraitsAndAptitudes() error {
 		d.ensureAptitude(Sabotage, 1)
 		d.ensureAptitude(Security, 0)
 		//TRA
-		d.traits[Culture] = d.traits[Culture] + DM(d.characteristics[Grd]) + DM(d.characteristics[Sch])
-		d.traits[FiscalDfnce] = d.traits[FiscalDfnce] + DM(d.characteristics[Lty]) + 1
-		d.traits[Fleet] = d.traits[Fleet] + DM(d.characteristics[Mil]) + DM(d.characteristics[Sch])
-		d.traits[Technology] = d.traits[Technology] + DM(d.characteristics[Mil]) + 2
-		d.traits[TerritorialDfnce] = d.traits[TerritorialDfnce] + DM(d.characteristics[Lty]) + DM(d.characteristics[Mil]) + 1
+		d.stat[Culture] = d.stat[Culture] + DM(d.stat[Grd]) + DM(d.stat[Sch])
+		d.stat[FiscalDfnce] = d.stat[FiscalDfnce] + DM(d.stat[Lty]) + 1
+		d.stat[Fleet] = d.stat[Fleet] + DM(d.stat[Mil]) + DM(d.stat[Sch])
+		d.stat[Technology] = d.stat[Technology] + DM(d.stat[Mil]) + 2
+		d.stat[TerritorialDfnce] = d.stat[TerritorialDfnce] + DM(d.stat[Lty]) + DM(d.stat[Mil]) + 1
 	}
 	return nil
 }
 
 func (d *Dynasty) ensureAptitude(apt string, val int) {
-	if v, ok := d.aptitudes[apt]; ok {
-		d.aptitudes[apt] = v + val
+	if v, ok := d.stat[apt]; ok {
+		d.stat[apt] = v + val
 		return
 	}
-	d.aptitudes[apt] = val
+	d.stat[apt] = val
 }
 
 func listBoons(arch string) []string {
@@ -852,168 +865,168 @@ func (d *Dynasty) initialBoonsEffect() {
 	for _, val := range d.boonsHinders {
 		switch val {
 		case "Commercial Psions":
-			d.characteristics[Pop]--
+			d.stat[Pop]--
 		case "Endless Funds":
-			d.traits[FiscalDfnce]--
-			d.traits[FiscalDfnce]--
+			d.stat[FiscalDfnce]--
+			d.stat[FiscalDfnce]--
 		case "Governmental Backing":
-			d.characteristics[Tra]--
+			d.stat[Tra]--
 		case "Military Contracts":
-			d.characteristics[Pop]--
-			d.characteristics[Grd]--
+			d.stat[Pop]--
+			d.stat[Grd]--
 		case "Total Control":
-			d.traits[TerritorialDfnce]--
-			d.traits[TerritorialDfnce]--
+			d.stat[TerritorialDfnce]--
+			d.stat[TerritorialDfnce]--
 		case "Alien Extortions":
-			d.characteristics[Grd]++
+			d.stat[Grd]++
 		case "Market Mercenaries":
-			d.characteristics[Clv]++
-			d.characteristics[Mil]++
+			d.stat[Clv]++
+			d.stat[Mil]++
 		case "Spies in the Network":
-			d.characteristics[Sch]++
+			d.stat[Sch]++
 		case "Underworld Loans":
-			d.traits[FiscalDfnce]++
-			d.traits[FiscalDfnce]++
+			d.stat[FiscalDfnce]++
+			d.stat[FiscalDfnce]++
 		case "Bureaucratic Roots":
-			d.characteristics[Grd]--
+			d.stat[Grd]--
 		case "Gossip Rags":
-			d.traits[Culture]--
+			d.stat[Culture]--
 		case "Politics Engine":
 			switch d.randomAction("-1 Lty", "-1 Sch") {
 			case 1:
-				d.characteristics[Lty]--
+				d.stat[Lty]--
 			case 2:
-				d.characteristics[Sch]--
+				d.stat[Sch]--
 			}
 		case "Sports Contracts":
-			d.characteristics[Pop]--
-			d.traits[Culture]--
+			d.stat[Pop]--
+			d.stat[Culture]--
 		case "Voice of a Generation":
-			d.characteristics[Pop]--
+			d.stat[Pop]--
 		case "Hostile Paparazzi":
-			d.traits[Culture]++
-			d.traits[Culture]++
+			d.stat[Culture]++
+			d.stat[Culture]++
 		case "Pirate Comms Station":
-			d.characteristics[Pop]++
-			d.characteristics[Tcy]++
+			d.stat[Pop]++
+			d.stat[Tcy]++
 		case "Rumours of Corruption":
-			d.characteristics[Clv]++
+			d.stat[Clv]++
 		case "Translation Troubles":
-			d.traits[TerritorialDfnce]++
+			d.stat[TerritorialDfnce]++
 		case "Interstellar Funding":
 			switch d.randomAction("-1 Tra", "-2 Culture") {
 			case 1:
-				d.characteristics[Tra]--
+				d.stat[Tra]--
 			case 2:
-				d.traits[Culture]--
-				d.traits[Culture]--
+				d.stat[Culture]--
+				d.stat[Culture]--
 			}
 		case "Naval Escorts":
-			d.characteristics[Mil]--
+			d.stat[Mil]--
 		case "Secure Production":
-			d.traits[FiscalDfnce]--
-			d.traits[TerritorialDfnce]--
+			d.stat[FiscalDfnce]--
+			d.stat[TerritorialDfnce]--
 		case "Vaulted Technologies":
-			d.traits[Technology]--
+			d.stat[Technology]--
 		case "Charitable Causes":
-			d.traits[Culture]++
+			d.stat[Culture]++
 		case "Depression Debts":
-			d.characteristics[Grd]++
+			d.stat[Grd]++
 		case "Pirate Problems":
-			d.traits[TerritorialDfnce]++
-			d.traits[TerritorialDfnce]++
+			d.stat[TerritorialDfnce]++
+			d.stat[TerritorialDfnce]++
 		case "Resource Mercenaries":
-			d.characteristics[Clv]++
-			d.characteristics[Mil]++
+			d.stat[Clv]++
+			d.stat[Mil]++
 		case "Aggressive Politics":
-			d.characteristics[Pop]--
+			d.stat[Pop]--
 		case "Homeland Foundation":
-			d.traits[Fleet]--
+			d.stat[Fleet]--
 		case "Laurels of Victory":
-			d.characteristics[Tcy]--
+			d.stat[Tcy]--
 		case "Martial Law":
-			d.characteristics[Lty]--
-			d.traits[Culture]--
+			d.stat[Lty]--
+			d.stat[Culture]--
 		case "War Hero":
-			d.characteristics[Sch]--
+			d.stat[Sch]--
 		case "Enemies on All Fronts":
-			d.characteristics[Clv]++
-			d.characteristics[Mil]++
+			d.stat[Clv]++
+			d.stat[Mil]++
 		case "Gun Runner Gambles":
-			d.traits[Technology]++
+			d.stat[Technology]++
 		case "Tech Problems":
-			d.characteristics[Tcy]++
+			d.stat[Tcy]++
 		case "War Eternal":
-			d.traits[TerritorialDfnce]++
-			d.traits[TerritorialDfnce]++
+			d.stat[TerritorialDfnce]++
+			d.stat[TerritorialDfnce]++
 		case "Breeding Eugenics":
-			d.traits[Technology]--
+			d.stat[Technology]--
 		case "Inherited Fortunes":
-			d.traits[FiscalDfnce]--
+			d.stat[FiscalDfnce]--
 		case "Pocket Government":
-			d.traits[Fleet]--
+			d.stat[Fleet]--
 		case "Royal Family":
-			d.characteristics[Lty]--
-			d.traits[Technology]--
+			d.stat[Lty]--
+			d.stat[Technology]--
 		case "Secret Society":
-			d.characteristics[Sch]--
+			d.stat[Sch]--
 		case "Disease in the Genes":
-			d.characteristics[Tra]++
+			d.stat[Tra]++
 		case "Inbred Rumours":
-			d.traits[Culture]++
+			d.stat[Culture]++
 		case "Primitive Subjects":
-			d.traits[FiscalDfnce]++
-			d.traits[FiscalDfnce]++
+			d.stat[FiscalDfnce]++
+			d.stat[FiscalDfnce]++
 		case "Revolution in the Future":
-			d.characteristics[Sch]++
-			d.characteristics[Mil]++
+			d.stat[Sch]++
+			d.stat[Mil]++
 		case "Alien Congregation":
-			d.characteristics[Pop]--
-			d.traits[Culture]--
+			d.stat[Pop]--
+			d.stat[Culture]--
 		case "Defenders of the Faith":
-			d.characteristics[Sch]--
+			d.stat[Sch]--
 		case "Holy Missionaries":
-			d.characteristics[Mil]--
+			d.stat[Mil]--
 		case "Tithes and Donations":
-			d.traits[Culture]--
+			d.stat[Culture]--
 		case "Words of Gods":
-			d.characteristics[Tra]--
+			d.stat[Tra]--
 		case "Atheist Coalition":
-			d.characteristics[Tcy]++
-			d.traits[Culture]++
+			d.stat[Tcy]++
+			d.stat[Culture]++
 		case "Controversial Clergy":
-			d.characteristics[Lty]++
+			d.stat[Lty]++
 		case "Superstitions Abound":
-			d.traits[Culture]++
+			d.stat[Culture]++
 		case "War Between Heavens":
 			switch d.randomAction("+2 Td", "+1 Mil") {
 			case 1:
-				d.traits[TerritorialDfnce]++
-				d.traits[TerritorialDfnce]++
+				d.stat[TerritorialDfnce]++
+				d.stat[TerritorialDfnce]++
 			case 2:
-				d.characteristics[Mil]++
+				d.stat[Mil]++
 			}
 		case "Deadly Reputation":
-			d.characteristics[Pop]--
+			d.stat[Pop]--
 		case "Family of Crime":
-			d.characteristics[Lty]--
+			d.stat[Lty]--
 		case "Law Enforcement Spies":
-			d.characteristics[Mil]--
+			d.stat[Mil]--
 		case "Pirate Shipyard":
-			d.characteristics[Grd]--
-			d.traits[FiscalDfnce]++
+			d.stat[Grd]--
+			d.stat[FiscalDfnce]++
 		case "Rule Through Fear":
-			d.characteristics[Lty]++
+			d.stat[Lty]++
 		case "Bounty Hunters":
-			d.characteristics[Clv]++
-			d.characteristics[Mil]++
+			d.stat[Clv]++
+			d.stat[Mil]++
 		case "Grudges and Vendettas":
-			d.characteristics[Lty]++
+			d.stat[Lty]++
 		case "Most Wanted":
-			d.characteristics[Sch]++
-			d.traits[Culture]++
+			d.stat[Sch]++
+			d.stat[Culture]++
 		case "Question of Authority":
-			d.characteristics[Grd]++
+			d.stat[Grd]++
 		}
 	}
 }
@@ -1116,13 +1129,13 @@ func (d *Dynasty) applyFGB() {
 	case "University Board Members":
 		d.raiseAny3AptitudesToLevel1()
 	case "Monopoly":
-		d.traits[FiscalDfnce]++
+		d.stat[FiscalDfnce]++
 	case "Shipyard Access":
-		d.traits[Fleet]++
+		d.stat[Fleet]++
 	case "Noble Investors":
-		d.values[Wealth]++
+		d.stat[Wealth]++
 	case "Inherited Pride":
-		d.traits[Culture]++
+		d.stat[Culture]++
 	case "Multi-stellar Benefactor":
 		d.raiseAny2TraitsBy1()
 	case "Royal Backing":
@@ -1132,12 +1145,12 @@ func (d *Dynasty) applyFGB() {
 	case "Pyramid Structure":
 		switch d.dicepool.RollNext("1d2").Sum() {
 		case 1:
-			d.values[Wealth] = d.values[Wealth] + d.dicepool.RollNext("1d6").Sum()
+			d.stat[Wealth] = d.stat[Wealth] + d.dicepool.RollNext("1d6").Sum()
 		case 2:
-			d.characteristics[Grd]++
+			d.stat[Grd]++
 		}
 	case "High-Tech Communications":
-		d.traits[Technology]++
+		d.stat[Technology]++
 	case "Military Reporters":
 		d.ensureAptitude(Conquest, 1)
 		d.ensureAptitude(Security, 1)
@@ -1153,27 +1166,27 @@ func (d *Dynasty) applyFGB() {
 	case "Intense Collegiate Training":
 		d.raiseApttitude(d.dicepool.RollFromList(listAptitudes()))
 	case "Patents Upon Patents":
-		d.values[Wealth]++
+		d.stat[Wealth]++
 	case "Governmental Acquisitions":
-		d.traits[Fleet]++
+		d.stat[Fleet]++
 	case "A Republic in Good Fortune":
-		d.values[Wealth] = d.values[Wealth] + d.dicepool.RollNext("1d6").Sum()
+		d.stat[Wealth] = d.stat[Wealth] + d.dicepool.RollNext("1d6").Sum()
 	case "Perfect Economy":
 		d.add1d6PointsToValues()
 	case "Intense Generational Training":
 		d.raiseAny3AptitudesToLevel1()
 	case "War Coffers":
-		d.values[Wealth]++
+		d.stat[Wealth]++
 	case "Naval Partners":
-		d.traits[Fleet]++
+		d.stat[Fleet]++
 	case "An Armed Populace":
-		d.traits[TerritorialDfnce]++
+		d.stat[TerritorialDfnce]++
 	case "Victory over Invasion":
 		switch d.dicepool.RollNext("1d2").Sum() {
 		case 1:
-			d.traits[Culture] = d.traits[Culture] + 2
+			d.stat[Culture] = d.stat[Culture] + 2
 		case 2:
-			d.characteristics[Tra]++
+			d.stat[Tra]++
 		}
 	case "War Colleges":
 		switch d.dicepool.RollNext("1d2").Sum() {
@@ -1186,59 +1199,59 @@ func (d *Dynasty) applyFGB() {
 			d.raiseAnyLevel1AptitudeBy1()
 		}
 	case "Noble Armada":
-		d.characteristics[Tra]++
-		d.traits[Fleet]++
-		d.traits[Fleet]++
+		d.stat[Tra]++
+		d.stat[Fleet]++
+		d.stat[Fleet]++
 	case "Royal Guard":
-		d.characteristics[Mil]++
-		d.traits[TerritorialDfnce]++
+		d.stat[Mil]++
+		d.stat[TerritorialDfnce]++
 	case "Of Pawns and Kings":
-		d.characteristics[Sch]++
+		d.stat[Sch]++
 	case "The Love of the People":
-		d.values[Morale]++
+		d.stat[Morale]++
 	case "Order of Protectors":
-		d.traits[TerritorialDfnce]++
+		d.stat[TerritorialDfnce]++
 	case "Military Honour":
-		d.characteristics[Mil]++
+		d.stat[Mil]++
 	case "Interstellar Marriages":
-		d.traits[Culture]++
-		d.traits[Fleet]++
+		d.stat[Culture]++
+		d.stat[Fleet]++
 	case "No Peers In Sight":
 		d.add1d6PointsToValues()
 	case "Clergy Scholars":
 		d.raiseAny3AptitudesToLevel1()
 	case "Knights and Templars":
-		d.traits[TerritorialDfnce]++
+		d.stat[TerritorialDfnce]++
 	case "Holy Treasures":
-		d.values[Wealth]++
+		d.stat[Wealth]++
 	case "Family Comes First":
-		d.values[Populance]++
+		d.stat[Populance]++
 	case "Online Scripture":
-		d.traits[Technology]++
+		d.stat[Technology]++
 	case "Blessings from Beyond":
-		d.traits[d.dicepool.RollFromList(listTraits())]++
-		d.traits[d.dicepool.RollFromList(listTraits())]++
+		d.stat[d.dicepool.RollFromList(listTraits())]++
+		d.stat[d.dicepool.RollFromList(listTraits())]++
 	case "Living Legends":
 		d.add1d6PointsToValues()
 	case "Undeniable Success":
 		d.raiseAny3AptitudesToLevel1()
 	case "Art Thieves and Extortions":
-		d.traits[FiscalDfnce]++
+		d.stat[FiscalDfnce]++
 	case "Pirate Captains":
 		switch d.dicepool.RollNext("1d2").Sum() {
 		case 1:
-			d.traits[Fleet]++
+			d.stat[Fleet]++
 		case 2:
-			d.characteristics[Mil]++
+			d.stat[Mil]++
 		}
 	case "Gangs Upon Gangs":
-		d.values[Populance]++
+		d.stat[Populance]++
 	case "Tougher than the Street":
-		d.traits[TerritorialDfnce]++
-		d.traits[Technology]++
+		d.stat[TerritorialDfnce]++
+		d.stat[Technology]++
 	case "Empire of Crime":
-		d.traits[d.dicepool.RollFromList(listTraits())]++
-		d.traits[d.dicepool.RollFromList(listTraits())]++
+		d.stat[d.dicepool.RollFromList(listTraits())]++
+		d.stat[d.dicepool.RollFromList(listTraits())]++
 	case "Intergalactic Mafia":
 		d.add1d6PointsToValues()
 	}
@@ -1247,7 +1260,7 @@ func (d *Dynasty) applyFGB() {
 func (d *Dynasty) raiseAny3AptitudesToLevel1() {
 	validToRaise := []string{}
 	for _, apt := range listAptitudes() {
-		if val, ok := d.aptitudes[apt]; !ok {
+		if val, ok := d.stat[apt]; !ok {
 			if val < 1 {
 				validToRaise = append(validToRaise, apt)
 			}
@@ -1260,7 +1273,7 @@ func (d *Dynasty) raiseAny3AptitudesToLevel1() {
 		validToRaise = remove(validToRaise, r)
 	}
 	for _, val := range validToRaise {
-		d.aptitudes[val] = 1
+		d.stat[val] = 1
 	}
 }
 
@@ -1270,23 +1283,23 @@ func remove(slice []string, s int) []string {
 
 func (d *Dynasty) raiseAny2TraitsBy1() {
 	for i := 0; i < 2; i++ {
-		d.traits[d.dicepool.RollFromList(listTraits())]++
+		d.stat[d.dicepool.RollFromList(listTraits())]++
 	}
 }
 
 func (d *Dynasty) add1d6PointsToValues() {
 	r := d.dicepool.RollNext("1d6").Sum()
 	for i := 0; i < r; i++ {
-		d.values[utils.RandomFromList(listValues())]++
+		d.stat[utils.RandomFromList(listValues())]++
 	}
 }
 
 func (d *Dynasty) raiseApttitude(apt string) {
-	if _, ok := d.aptitudes[apt]; ok {
-		d.aptitudes[apt]++
+	if _, ok := d.stat[apt]; ok {
+		d.stat[apt]++
 		return
 	}
-	d.aptitudes[apt] = 0
+	d.stat[apt] = 0
 }
 
 func (d *Dynasty) raiseAny2AptitudesBy1() {
@@ -1298,7 +1311,7 @@ func (d *Dynasty) raiseAny2AptitudesBy1() {
 func (d *Dynasty) raiseAnyLevel0AptitudeTo1() {
 	validToRaise := []string{}
 	for _, apt := range listAptitudes() {
-		if val, ok := d.aptitudes[apt]; !ok {
+		if val, ok := d.stat[apt]; !ok {
 			if val == 0 {
 				validToRaise = append(validToRaise, apt)
 			}
@@ -1309,14 +1322,14 @@ func (d *Dynasty) raiseAnyLevel0AptitudeTo1() {
 		validToRaise = remove(validToRaise, r)
 	}
 	for _, val := range validToRaise {
-		d.aptitudes[val] = 1
+		d.stat[val] = 1
 	}
 }
 
 func (d *Dynasty) raiseAnyLevel1AptitudeBy1() {
 	validToRaise := []string{}
 	for _, apt := range listAptitudes() {
-		if val, ok := d.aptitudes[apt]; !ok {
+		if val, ok := d.stat[apt]; !ok {
 			if val == 1 {
 				validToRaise = append(validToRaise, apt)
 			}
@@ -1327,7 +1340,7 @@ func (d *Dynasty) raiseAnyLevel1AptitudeBy1() {
 		validToRaise = remove(validToRaise, r)
 	}
 	for _, val := range validToRaise {
-		d.aptitudes[val] = 2
+		d.stat[val] = 2
 	}
 }
 
@@ -1342,4 +1355,13 @@ func reportErr(err error) {
 		fmt.Println(err.Error())
 		panic(err)
 	}
+}
+
+func (d *Dynasty) changeStatBy(stat string, increment int) {
+	d.story += "\n " + stat + " " + strconv.Itoa(increment)
+	d.stat[stat] = d.stat[stat] + increment
+}
+
+func (d *Dynasty) anyCharacteristic() string {
+	return d.dicepool.RollFromList(listCharacteristics())
 }

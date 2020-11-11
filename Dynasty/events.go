@@ -1,8 +1,11 @@
 package dynasty
 
 import (
+	"errors"
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Galdoba/TR_Dynasty/DateManager"
 	"github.com/Galdoba/TR_Dynasty/dice"
@@ -22,6 +25,109 @@ import (
 
 
 */
+
+type chalenge struct {
+	name       string
+	descr      string
+	roll       []string
+	reward     string
+	punishment string
+}
+
+type ChangeReceiver interface {
+	ChangeStats(...string)
+}
+
+// func (d *Dynasty) ChangeStats(changes ...string) {
+// 	rpa := parceChanges(changes...)
+// 	for i, change := range rpa {
+
+// 	}
+// }
+
+// func (d *Dynasty) applyChange(rp rewardPunishment) {
+// 	for i, val := range listALL() {
+
+// 	}
+// }
+
+type rewardPunishment struct {
+	fieldName string
+	changeby  int
+	err       error
+}
+
+func Test3() {
+	d := NewDynasty("Test Dynasty")
+	rpa := parceChanges("-2 Popularity", "+1 AnyTrait", "+6 AnyAptitude", "-1 Hostility", "-1 Illicit")
+	fmt.Println(d.Info())
+	for _, rp := range rpa {
+		d.changeStatBy(rp.fieldName, rp.changeby)
+	}
+	fmt.Println(d.Info())
+}
+
+func parceChanges(changes ...string) []rewardPunishment {
+	rpa := []rewardPunishment{}
+	entry := 1
+	start := time.Now().UnixNano()
+	for _, descr := range changes {
+		fmt.Println(entry, "Go ", descr, time.Now().UnixNano()-start)
+		entry++
+		rp := rewardPunishment{}
+		rp.changeby, rp.err = intFromDescr(descr)
+		if rp.err != nil {
+			continue
+		}
+		for _, field := range listALL() {
+			if strings.Contains(descr, "AnyCharacteristic") {
+				trait := dice.New(time.Now().UnixNano()).RollFromList(listCharacteristics())
+				rp.fieldName = trait
+				rpa = append(rpa, rp)
+				break
+			}
+			if strings.Contains(descr, "AnyTrait") {
+				trait := dice.New(time.Now().UnixNano()).RollFromList(listTraits())
+				rp.fieldName = trait
+				rpa = append(rpa, rp)
+				break
+			}
+			if strings.Contains(descr, "AnyAptitude") {
+				trait := dice.New(time.Now().UnixNano()).RollFromList(listAptitudes())
+				rp.fieldName = trait
+				rpa = append(rpa, rp)
+				break
+			}
+			fmt.Println(entry, "check: ", descr, "|", field, time.Now().UnixNano()-start)
+			entry++
+			if strings.Contains(descr, field) {
+				fmt.Println(entry, "FOUND!!! ", field, time.Now().UnixNano()-start)
+				entry++
+				rp.fieldName = field
+				rpa = append(rpa, rp)
+				break
+			}
+
+		}
+	}
+	fmt.Println("rpa:")
+	for i := range rpa {
+		fmt.Println(rpa[i])
+	}
+
+	return rpa
+}
+
+func intFromDescr(descr string) (int, error) {
+	data := strings.Split(descr, " ")
+	for _, str := range data {
+		res, err := strconv.Atoi(str)
+		if err == nil {
+			return res, err
+		}
+	}
+	return 0, errors.New("Parce failed")
+}
 
 type event struct {
 	date        string
@@ -76,7 +182,7 @@ func (d *Dynasty) HistoricEvent() event {
 				shr = append(shr, d.dicepool.RollFromList(listCharacteristics()))
 			}
 			for _, val := range shr {
-				d.characteristics[val]++
+				d.stat[val]++
 				ev.outcome += val + ", "
 			}
 			ev.outcome = strings.TrimSuffix(ev.outcome, ", ")
@@ -87,7 +193,7 @@ func (d *Dynasty) HistoricEvent() event {
 				shr = append(shr, d.dicepool.RollFromList(listCharacteristics()))
 			}
 			for _, val := range shr {
-				d.characteristics[val]++
+				d.stat[val]++
 				ev.outcome += val + ", "
 			}
 			ev.outcome = strings.TrimSuffix(ev.outcome, ", ")
@@ -98,7 +204,7 @@ func (d *Dynasty) HistoricEvent() event {
 				shr = append(shr, d.dicepool.RollFromList(listCharacteristics()))
 			}
 			for _, val := range shr {
-				d.characteristics[val]++
+				d.stat[val]++
 				ev.outcome += val + ", "
 			}
 			ev.outcome = strings.TrimSuffix(ev.outcome, ", ")
@@ -125,9 +231,9 @@ func (d *Dynasty) HistoricEvent() event {
 				d.increaseAllValues()
 				ev.outcome += "Increase All Values by 1\n"
 			} else {
-				d.traits[FiscalDfnce]--
-				d.traits[TerritorialDfnce]--
-				d.traits[Fleet]--
+				d.stat[FiscalDfnce]--
+				d.stat[TerritorialDfnce]--
+				d.stat[Fleet]--
 				ev.outcome += "Decrease All Fiscal Defence, Territorial Defence and Fleet by 1\n"
 			}
 		}
@@ -139,10 +245,10 @@ func (d *Dynasty) HistoricEvent() event {
 			chr = append(chr, d.dicepool.RollFromList(listCharacteristics()))
 		}
 		for _, val := range chr {
-			d.characteristics[val]++
+			d.stat[val]++
 			ev.outcome += "Raise " + val + " by 1"
 		}
-		d.values[Morale]++
+		d.stat[Morale]++
 		ev.outcome += "Raise Morale by 1"
 	}
 	return ev
@@ -159,7 +265,7 @@ func (d *Dynasty) bgEventConglomerate(code string) string {
 	case "11":
 		ev = "Stocks are falling all over the galaxy for years; roll Greed 8+ or lose 1 point of Wealth. "
 		if d.rollCharacteristic(Grd) < 8 {
-			d.values[Wealth]--
+			d.stat[Wealth]--
 		}
 	case "12":
 		ev = "Scandal rocks the shareholders’ memo meetings and prices hit an all time low; roll Loyalty 8+ or lose 1 point of Morale. "
@@ -226,14 +332,14 @@ func (d *Dynasty) bgEventConglomerate(code string) string {
 
 func Survived(d Dynasty) bool {
 	for _, val := range listValues() {
-		if d.values[val] < 1 {
+		if d.stat[val] < 1 {
 			//fmt.Println("Dynasty have crumbled and is no more...")
 			return false
 		}
 	}
 	zeroTraits := []string{}
 	for _, val := range listTraits() {
-		if d.traits[val] < 1 {
+		if d.stat[val] < 1 {
 			zeroTraits = append(zeroTraits, val)
 		}
 	}
@@ -243,7 +349,7 @@ func Survived(d Dynasty) bool {
 	}
 	vitalChars := []string{Lty, Pop, Tra}
 	for _, val := range vitalChars {
-		if d.characteristics[val] < 1 {
+		if d.stat[val] < 1 {
 			//	fmt.Println("Dynasty members riot and rise up from within, destroying the Dynasty’s power base until it cannot stand on its own...")
 			return false
 		}
@@ -252,13 +358,13 @@ func Survived(d Dynasty) bool {
 }
 
 func (d *Dynasty) rollCharacteristic(chr string) int {
-	dm := DM(d.characteristics[chr])
+	dm := DM(d.stat[chr])
 	return d.dicepool.RollNext("2d6").DM(dm).Sum()
 }
 
 func (d *Dynasty) rollAptitude(apt string) int {
 	dm := -2
-	if val, ok := d.aptitudes[apt]; ok {
+	if val, ok := d.stat[apt]; ok {
 		dm = val
 	}
 	return d.dicepool.RollNext("2d6").DM(dm).Sum()
@@ -266,25 +372,25 @@ func (d *Dynasty) rollAptitude(apt string) int {
 
 func (d *Dynasty) increaseAllTraits() {
 	for _, val := range listTraits() {
-		d.traits[val]++
+		d.stat[val]++
 	}
 }
 
 func (d *Dynasty) decreaseAllTraits() {
 	for _, val := range listTraits() {
-		d.traits[val]--
+		d.stat[val]--
 	}
 }
 
 func (d *Dynasty) increaseAllValues() {
 	for _, val := range listValues() {
-		d.values[val]++
+		d.stat[val]++
 	}
 }
 
 func (d *Dynasty) decreaseAllValues() {
 	for _, val := range listValues() {
-		d.values[val]--
+		d.stat[val]--
 	}
 }
 
@@ -361,4 +467,51 @@ func InitiateAction(source, target *Dynasty, name string, currentDay int) {
 
 func months() int {
 	return 31 + dice.Flux()
+}
+
+func EventMap(name string) map[string]func(Dynasty) *Dynasty {
+	evmap := make(map[string]func(Dynasty) *Dynasty)
+	////GENERATION GOALS
+	evmap["Acquire Ancient Technology|SUCCESS"] = func(d Dynasty) *Dynasty {
+		for i := 0; i < d.dicepool.RollNext("1d6").Sum(); i++ {
+			val := d.dicepool.RollFromList([]string{Technology, Wealth})
+			if i%2 == 1 {
+				val = Technology
+			}
+			d.changeStatBy(val, 1)
+		}
+		return &d
+	}
+	evmap["Acquire Ancient Technology|FAILURE"] = func(d Dynasty) *Dynasty {
+		for i := 0; i < d.dicepool.RollNext("1d6").Sum()+1; i++ {
+			val := d.dicepool.RollFromList(listValues())
+			if i%2 == 1 {
+				val = Wealth
+			}
+			d.changeStatBy(val, -1)
+		}
+		return &d
+	}
+
+	evmap["Banish an Enemy|SUCCESS"] = func(d Dynasty) *Dynasty {
+		d.changeStatBy(d.anyCharacteristic(), 1)
+		d.changeStatBy(d.anyCharacteristic(), 1)
+		for i := 0; i < d.dicepool.RollNext("1d6").Sum(); i++ {
+			val := d.dicepool.RollFromList(listTraits())
+			d.changeStatBy(val, 1)
+		}
+		return &d
+	}
+	evmap["Banish an Enemy|FAILURE"] = func(d Dynasty) *Dynasty {
+		for i := 0; i < d.dicepool.RollNext("1d6").Sum(); i++ {
+			val := d.anyCharacteristic()
+			if i == 1 {
+				val = Lty
+			}
+			d.changeStatBy(val, -1)
+		}
+		return &d
+	}
+
+	return evmap
 }

@@ -1,8 +1,185 @@
 package dynasty
 
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/Galdoba/TR_Dynasty/dice"
+)
+
 type goal struct {
-	name string
+	name                       string
+	descr                      string
+	scale                      int            //instant, 5year, 10year,30year
+	cumulativeEffectNeeded     map[string]int //карта необходимых кумулятивных успехов
+	roll4Needed                map[string]int
+	roll5Needed                map[string]int
+	roll6Needed                map[string]int
+	characteristicPointsNeeded map[string]int
+	traitPointsNeeded          map[string]int
+	valuePointsNeeded          map[string]int
+	trigerDay                  int
+	reward                     func(Dynasty) *Dynasty
+	log                        string
 }
+
+func testNewGoal(urgency int) goal {
+	g := goal{}
+	g.trigerDay = urgency
+	g.cumulativeEffectNeeded = make(map[string]int)
+	g.roll4Needed = make(map[string]int)
+	g.roll5Needed = make(map[string]int)
+	g.roll6Needed = make(map[string]int)
+	g.characteristicPointsNeeded = make(map[string]int)
+	g.traitPointsNeeded = make(map[string]int)
+	g.valuePointsNeeded = make(map[string]int)
+	g.name = "test Goal 1"
+	g.cumulativeEffectNeeded[Clv] = 1
+	return g
+}
+
+func Test4() {
+
+	dyn := NewDynasty("1")
+	for i, val := range listAptitudes() {
+		dyn.stat[val] = i
+	}
+	fmt.Println(dyn.Info())
+	dyn.goals = append(dyn.goals, testNewGoal(2))
+
+	for cd := 0; cd < 4; cd++ {
+		fmt.Println("CD", cd)
+		if cd < dyn.goals[0].trigerDay {
+			continue
+		}
+		r := dice.Flux()
+		dyn.goals[0].cumulativeEffectNeeded[Clv] = dyn.goals[0].cumulativeEffectNeeded[Clv] + r
+		dyn.goals[0].conclude()
+		fmt.Println(dyn)
+		dyn.goals[0].reward(dyn)
+	}
+	fmt.Println(dyn.Info())
+}
+
+func (g *goal) conclude() {
+	eventMap := make(map[string]func(Dynasty) *Dynasty)
+	eventMap["test3"] = func(d Dynasty) *Dynasty {
+		d.stat[Clv] = 99
+		return &d
+	}
+	eventMap["test4"] = func(d Dynasty) *Dynasty {
+		d.stat[Clv] = -99
+		return &d
+	}
+	key := ""
+	switch g.success() {
+	default:
+		fmt.Println("-----------")
+	case true:
+		key = "3"
+		fmt.Println("++++++++++++++++")
+	case false:
+		key = "4"
+		fmt.Println("=============")
+	}
+	name := "test"
+	if val, ok := eventMap[name+key]; ok {
+		g.reward = val
+	} else {
+		//fmt.Println("Null event")
+		g.reward = func(d Dynasty) *Dynasty {
+			return &d
+		}
+	}
+}
+
+func (g *goal) success() bool {
+	for k, v := range g.cumulativeEffectNeeded {
+		if v > 0 {
+			g.log += "\n" + strconv.Itoa(v) + " effect missing for " + k
+			return false
+		}
+	}
+	for k, v := range g.roll4Needed {
+		if v > 0 {
+			g.log += "\n" + strconv.Itoa(v) + " 4+ effect rolls missing for " + k
+			return false
+		}
+	}
+	for k, v := range g.roll5Needed {
+		if v > 0 {
+			g.log += "\n" + strconv.Itoa(v) + " 5+ effect rolls missing for " + k
+			return false
+		}
+	}
+	for k, v := range g.roll6Needed {
+		if v > 0 {
+			g.log += "\n" + strconv.Itoa(v) + " 6+ effect rolls missing for " + k
+			return false
+		}
+	}
+	for k, v := range g.characteristicPointsNeeded {
+		if v > 0 {
+			g.log += "\n" + strconv.Itoa(v) + " characteristic points missing for " + k
+			return false
+		}
+	}
+	for k, v := range g.traitPointsNeeded {
+		if v > 0 {
+			g.log += "\n" + strconv.Itoa(v) + " trait points missing for " + k
+			return false
+		}
+	}
+	for k, v := range g.valuePointsNeeded {
+		if v > 0 {
+			g.log += "\n" + strconv.Itoa(v) + " value points missing for " + k
+			return false
+		}
+	}
+	return true
+}
+
+type testStruct struct {
+	value    int
+	testgoal goal
+}
+
+type RewardReciever interface {
+	GetRewardFor() Dynasty
+}
+
+func (d *Dynasty) GetRewardFor() Dynasty {
+	newState := *d
+	for _, goal := range d.goals {
+		if goal.trigerDay > 0 {
+			continue
+		}
+		//goal.conclude() // проверяет выполнена ли цель и решает какую дать награду
+		//newState = goal.reward(newState)
+	}
+	return newState
+	//return ts.testgoal.reward(*ts)
+
+}
+
+// func Test2() {
+// 	ts := testStruct{3, goal{}}
+// 	ts.testgoal.reward = increasetestvalue
+// 	fmt.Println(ts)
+// 	ts = ts.Reward()
+
+// 	fmt.Println(ts)
+// }
+
+// func (ts *testStruct) Reward() testStruct {
+// 	return ts.testgoal.reward(*ts)
+
+// }
+
+// func increasetestvalue(ts testStruct) testStruct {
+// 	ts.value++
+// 	return ts
+// }
 
 /*
 Acquire Ancient Technology
@@ -15,57 +192,7 @@ Start an Interstellar War
 Teach a New Skill to the Masses
 Utter Genocide
 [NOT ESTABLESHED]
-*/
 
-/*
-
-ДЗ 3
-1 Pathfinder
-Анализ:
-Честно говоря из формулировки задания и описания способностей я не понимаю почему Nature's Whisper обязательно НЕ ограничивает бонус на КД и/или игнорирует ограничения тяжелой брони.
-Основной принцип всех правил это "частное превалирует над общим". В случае когда нет частного - используем общее.
-В описании Nature's Whisper нет указания на то ограничен ли бонус к КД или есть ли ограничения на социальные действия.
-Соответственно в моем прочтении правил в обоих случаях (SS и NW) КД получит максимально возможный бонус от характеристики согласно правилам брони (+6 для тряпок и +0 для чугуна - сорян конкретных цифр не знаю). Точно такое же ограничение будет у всех классов и всех способностей в описании которых не будет указано, что в этом случае бонус может превышать ограничение брони.
-Если ношение тяжелой брони ограничивает использование действий от харизмы для обычного крестьянина, то и Оракул Природы тоже должен испытывать эти ограничения - потому что нет частного правила (во всяком случае я не вижу его в матеиалах задания).
-Далее. Если вывести бонус к КД за скобки - способности по своей сути разные: Sidestep Secret увеличивает выживаймость в сценах Исследований (в частности от ловушек). Тогда как Nature's Whispers повышает выживаемость в бою.
-Кроме того, для Nature's Whispers есть еще и дополнительная слабость (которая дает риск как раз в боевой сцене): это возможность потерять модификатор на харизму от всего что может вызывать потерю модификатора на ловкость. То есть в потенциале замедляющее заклинание понизит КД Оракула Природы (а вместе с этим еще и помешает использовать действия и от харизмы), но не повлияет на КД и магию Оракула Знаний.
-Вывод:
-Прямо здесь и сейчас не менять ничего. Однако четко обозначить что суждение идет исходя из общих правил.
-В перспективе - написать на форуме, чтобы удалили последнее предложение из описания Sidestep Secret, так как оно повторяет общее правило и путает читающего который неосознано будет противопоставлять два вида Оракулов.
-
-2 Dragon Age
-Анализ:
-Вот тут у меня очень большие вопросы к переводчикам. Skirmish - это не рывок, а в первую очередь бой с низкой интенсивностью, задачей которого задержать и сковать противника, для того чтобы союзники (или сам нападающий) имели бы возможность для маневров.
-Вывод:
-Соответственно если мы говорим о духе сеттинга. Логичней было бы переформулировать описание следующим образом:
-"Вы можете передвинуть себя относительно цели атаки в любом направлении на 2 ярда за каждый потраченный SP"
-Такой прием создает образ героя применившего как тактически подкованного, ловкого и даже слегка коварного, но никак не Довакина швыряющего бронемедведей со скалы.
-*Как вариант можно подумать над возможностью замедлить противника на 2 ярда за SP - но тут одназначно - или задерживать, или перемещаться самому. Однако для такого решения надо знать всю систему - потому как это может нивелировать уникальность и нужность других классов с подобными навками контроля.
-
-3 Legend of the Five Rings
-Анализ:
-Ну самурай на то и самурай что может стрелять из катаны даже лежа на пузе...
-Вывод:
-Однозначно добавить бонус к атакующему самурая ручным оружием. Да в лежащего самурая сложнее попасть издалека, однако бить почти обездвиженного противника не впример легче.
-Если в системе есть аналог ДнД-шного приемущества/вдохновения, то использовать его. Если нет то бонус за Supperior Position (сопостовимый с тем, что всадник получает против пешего или самурай наверху лестницы против самурая внизу лестницы). Если и такого нет, то как минимум понизить TN для атакующего на 2 (Риск должен быть немного больше чем Награда).
-В случае если в системе имеет значение длинна оружия, так же бы наложил штраф на пользование оружием лежачиму полице... самураю - по 1 TN за единицу длинны оружия длиннее короткого меча. Потому что, в лежачем положении управляться 20 сантиметровым Танто, легче чем полуторометровым Нодачи.
-Ну и наконец если он хочет лежать в ногах у врага и кататься в грязи как свинья уворачиваясь от ударов и стрел - на эти действия помех быть не должно. Самурай имеет право терять лицо так, как он этого хочет. По единице за каждый ход проведенный на полу после того как его соперник предложил ему встать.
-
-4 Dark Heresy
-Анализ:
-Заклинание работает не только с псайкером (он вытягивает и направляет силу в мир), но еще и на цель (активно влияет на его сознание). Так же на мой взгляд чем мощнее колдунство получилось у псайкера, тем более он привлекает всяких тварей и демонов.
-Вывод:
-Лучшим решением будет повышать риск от этого заклятия в многолюдных местах, и оставить его как есть в случае если один псайкер прячется от одного охотника в темном корридоре.
-Думаю в духе Вархамера будет бросать тест на то, привлекло ли заклинание какую-нибудь варповую тварь, всякий раз когда в радиусе заклятия появляется новая цель. TN У такого теста должно быть равным разнице между набранным колличеством очков и порогом заклинания. Появившиеся твари будут атаковать в первую очередь псайкера (что очень чревато если псайкер просто хочет подслушать разговор двух слуг), но переключатся если кто-то атакует их (что почти наверняка произойдет если псайкер прячется от охраны).
-
-5 Vampires the Mascarade
-Анализ:
-Ну тут ответ выходит из самого вопроса. Поскольку диета влияет на само контроль и может спровоцировать зверя и дикость. То бить надо именно сюда.
-Вывод:
-Канибализм - у всех народов считается прямым путем к потере "человечности". Даже те культуры что практикуют канибализм стремяться есть только чужаков либо от безысходности.
-Каждый выпитый пункт крови от вампира должен стать кирпичиком на пути к безумию. Если я правильно помню, нельзя набирать больше чем 100 очков. Соответственно вампир получает +1 за каждый поглощенный пункт крови другого вампира.
-Таким образом эффективное пищевариение ускоряет этот эффект. Но при этом нет запрета напоить друга своей кровью чтобы спасти его. Оставляя у игроков саму возможность кормиться за счет друг друга, такой маневр выводит эту возможность в "действия последнего шанса" (вампир умрет от голода - или наестся и может быть не сойдет с ума).
-Если есть механики возвращения человечности, то само действие будет обратимым но его последствия будут весомым фактором в течении нескольких игр пока игрок будет восстанавливать человечность.
 
 
 */

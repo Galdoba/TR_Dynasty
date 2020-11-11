@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	dynasty.Test()
+	dynasty.Test4()
 
 	//skimming.Test()
 	//routine.StartRoutine()
