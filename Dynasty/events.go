@@ -469,7 +469,7 @@ func months() int {
 	return 31 + dice.Flux()
 }
 
-func EventMap(name string) map[string]func(Dynasty) *Dynasty {
+func EventMap() map[string]func(Dynasty) *Dynasty {
 	evmap := make(map[string]func(Dynasty) *Dynasty)
 	////GENERATION GOALS
 	evmap["Acquire Ancient Technology|SUCCESS"] = func(d Dynasty) *Dynasty {

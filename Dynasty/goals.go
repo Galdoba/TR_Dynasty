@@ -2,7 +2,6 @@ package dynasty
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/Galdoba/TR_Dynasty/dice"
 )
@@ -18,14 +17,14 @@ type goal struct {
 	characteristicPointsNeeded map[string]int
 	traitPointsNeeded          map[string]int
 	valuePointsNeeded          map[string]int
-	trigerDay                  int
+	urgency                    int
 	reward                     func(Dynasty) *Dynasty
 	log                        string
 }
 
 func testNewGoal(urgency int) goal {
 	g := goal{}
-	g.trigerDay = urgency
+	g.urgency = urgency
 	g.cumulativeEffectNeeded = make(map[string]int)
 	g.roll4Needed = make(map[string]int)
 	g.roll5Needed = make(map[string]int)
@@ -38,6 +37,34 @@ func testNewGoal(urgency int) goal {
 	return g
 }
 
+func NewGoal(name string, scale int) goal {
+	g := goal{}
+	switch scale {
+	default:
+		g.urgency = 0
+	case 1:
+		g.urgency = 60 * months()
+	case 2:
+		g.urgency = 120 * months()
+	case 3:
+		g.urgency = 360 * months()
+	}
+	g.cumulativeEffectNeeded = make(map[string]int)
+	g.roll4Needed = make(map[string]int)
+	g.roll5Needed = make(map[string]int)
+	g.roll6Needed = make(map[string]int)
+	g.characteristicPointsNeeded = make(map[string]int)
+	g.traitPointsNeeded = make(map[string]int)
+	g.valuePointsNeeded = make(map[string]int)
+	g.name = name
+	g.setupChecklist(name)
+	return g
+}
+
+func (g goal) triggered() bool {
+	return true
+}
+
 func Test4() {
 
 	dyn := NewDynasty("1")
@@ -45,11 +72,11 @@ func Test4() {
 		dyn.stat[val] = i
 	}
 	fmt.Println(dyn.Info())
-	dyn.goals = append(dyn.goals, testNewGoal(2))
+	dyn.goals = append(dyn.goals, NewGoal("Utter Genocide", 3))
 
-	for cd := 0; cd < 4; cd++ {
+	for cd := 0; cd < 12000; cd++ {
 		fmt.Println("CD", cd)
-		if cd < dyn.goals[0].trigerDay {
+		if cd < dyn.goals[0].urgency {
 			continue
 		}
 		r := dice.Flux()
@@ -59,6 +86,7 @@ func Test4() {
 		dyn.goals[0].reward(dyn)
 	}
 	fmt.Println(dyn.Info())
+	fmt.Println(dyn.goals[0])
 }
 
 func (g *goal) conclude() {
@@ -76,14 +104,16 @@ func (g *goal) conclude() {
 	default:
 		fmt.Println("-----------")
 	case true:
-		key = "3"
+		key = g.name + "|SUCCESS"
 		fmt.Println("++++++++++++++++")
+
 	case false:
-		key = "4"
+		key = g.name + "|FAILURE"
+
 		fmt.Println("=============")
 	}
-	name := "test"
-	if val, ok := eventMap[name+key]; ok {
+	//name := "test"
+	if val, ok := EventMap()[key]; ok {
 		g.reward = val
 	} else {
 		//fmt.Println("Null event")
@@ -91,48 +121,42 @@ func (g *goal) conclude() {
 			return &d
 		}
 	}
+	g = nil
 }
 
 func (g *goal) success() bool {
-	for k, v := range g.cumulativeEffectNeeded {
+	for _, v := range g.cumulativeEffectNeeded {
 		if v > 0 {
-			g.log += "\n" + strconv.Itoa(v) + " effect missing for " + k
 			return false
 		}
 	}
-	for k, v := range g.roll4Needed {
+	for _, v := range g.roll4Needed {
 		if v > 0 {
-			g.log += "\n" + strconv.Itoa(v) + " 4+ effect rolls missing for " + k
 			return false
 		}
 	}
-	for k, v := range g.roll5Needed {
+	for _, v := range g.roll5Needed {
 		if v > 0 {
-			g.log += "\n" + strconv.Itoa(v) + " 5+ effect rolls missing for " + k
 			return false
 		}
 	}
-	for k, v := range g.roll6Needed {
+	for _, v := range g.roll6Needed {
 		if v > 0 {
-			g.log += "\n" + strconv.Itoa(v) + " 6+ effect rolls missing for " + k
 			return false
 		}
 	}
-	for k, v := range g.characteristicPointsNeeded {
+	for _, v := range g.characteristicPointsNeeded {
 		if v > 0 {
-			g.log += "\n" + strconv.Itoa(v) + " characteristic points missing for " + k
 			return false
 		}
 	}
-	for k, v := range g.traitPointsNeeded {
+	for _, v := range g.traitPointsNeeded {
 		if v > 0 {
-			g.log += "\n" + strconv.Itoa(v) + " trait points missing for " + k
 			return false
 		}
 	}
-	for k, v := range g.valuePointsNeeded {
+	for _, v := range g.valuePointsNeeded {
 		if v > 0 {
-			g.log += "\n" + strconv.Itoa(v) + " value points missing for " + k
 			return false
 		}
 	}
@@ -151,7 +175,7 @@ type RewardReciever interface {
 func (d *Dynasty) GetRewardFor() Dynasty {
 	newState := *d
 	for _, goal := range d.goals {
-		if goal.trigerDay > 0 {
+		if goal.urgency > 0 {
 			continue
 		}
 		//goal.conclude() // проверяет выполнена ли цель и решает какую дать награду
@@ -184,7 +208,7 @@ func (d *Dynasty) GetRewardFor() Dynasty {
 /*
 Acquire Ancient Technology
 Banish an Enemy
-Fulfil a Successful Coup Dé'tat
+Fulfil a Successful Coup De'tat
 Grow by Leaps and Bounds
 Hold an Interstellar Peace Conference
 Organise Order from Chaos
@@ -196,3 +220,69 @@ Utter Genocide
 
 
 */
+
+func (g *goal) setupChecklist(name string) {
+	switch name {
+	case "Acquire Ancient Technology":
+		g.cumulativeEffectNeeded[Intel] = 20
+		g.cumulativeEffectNeeded[Research] = 30
+		g.roll5Needed[Conquest] = 3
+		g.roll6Needed[Clv] = 2
+		g.traitPointsNeeded[Technology] = -3
+	case "Banish an Enemy":
+		g.cumulativeEffectNeeded[Sabotage] = 10
+		g.cumulativeEffectNeeded[Hostility] = 20
+		g.cumulativeEffectNeeded[Propaganda] = 30
+		g.roll5Needed[Mil] = 2
+		g.valuePointsNeeded[Populance] = -3 //TODO: Cannot lose more than 5 points between Populace and Wealth
+		g.valuePointsNeeded[Wealth] = -3
+	case "Fulfil a Successful Coup De'tat ":
+		g.cumulativeEffectNeeded[Intel] = 12
+		g.cumulativeEffectNeeded[Politics] = 30
+		g.roll4Needed[Clv] = 3
+		g.roll5Needed[Sch] = 2
+		g.characteristicPointsNeeded[Pop] = 1
+	case "Grow by Leaps and Bounds":
+		g.cumulativeEffectNeeded[Acquisition] = 10
+		g.cumulativeEffectNeeded[PublicRelations] = 15
+		g.cumulativeEffectNeeded[Recruit] = 20
+		g.characteristicPointsNeeded[Lty] = 1
+		g.valuePointsNeeded[Populance] = 2
+	case "Hold an Interstellar Peace Conference":
+		g.cumulativeEffectNeeded[Expression] = 10
+		g.cumulativeEffectNeeded[Security] = 10
+		g.cumulativeEffectNeeded[Posturing] = 15
+		g.roll5Needed[Pop] = 3
+		g.valuePointsNeeded[Morale] = -2
+	case "Invent a New Technological Marvel":
+		g.cumulativeEffectNeeded[Intel] = 10
+		g.cumulativeEffectNeeded[Security] = 15
+		g.cumulativeEffectNeeded[Research] = 15
+		g.roll6Needed[Clv] = 2
+		g.traitPointsNeeded[Technology] = 2
+	case "Organise Order from Chaos":
+		g.cumulativeEffectNeeded[Expression] = 10
+		g.cumulativeEffectNeeded[PublicRelations] = 10
+		g.cumulativeEffectNeeded[Tutelage] = 15
+		g.roll5Needed[Pop] = 3
+		g.roll6Needed[Tra] = 1
+	case "Start an Interstellar War":
+		g.cumulativeEffectNeeded[Expression] = 10
+		g.cumulativeEffectNeeded[Politics] = 10
+		g.cumulativeEffectNeeded[Hostility] = 15
+		g.cumulativeEffectNeeded[Tactical] = 15
+		g.roll4Needed[Pop] = 4
+	case "Teach a New Skill to the Masses":
+		g.cumulativeEffectNeeded[Recruit] = 10
+		g.cumulativeEffectNeeded[Tutelage] = 10
+		g.roll5Needed[Pop] = 2
+		g.roll4Needed[Tra] = 3
+		g.traitPointsNeeded[Culture] = 2
+	case "Utter Genocide":
+		g.cumulativeEffectNeeded[Conquest] = 15
+		g.cumulativeEffectNeeded[Hostility] = 15
+		g.cumulativeEffectNeeded[Intel] = 15
+		g.cumulativeEffectNeeded[Sabotage] = 15
+		g.valuePointsNeeded[Morale] = -2
+	}
+}

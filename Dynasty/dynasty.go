@@ -75,6 +75,8 @@ const (
 	Theocrat            = "Theocrat"
 )
 
+var currentDay int
+
 func Test() {
 	//code.ConstructStandardMethods()
 	//validDyn := false
@@ -95,14 +97,14 @@ func Test() {
 	// 	dyns = append(dyns, d)
 	// }
 
-	curentDay := 402000
+	currentDay = 402000
 	for d := 0; d < 1000; d++ {
-		curentDay++
+		currentDay++
 
 		for i := range dynMap {
-			if dynMap[i].nextActionDay <= curentDay {
+			if dynMap[i].nextActionDay <= currentDay {
 				val := dynMap[i]
-				val.DecrlareAction(curentDay)
+				val.DecrlareAction(currentDay)
 			}
 
 		}
