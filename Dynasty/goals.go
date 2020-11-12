@@ -2,8 +2,6 @@ package dynasty
 
 import (
 	"fmt"
-
-	"github.com/Galdoba/TR_Dynasty/dice"
 )
 
 type goal struct {
@@ -67,38 +65,53 @@ func (g goal) triggered() bool {
 
 func Test4() {
 
-	dyn := NewDynasty("1")
-	for i, val := range listAptitudes() {
-		dyn.stat[val] = i
-	}
+	dyn := NewDynasty("")
+
 	fmt.Println(dyn.Info())
 	dyn.goals = append(dyn.goals, NewGoal("Utter Genocide", 3))
 
-	for cd := 0; cd < 12000; cd++ {
-		fmt.Println("CD", cd)
-		if cd < dyn.goals[0].urgency {
-			continue
-		}
-		r := dice.Flux()
-		dyn.goals[0].cumulativeEffectNeeded[Clv] = dyn.goals[0].cumulativeEffectNeeded[Clv] + r
-		dyn.goals[0].conclude()
-		fmt.Println(dyn)
-		dyn.goals[0].reward(dyn)
-	}
+	// for cd := 0; cd < 12000; cd++ {
+	// 	// fmt.Print("CD: ", cd, "  \r")
+	// 	// if cd < dyn.goals[0].urgency {
+	// 	// 	continue
+	// 	// }
+	// 	// dyn.goals[0].conclude()
+
+	// 	// fmt.Println(dyn)
+	// 	// dyn.goals[0].reward(dyn)
+	// 	// dyn.ensureAptValidRange()
+	// 	// break
+	// 	dyn.updateGoals()
+	// }
+	fmt.Print("  \n")
 	fmt.Println(dyn.Info())
 	fmt.Println(dyn.goals[0])
+	fmt.Println("d.probeCheckAptitude(Mil, Hostility, DifficultyAverage, 0) TEST")
+	fmt.Println(dyn.probeCheckAptitude(Mil, Hostility, DifficultyDifficult, 4))
+}
+
+func (d *Dynasty) updateGoals() {
+	for i := range d.goals {
+		if d.goals[i].urgency > 0 {
+			d.goals[i].urgency--
+			continue
+		}
+		d.goals[i].conclude()
+		d.goals[i].reward(*d)
+		d.ensureAptValidRange()
+	}
 }
 
 func (g *goal) conclude() {
-	eventMap := make(map[string]func(Dynasty) *Dynasty)
-	eventMap["test3"] = func(d Dynasty) *Dynasty {
-		d.stat[Clv] = 99
-		return &d
-	}
-	eventMap["test4"] = func(d Dynasty) *Dynasty {
-		d.stat[Clv] = -99
-		return &d
-	}
+	// eventMap := make(map[string]func(Dynasty) *Dynasty)
+	// eventMap["test3"] = func(d Dynasty) *Dynasty {
+	// 	d.stat[Clv] = 99
+	// 	return &d
+	// }
+	// eventMap["test4"] = func(d Dynasty) *Dynasty {
+	// 	d.stat[Clv] = -99
+	// 	return &d
+	// }
 	key := ""
 	switch g.success() {
 	default:
@@ -114,14 +127,16 @@ func (g *goal) conclude() {
 	}
 	//name := "test"
 	if val, ok := EventMap()[key]; ok {
+		fmt.Println(key)
 		g.reward = val
 	} else {
-		//fmt.Println("Null event")
+		fmt.Println("Null event")
 		g.reward = func(d Dynasty) *Dynasty {
 			return &d
 		}
 	}
 	g = nil
+
 }
 
 func (g *goal) success() bool {
@@ -234,7 +249,7 @@ func (g *goal) setupChecklist(name string) {
 		g.cumulativeEffectNeeded[Hostility] = 20
 		g.cumulativeEffectNeeded[Propaganda] = 30
 		g.roll5Needed[Mil] = 2
-		g.valuePointsNeeded[Populance] = -3 //TODO: Cannot lose more than 5 points between Populace and Wealth
+		g.valuePointsNeeded[Populace] = -3 //TODO: Cannot lose more than 5 points between Populace and Wealth
 		g.valuePointsNeeded[Wealth] = -3
 	case "Fulfil a Successful Coup De'tat ":
 		g.cumulativeEffectNeeded[Intel] = 12
@@ -247,7 +262,7 @@ func (g *goal) setupChecklist(name string) {
 		g.cumulativeEffectNeeded[PublicRelations] = 15
 		g.cumulativeEffectNeeded[Recruit] = 20
 		g.characteristicPointsNeeded[Lty] = 1
-		g.valuePointsNeeded[Populance] = 2
+		g.valuePointsNeeded[Populace] = 2
 	case "Hold an Interstellar Peace Conference":
 		g.cumulativeEffectNeeded[Expression] = 10
 		g.cumulativeEffectNeeded[Security] = 10

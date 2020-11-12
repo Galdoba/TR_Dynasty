@@ -48,7 +48,7 @@ const (
 	Tactical            = "Tactical"
 	Tutelage            = "Tutelage"
 	Morale              = "Morale"
-	Populance           = "Populance"
+	Populace            = "Populace"
 	Wealth              = "Wealth"
 	ColonySettlement    = "Colony/Settlement"
 	ConflictZone        = "Conflict Zone"
@@ -267,7 +267,7 @@ func (d *Dynasty) fgStep3() {
 
 func (d *Dynasty) fgStep4() {
 	d.stat[Morale] = d.stat[Morale] + DM(d.stat[Pop]) + d.stat[Culture]
-	d.stat[Populance] = d.stat[Populance] + DM(d.stat[Tra]) + d.stat[Technology]
+	d.stat[Populace] = d.stat[Populace] + DM(d.stat[Tra]) + d.stat[Technology]
 	d.stat[Wealth] = d.stat[Wealth] + DM(d.stat[Clv]) + d.stat[FiscalDfnce]
 	for _, val := range listValues() {
 		if d.stat[val] < 1 {
@@ -424,7 +424,7 @@ func listAptitudes() []string {
 func listValues() []string {
 	return []string{
 		Morale,
-		Populance,
+		Populace,
 		Wealth,
 	}
 }
@@ -1227,7 +1227,7 @@ func (d *Dynasty) applyFGB() {
 	case "Holy Treasures":
 		d.stat[Wealth]++
 	case "Family Comes First":
-		d.stat[Populance]++
+		d.stat[Populace]++
 	case "Online Scripture":
 		d.stat[Technology]++
 	case "Blessings from Beyond":
@@ -1247,7 +1247,7 @@ func (d *Dynasty) applyFGB() {
 			d.stat[Mil]++
 		}
 	case "Gangs Upon Gangs":
-		d.stat[Populance]++
+		d.stat[Populace]++
 	case "Tougher than the Street":
 		d.stat[TerritorialDfnce]++
 		d.stat[Technology]++
@@ -1362,8 +1362,39 @@ func reportErr(err error) {
 func (d *Dynasty) changeStatBy(stat string, increment int) {
 	d.story += "\n " + stat + " " + strconv.Itoa(increment)
 	d.stat[stat] = d.stat[stat] + increment
+	// if utils.ListContains(listAptitudes(), stat) { - не в этом месте.
+	// 	if d.stat[stat] < 0 {
+	// 		d.stat[stat] = 0
+	// 	}
+	// }
+}
+
+func (d *Dynasty) ensureAptValidRange() {
+	for _, val := range listAptitudes() {
+		if d.stat[val] < 0 {
+			d.stat[val] = 0
+		}
+		if d.stat[val] > 5 {
+			d.stat[val] = 5
+		}
+	}
 }
 
 func (d *Dynasty) anyCharacteristic() string {
 	return d.dicepool.RollFromList(listCharacteristics())
+}
+
+func (d *Dynasty) aptitudeValue(apt string) int {
+	if val, ok := d.stat[apt]; ok {
+		return val
+	}
+	return -2
+}
+
+func (d *Dynasty) characteristicDM(chr string) int {
+	if val, ok := d.stat[chr]; ok {
+		return DM(val)
+	}
+	panic("Dynasty Inconsistent!")
+	return -2
 }

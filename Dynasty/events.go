@@ -9,6 +9,7 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/DateManager"
 	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/utils"
 )
 
 /*
@@ -420,13 +421,14 @@ func (d *Dynasty) TrackEvent(currentDay int) bool {
 }
 
 const (
-	DifficultyVeryEasy      = 6
+	DifficultyVeryEasy      = 2
 	DifficultyEasy          = 4
-	DifficultyRoutine       = 2
-	DifficultyAverage       = 0
-	DifficultyDifficult     = -2
-	DifficultyVeryDifficult = -4
-	DifficultyFormidable    = -6
+	DifficultyRoutine       = 6
+	DifficultyAverage       = 8
+	DifficultyDifficult     = 10
+	DifficultyVeryDifficult = 12
+	DifficultyFormidable    = 14
+	DifficultyImposible     = 16
 )
 
 type apttAction struct {
@@ -508,6 +510,187 @@ func EventMap() map[string]func(Dynasty) *Dynasty {
 			if i == 1 {
 				val = Lty
 			}
+			d.changeStatBy(val, -1)
+		}
+		return &d
+	}
+
+	evmap["Fulfil a Successful Coup De'tat|SUCCESS"] = func(d Dynasty) *Dynasty {
+		d.changeStatBy(Mil, 1)
+		d.changeStatBy(Pop, 1)
+		d.changeStatBy(TerritorialDfnce, 2)
+		d.changeStatBy(Culture, 1)
+		d.changeStatBy(Morale, 1)
+		return &d
+	}
+	evmap["Fulfil a Successful Coup De'tat|FAILURE"] = func(d Dynasty) *Dynasty {
+		d.changeStatBy(Pop, -1)
+		d.changeStatBy(Sch, -1)
+		d.changeStatBy(Conquest, -1)
+		d.changeStatBy(Hostility, -1)
+		d.changeStatBy(Illicit, -1)
+		return &d
+	}
+
+	evmap["Grow by Leaps and Bounds|SUCCESS"] = func(d Dynasty) *Dynasty {
+		r := d.dicepool.RollNext("1d6").Sum() + 1
+		incPool := []string{}
+		chooseFromList := listAptitudes()
+		chooseFromList = append(chooseFromList, listTraits()...)
+		chooseFromList = append(chooseFromList, listValues()...)
+		for len(incPool) < r {
+			incPool = utils.AppendUniqueStr(incPool, d.dicepool.RollFromList(chooseFromList))
+		}
+		for _, val := range incPool {
+			d.changeStatBy(val, 1)
+		}
+		return &d
+	}
+	evmap["Grow by Leaps and Bounds|FAILURE"] = func(d Dynasty) *Dynasty {
+		for _, val := range listValues() {
+			d.changeStatBy(val, -1)
+		}
+		// cannot increase any Value until the start of the next Generation - запустить через систему пермаэффектов (Boons and Hinders)
+		return &d
+	}
+
+	evmap["Hold an Interstellar Peace Conference|SUCCESS"] = func(d Dynasty) *Dynasty {
+		r := d.dicepool.RollNext("1d6").Sum() + 2
+		incPool := []string{}
+		chooseFromList := []string{Acquisition, Bureaucracy, Economics, Entertain, Expression, Intel, Maintenance, Politics, Propaganda, PublicRelations, Research, Security}
+		for len(incPool) < r {
+			incPool = append(incPool, d.dicepool.RollFromList(chooseFromList))
+		}
+		for _, val := range incPool {
+			d.changeStatBy(val, 1)
+		}
+		return &d
+	}
+	evmap["Hold an Interstellar Peace Conference|FAILURE"] = func(d Dynasty) *Dynasty {
+		for _, val := range listValues() {
+			d.changeStatBy(val, -2)
+		}
+		return &d
+	}
+
+	evmap["Invent a New Technological Marvel|SUCCESS"] = func(d Dynasty) *Dynasty {
+		d.changeStatBy(Grd, 1)
+		d.changeStatBy(Pop, 1)
+		d.changeStatBy(Technology, 1)
+		d.changeStatBy(Wealth, 2)
+		d.changeStatBy(Morale, 1)
+		//Increase Planet's TL
+		return &d
+	}
+	evmap["Invent a New Technological Marvel|FAILURE"] = func(d Dynasty) *Dynasty {
+		d.changeStatBy(Wealth, -3)
+		d.changeStatBy(Pop, -1)
+		return &d
+	}
+
+	evmap["Organise Order from Chaos|SUCCESS"] = func(d Dynasty) *Dynasty {
+		incPool := []string{}
+		chooseFromList := listAptitudes()
+		for len(incPool) < 3 {
+			incPool = utils.AppendUniqueStr(incPool, d.dicepool.RollFromList(chooseFromList))
+		}
+		chooseFromList = listTraits()
+		for len(incPool) < 5 {
+			incPool = utils.AppendUniqueStr(incPool, d.dicepool.RollFromList(chooseFromList))
+		}
+		incPool = append(incPool, Wealth)
+		incPool = append(incPool, Populace)
+		for _, val := range incPool {
+			d.changeStatBy(val, 1)
+		}
+		return &d
+	}
+	evmap["Organise Order from Chaos|FAILURE"] = func(d Dynasty) *Dynasty {
+		chageList := listValues()
+		chageList = append(chageList, Pop)
+		for _, val := range chageList {
+			d.changeStatBy(val, -1)
+		}
+		return &d
+	}
+
+	evmap["Start an Interstellar War|SUCCESS"] = func(d Dynasty) *Dynasty {
+		incPool := []string{}
+		chooseFromList := listTraits()
+		chooseFromList = append(chooseFromList, listValues()...)
+		r := d.dicepool.RollNext("1d6").Sum() + 1
+		for len(incPool) < r {
+			incPool = append(incPool, d.dicepool.RollFromList(chooseFromList))
+		}
+		incPool = append(incPool, Conquest)
+		incPool = append(incPool, Economics)
+		incPool = append(incPool, Hostility)
+		for _, val := range incPool {
+			d.changeStatBy(val, 1)
+		}
+		return &d
+	}
+	evmap["Start an Interstellar War|FAILURE"] = func(d Dynasty) *Dynasty {
+		chageList := listValues()
+		chageList = append(chageList, listTraits()...)
+		for _, val := range chageList {
+			d.changeStatBy(val, -1)
+		}
+		return &d
+	}
+
+	evmap["Teach a New Skill to the Masses|SUCCESS"] = func(d Dynasty) *Dynasty {
+		incPool := []string{Lty, Pop, Culture, Morale, Morale}
+		for _, val := range incPool {
+			d.changeStatBy(val, 1)
+		}
+		return &d
+	}
+	evmap["Teach a New Skill to the Masses|FAILURE"] = func(d Dynasty) *Dynasty {
+		incPool := []string{Pop, Tcy, Tra, TerritorialDfnce, Culture, Morale, Populace}
+		r := d.dicepool.RollNext("1d6").Sum() + 1
+		for i := 0; i < r; i++ {
+			d.changeStatBy(incPool[i], -1)
+		}
+		return &d
+	}
+
+	evmap["Utter Genocide|SUCCESS"] = func(d Dynasty) *Dynasty {
+		incPool := []string{}
+		switch d.dicepool.RollNext("1d2").Sum() {
+		case 1:
+			incPool = append(incPool, Mil)
+			incPool = append(incPool, Mil)
+		case 2:
+			incPool = append(incPool, Lty)
+			incPool = append(incPool, Pop)
+		}
+		switch d.dicepool.RollNext("1d2").Sum() {
+		case 1:
+			incPool = append(incPool, []string{TerritorialDfnce, TerritorialDfnce, TerritorialDfnce}...)
+		case 2:
+			incPool = append(incPool, Fleet)
+			incPool = append(incPool, Technology)
+		}
+		switch d.dicepool.RollNext("1d2").Sum() {
+		case 1:
+			incPool = append(incPool, []string{Morale, Morale}...)
+		case 2:
+			incPool = append(incPool, []string{Wealth, Wealth}...)
+		}
+		apts := []string{}
+		for len(apts) < 3 {
+			apts = utils.AppendUniqueStr(apts, d.dicepool.RollFromList(listAptitudes()))
+		}
+		incPool = append(incPool, apts...)
+		for _, val := range incPool {
+			d.changeStatBy(val, 1)
+		}
+		return &d
+	}
+	evmap["Utter Genocide|FAILURE"] = func(d Dynasty) *Dynasty {
+		incPool := []string{Pop, Pop, Lty, Fleet, PublicRelations, Morale, Morale, Populace, Populace}
+		for _, val := range incPool {
 			d.changeStatBy(val, -1)
 		}
 		return &d
