@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
+	"github.com/Galdoba/TR_Dynasty/TrvCore/ehex"
 	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/utils"
@@ -48,7 +49,7 @@ func RandomUWP(planetType ...string) string {
 	}
 	size = utils.BoundInt(size, 0, 32)
 	//uwp.data[constant.PrSize] = ehex(size)
-	result = ehex(size)
+	result = TrvCore.DigitToEhex(size)
 
 	//////////ATMO
 	var atmo int
@@ -67,7 +68,7 @@ func RandomUWP(planetType ...string) string {
 	}
 	atmo = utils.BoundInt(atmo, 0, TrvCore.EhexToDigit("F"))
 	//uwp.data[constant.PrAtmo] = ehex(atmo)
-	result = result + ehex(atmo)
+	result = result + TrvCore.DigitToEhex(atmo)
 
 	//////////HYDRO
 	var hydr int
@@ -88,7 +89,7 @@ func RandomUWP(planetType ...string) string {
 	}
 	hydr = utils.BoundInt(hydr, 0, TrvCore.EhexToDigit("A"))
 	//uwp.data[constant.PrHydr] = ehex(hydr)
-	result = result + ehex(hydr)
+	result = result + TrvCore.DigitToEhex(hydr)
 
 	//////////POPS
 	var pops int
@@ -109,7 +110,7 @@ func RandomUWP(planetType ...string) string {
 
 	pops = utils.BoundInt(pops, 0, TrvCore.EhexToDigit("Y"))
 	//uwp.data[constant.PrPops] = ehex(pops)
-	result = result + ehex(pops)
+	result = result + TrvCore.DigitToEhex(pops)
 
 	//////////GOVR
 	var govr int
@@ -124,7 +125,7 @@ func RandomUWP(planetType ...string) string {
 	}
 	govr = utils.BoundInt(govr, 0, TrvCore.EhexToDigit("F"))
 	//uwp.data[constant.PrGovr] = ehex(govr)
-	result = result + ehex(govr)
+	result = result + TrvCore.DigitToEhex(govr)
 
 	//////////LAWS
 	var laws int
@@ -137,7 +138,7 @@ func RandomUWP(planetType ...string) string {
 	}
 	laws = utils.BoundInt(laws, 0, TrvCore.EhexToDigit("J"))
 	//uwp.data[constant.PrLaws] = ehex(laws)
-	result = result + ehex(laws)
+	result = result + TrvCore.DigitToEhex(laws)
 
 	//////////Starport
 	var stprt string
@@ -255,7 +256,7 @@ func RandomUWP(planetType ...string) string {
 
 	tl = utils.BoundInt(tl, 0, TrvCore.EhexToDigit("Y"))
 	//uwp.data[constant.PrTL] = ehex(tl)
-	result = result + "-" + ehex(tl)
+	result = result + "-" + TrvCore.DigitToEhex(tl)
 	return result
 }
 
@@ -270,9 +271,9 @@ func flux() int {
 	return TrvCore.Flux()
 }
 
-func ehex(i int) string {
-	return TrvCore.DigitToEhex(i)
-}
+// func ehex(i int) string {
+// 	return TrvCore.DigitToEhex(i)
+// }
 
 func orderByType(profileType string) (order []string) {
 	switch profileType {
@@ -475,4 +476,40 @@ func (uwp UWP) Laws() string {
 
 func (uwp UWP) TL() string {
 	return string([]byte(uwp.data)[8])
+}
+
+type newUWPr struct {
+	data map[string]ehex.DataRetriver
+}
+
+func NewUWP2(str string) *newUWPr {
+	u := newUWPr{}
+	return &u
+}
+
+func (u *newUWPr) Starport() ehex.DataRetriver {
+	return u.data[constant.PrStarport]
+}
+
+func (u *newUWPr) Size() ehex.DataRetriver {
+	return u.data[constant.PrSize]
+}
+func (u *newUWPr) Atmo() ehex.DataRetriver {
+	return u.data[constant.PrAtmo]
+}
+func (u *newUWPr) Hydr() ehex.DataRetriver {
+	return u.data[constant.PrHydr]
+}
+func (u *newUWPr) Pops() ehex.DataRetriver {
+	return u.data[constant.PrPops]
+}
+func (u *newUWPr) Govr() ehex.DataRetriver {
+	return u.data[constant.PrGovr]
+}
+func (u *newUWPr) Laws() ehex.DataRetriver {
+	return u.data[constant.PrLaws]
+}
+
+func (u *newUWPr) TL() ehex.DataRetriver {
+	return u.data[constant.PrTL]
 }
