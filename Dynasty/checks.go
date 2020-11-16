@@ -1,14 +1,29 @@
 package dynasty
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Galdoba/TR_Dynasty/task"
+)
 
 func (d *Dynasty) rollCheckAptitude(chars string, apt string, difficulty int) int {
-	r := d.dicepool.RollNext("2d6").Sum()
-	eff := r + d.aptitudeValue(apt) + d.characteristicDM(chars) - difficulty
+	//r := d.dicepool.RollNext("2d6").Sum()
+	//eff := r + d.aptitudeValue(apt) + d.characteristicDM(chars) - difficulty
+
+	t := task.NewTask("Test Aptitude Check",
+		task.Modifier(DM(d.aptitudeValue(chars)), "from "+chars),
+		task.Modifier(d.characteristicDM(apt), "from "+apt),
+		task.Modifier(-5, "test Control"),
+		task.Difficulty(difficulty),
+	)
+	t.Add(task.Modifier(-5, "test Add2"))
+	eff, _ := t.Resolve()
+
 	return eff
 }
 
 func (d *Dynasty) probeCheckAptitude(chars string, apt string, difficulty, etn int) float64 {
+
 	eff := d.aptitudeValue(apt) + d.characteristicDM(chars) - difficulty
 	fmt.Println(d.aptitudeValue(apt))
 	fmt.Println(d.characteristicDM(chars))
@@ -22,5 +37,4 @@ func (d *Dynasty) probeCheckAptitude(chars string, apt string, difficulty, etn i
 		}
 	}
 	return 0.0
-
 }

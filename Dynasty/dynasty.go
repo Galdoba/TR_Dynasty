@@ -1395,6 +1395,6 @@ func (d *Dynasty) characteristicDM(chr string) int {
 	if val, ok := d.stat[chr]; ok {
 		return DM(val)
 	}
-	panic("Dynasty Inconsistent!")
+	//panic("Dynasty Inconsistent!")
 	return -2
 }

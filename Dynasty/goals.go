@@ -2,6 +2,21 @@ package dynasty
 
 import (
 	"fmt"
+
+	"github.com/Galdoba/TR_Dynasty/task"
+)
+
+const (
+	goalAcquireAncientTechnology          = "Acquire Ancient Technology"
+	goalBanishAnEnemy                     = "Banish an Enemy"
+	goalFulfilASuccessfulCoupDetat        = "Fulfil a Successful Coup De'tat"
+	goalGrowByLeapsAndBounds              = "Grow by Leaps and Bounds"
+	goalInventANewTechnologicalMarvel     = "Invent a New Technological Marvel"
+	goalHoldAnInterstellarPeaceConference = "Hold an Interstellar Peace Conference"
+	goalOrganiseOrderFromChaos            = "Organise Order from Chaos"
+	goalStartAnInterstellarWar            = "Start an Interstellar War"
+	goalTeachANewSkillToTheMasses         = "Teach a New Skill to the Masses"
+	goalUtterGenocide                     = "Utter Genocide"
 )
 
 type goal struct {
@@ -18,6 +33,21 @@ type goal struct {
 	urgency                    int
 	reward                     func(Dynasty) *Dynasty
 	log                        string
+}
+
+func listGoals() []string {
+	return []string{
+		goalAcquireAncientTechnology,
+		goalBanishAnEnemy,
+		goalFulfilASuccessfulCoupDetat,
+		goalGrowByLeapsAndBounds,
+		goalInventANewTechnologicalMarvel,
+		goalHoldAnInterstellarPeaceConference,
+		goalOrganiseOrderFromChaos,
+		goalStartAnInterstellarWar,
+		goalTeachANewSkillToTheMasses,
+		goalUtterGenocide,
+	}
 }
 
 func testNewGoal(urgency int) goal {
@@ -85,9 +115,7 @@ func Test4() {
 	// }
 	fmt.Print("  \n")
 	fmt.Println(dyn.Info())
-	fmt.Println(dyn.goals[0])
-	fmt.Println("d.probeCheckAptitude(Mil, Hostility, DifficultyAverage, 0) TEST")
-	fmt.Println(dyn.probeCheckAptitude(Mil, Hostility, DifficultyDifficult, 4))
+	dyn.rollCheckAptitude(Mil, Conquest, task.DifficultyAverage)
 }
 
 func (d *Dynasty) updateGoals() {
@@ -238,62 +266,62 @@ Utter Genocide
 
 func (g *goal) setupChecklist(name string) {
 	switch name {
-	case "Acquire Ancient Technology":
+	case goalAcquireAncientTechnology:
 		g.cumulativeEffectNeeded[Intel] = 20
 		g.cumulativeEffectNeeded[Research] = 30
 		g.roll5Needed[Conquest] = 3
 		g.roll6Needed[Clv] = 2
 		g.traitPointsNeeded[Technology] = -3
-	case "Banish an Enemy":
+	case goalBanishAnEnemy:
 		g.cumulativeEffectNeeded[Sabotage] = 10
 		g.cumulativeEffectNeeded[Hostility] = 20
 		g.cumulativeEffectNeeded[Propaganda] = 30
 		g.roll5Needed[Mil] = 2
 		g.valuePointsNeeded[Populace] = -3 //TODO: Cannot lose more than 5 points between Populace and Wealth
 		g.valuePointsNeeded[Wealth] = -3
-	case "Fulfil a Successful Coup De'tat ":
+	case goalFulfilASuccessfulCoupDetat:
 		g.cumulativeEffectNeeded[Intel] = 12
 		g.cumulativeEffectNeeded[Politics] = 30
 		g.roll4Needed[Clv] = 3
 		g.roll5Needed[Sch] = 2
 		g.characteristicPointsNeeded[Pop] = 1
-	case "Grow by Leaps and Bounds":
+	case goalGrowByLeapsAndBounds:
 		g.cumulativeEffectNeeded[Acquisition] = 10
 		g.cumulativeEffectNeeded[PublicRelations] = 15
 		g.cumulativeEffectNeeded[Recruit] = 20
 		g.characteristicPointsNeeded[Lty] = 1
 		g.valuePointsNeeded[Populace] = 2
-	case "Hold an Interstellar Peace Conference":
+	case goalHoldAnInterstellarPeaceConference:
 		g.cumulativeEffectNeeded[Expression] = 10
 		g.cumulativeEffectNeeded[Security] = 10
 		g.cumulativeEffectNeeded[Posturing] = 15
 		g.roll5Needed[Pop] = 3
 		g.valuePointsNeeded[Morale] = -2
-	case "Invent a New Technological Marvel":
+	case goalInventANewTechnologicalMarvel:
 		g.cumulativeEffectNeeded[Intel] = 10
 		g.cumulativeEffectNeeded[Security] = 15
 		g.cumulativeEffectNeeded[Research] = 15
 		g.roll6Needed[Clv] = 2
 		g.traitPointsNeeded[Technology] = 2
-	case "Organise Order from Chaos":
+	case goalOrganiseOrderFromChaos:
 		g.cumulativeEffectNeeded[Expression] = 10
 		g.cumulativeEffectNeeded[PublicRelations] = 10
 		g.cumulativeEffectNeeded[Tutelage] = 15
 		g.roll5Needed[Pop] = 3
 		g.roll6Needed[Tra] = 1
-	case "Start an Interstellar War":
+	case goalStartAnInterstellarWar:
 		g.cumulativeEffectNeeded[Expression] = 10
 		g.cumulativeEffectNeeded[Politics] = 10
 		g.cumulativeEffectNeeded[Hostility] = 15
 		g.cumulativeEffectNeeded[Tactical] = 15
 		g.roll4Needed[Pop] = 4
-	case "Teach a New Skill to the Masses":
+	case goalTeachANewSkillToTheMasses:
 		g.cumulativeEffectNeeded[Recruit] = 10
 		g.cumulativeEffectNeeded[Tutelage] = 10
 		g.roll5Needed[Pop] = 2
 		g.roll4Needed[Tra] = 3
 		g.traitPointsNeeded[Culture] = 2
-	case "Utter Genocide":
+	case goalUtterGenocide:
 		g.cumulativeEffectNeeded[Conquest] = 15
 		g.cumulativeEffectNeeded[Hostility] = 15
 		g.cumulativeEffectNeeded[Intel] = 15
