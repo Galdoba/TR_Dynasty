@@ -1,7 +1,6 @@
 package profile
 
 import (
-	"errors"
 	"strconv"
 	"strings"
 
@@ -412,71 +411,71 @@ func matchTradeClassificationRequirements(uwp, reqLine string) bool {
 	return true
 }
 
-func Goverment(uwp string) string {
-	return string([]byte(uwp)[5])
-}
+// func Goverment(uwp string) string {
+// 	return string([]byte(uwp)[5])
+// }
 
-type UWP struct {
-	data string
-}
+// type UWP struct {
+// 	data string
+// }
 
-func NewUWP(s string) (UWP, error) {
-	uwp := UWP{}
-	if !uwpValid(s) {
-		return uwp, errors.New("NewUWP: can't parse UWP from string")
-	}
-	uwp.data = s
-	return uwp, nil
-}
+// func NewUWP(s string) (UWP, error) {
+// 	uwp := UWP{}
+// 	if !uwpValid(s) {
+// 		return uwp, errors.New("NewUWP: can't parse UWP from string")
+// 	}
+// 	uwp.data = s
+// 	return uwp, nil
+// }
 
-func uwpValid(uwp string) bool {
-	if len(uwp) != 9 {
-		return false
-	}
-	data := strings.Split(uwp, "")
-	if data[7] != constant.DIVIDER {
-		return false
-	}
-	for i := range data {
-		if i == 7 {
-			continue
-		}
-		if data[i] == "_" {
-			continue
-		}
-		if TrvCore.EhexToDigit(data[i]) == -999 {
-			return false
-		}
-	}
-	return true
-}
+// func uwpValid(uwp string) bool {
+// 	if len(uwp) != 9 {
+// 		return false
+// 	}
+// 	data := strings.Split(uwp, "")
+// 	if data[7] != constant.DIVIDER {
+// 		return false
+// 	}
+// 	for i := range data {
+// 		if i == 7 {
+// 			continue
+// 		}
+// 		if data[i] == "_" {
+// 			continue
+// 		}
+// 		if TrvCore.EhexToDigit(data[i]) == -999 {
+// 			return false
+// 		}
+// 	}
+// 	return true
+// }
 
-func (uwp UWP) Starport() string {
-	return string([]byte(uwp.data)[0])
-}
+// func (uwp UWP) Starport() string {
+// 	return string([]byte(uwp.data)[0])
+// }
 
-func (uwp UWP) Size() string {
-	return string([]byte(uwp.data)[1])
-}
-func (uwp UWP) Atmo() string {
-	return string([]byte(uwp.data)[2])
-}
-func (uwp UWP) Hydr() string {
-	return string([]byte(uwp.data)[3])
-}
-func (uwp UWP) Pops() string {
-	return string([]byte(uwp.data)[4])
-}
-func (uwp UWP) Govr() string {
-	return string([]byte(uwp.data)[5])
-}
-func (uwp UWP) Laws() string {
-	return string([]byte(uwp.data)[6])
-}
+// func (uwp UWP) Size() string {
+// 	return string([]byte(uwp.data)[1])
+// }
+// func (uwp UWP) Atmo() string {
+// 	return string([]byte(uwp.data)[2])
+// }
+// func (uwp UWP) Hydr() string {
+// 	return string([]byte(uwp.data)[3])
+// }
+// func (uwp UWP) Pops() string {
+// 	return string([]byte(uwp.data)[4])
+// }
+// func (uwp UWP) Govr() string {
+// 	return string([]byte(uwp.data)[5])
+// }
+// func (uwp UWP) Laws() string {
+// 	return string([]byte(uwp.data)[6])
+// }
 
-func (uwp UWP) TL() string {
-	return string([]byte(uwp.data)[8])
-}
+// func (uwp UWP) TL() string {
+// 	return string([]byte(uwp.data)[8])
+// }
 
 type newUWPr struct {
 	data map[string]ehex.DataRetriver

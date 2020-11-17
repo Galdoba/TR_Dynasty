@@ -11,14 +11,14 @@ type ehexStruct struct {
 
 //DataRetriver -
 type DataRetriver interface {
+	fmt.Stringer
 	Value() int
-	String() string
 }
 
 //TestEhex -
 func TestEhex() {
 
-	eh := New("O")
+	eh := New(15)
 	fmt.Println(eh, eh.Value(), eh.String())
 
 }
@@ -140,11 +140,11 @@ func int2Digit(i int) byte {
 	}
 }
 
-func (e *ehexStruct) String() string {
+func (e ehexStruct) String() string {
 	return string(e.bt)
 }
 
-func (e *ehexStruct) Value() int {
+func (e ehexStruct) Value() int {
 	v := -1
 	switch e.bt {
 	default:
