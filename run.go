@@ -3,14 +3,16 @@ package main
 import (
 	"fmt"
 
-	"github.com/Galdoba/TR_Dynasty/TrvCore/ehex"
+	"github.com/Galdoba/TR_Dynasty/autoGM/mission"
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/devtools/cli/user"
 )
 
 func main() {
-	ehex.TestEhex()
+	mission.Test()
+
+	//ehex.TestEhex()
 	//dynasty.Test4()
 
 	//skimming.Test()

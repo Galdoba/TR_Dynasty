@@ -66,11 +66,11 @@ func (w *World) UWP() string {
 //CodePops - return UWP data
 func (w *World) CodePops() string {
 	if val, ok := w.data[worldUWP]; ok {
-		uwp, err := profile.NewUWP(val)
-		if err != nil {
-			return err.Error()
-		}
-		return uwp.Pops()
+		uwp := profile.NewUWP2(val)
+		// if err != nil {
+		// 	return err.Error()
+		// }
+		return uwp.Pops().String()
 	}
 	return "--NO DATA--"
 }
@@ -78,11 +78,11 @@ func (w *World) CodePops() string {
 //CodeTL - return UWP data
 func (w *World) CodeTL() string {
 	if val, ok := w.data[worldUWP]; ok {
-		uwp, err := profile.NewUWP(val)
-		if err != nil {
-			return err.Error()
-		}
-		return uwp.TL()
+		uwp := profile.NewUWP2(val)
+		// if err != nil {
+		// 	return err.Error()
+		// }
+		return uwp.TL().String()
 	}
 	return "--NO DATA--"
 }
