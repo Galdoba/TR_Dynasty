@@ -36,6 +36,7 @@ const (
 	chrPack             = "Pack"
 	sklSurvival         = "Survival"
 	sklAthlethics       = "Athlethics"
+	sklDeception        = "Deception"
 	sklRecon            = "Recon"
 	sklMeleeNW          = "Melee (natural weapons)"
 	sklStealth          = "Stealth"
@@ -96,6 +97,7 @@ type animal struct {
 	damageDice         int
 	damageMod          int
 	exoticWeapon       []string
+	weapon             []string
 	exoticWeaponEffect []string
 	descr              string
 	notes              string
@@ -838,6 +840,259 @@ func (an *animal) amphibianQuirk(q int) {
 	case 11:
 		an.notes += "\nUnusually for its kind, these amphibians have developed a rigid shell over their forelimbs and torsos."
 		an.armorScore = an.armorScore + 2
+	}
+}
+
+func (an *animal) aquaticQuirk(q int) {
+	switch q {
+	default:
+		panic("Quirk unknown: " + strconv.Itoa(q))
+	case 2:
+		an.notes += "\nThis aquatic is found in the darkest parts of its habitat and sees through bioluminescent eyes."
+	case 3:
+		an.notes += "\nThis creature is never found alone and will die within " + an.dicepool.RollNext("1d6").SumStr() + " days of natural causes if it cannot find a pack to join."
+		if an.characteristics[chrPack] == 0 {
+			an.characteristics[chrPack] = 1
+		}
+	case 4:
+		an.notes += "\nPosseses a frail physique and has the ability to engage in extremely swift movement."
+		an.behaviour += "-Pouncer"
+		an.armorScore = 0
+	case 5:
+		an.notes += "\nPossessed of a unique biology, this aquatic can survive for " + an.dicepool.RollNext("1d6").SumStr() + " hours on dry land and has a W movement type in addition to its ability to swim."
+		an.movementType += " and W"
+	case 6:
+		an.notes += "\nUnnaturally large for the local ecology."
+		an.size++
+	case 7:
+		an.notes += "\nCapable of surviving for long periods of time without any nourishment, this aquatic goes dormant for long periods of time, awaking for " + an.dicepool.RollNext("3d6").SumStr() + " days at a time to feed and breed."
+	case 8:
+		an.notes += "\nThis aquatic breed has volatile genetics and is prone to mutation."
+		an.evolutionRollDM++
+	case 9:
+		an.notes += "\nUnlike most aquatics, this species reproduces asexually and is never encountered with others of its kind."
+		an.characteristics[chrPack] = 0
+		an.addCharacteristic(chrEndurance, an.dicepool.RollNext("1d6").Sum())
+	case 10:
+		an.notes += "\nExtremely vicious, this animal gains a +1 DM to all Melee (natural weapons) and damage rolls after it or its opponent suffers damage in combat."
+	case 11:
+		an.notes += "\nUnusually bright and clever."
+		an.notes += "\nHas a minimum Instinct of 9."
+		an.characteristics[chrIntelligence] = 2
+	}
+}
+
+func (an *animal) avianQuirk(q int) {
+	switch q {
+	default:
+		panic("Quirk unknown: " + strconv.Itoa(q))
+	case 2:
+		an.notes += "\nThe plumage of this animal is highly exotic and valuable, exhibiting colours rarely found within its habitat."
+	case 3:
+		an.notes += "\nExtremely social, these animals live in immense flocks.\nIf the animal’s Pack score is 6 or less increase it to 12. For animals with a Pack score of 7 or more double the number."
+	case 4:
+		an.notes += "\nQuite at home on the ground, this species has evolved away from flight and no longer has an F movement type."
+		an.movementType = "W"
+	case 5:
+		an.notes += "\nFar smaller than their evolutionary niche would suggest."
+		an.size = an.size - 4
+	case 6:
+		an.notes += "\nThese avians have adapted a very unusual way of dealing with enemies."
+		//Exotic Weapon
+	case 7:
+		an.notes += "\nThese avians have developed a way to emit calls that sound exactly like the cries of wounded prey. Using these to lure meals closer."
+		an.behaviour = "Siren"
+	case 8:
+		an.notes += "\nEnvironmental pressures have forced this animal to adapt to a hostile environment, granting +1 to both Endurance and Armour."
+		an.armorScore++
+		an.addCharacteristic(chrEndurance, 1)
+	case 9:
+		an.notes += "\nNot just ground bound, this flightless species has no F movement rate and thrives because of it."
+		an.movementType = "W"
+		an.behaviour = "Chaser"
+		an.addCharacteristic(chrEndurance, 1)
+	case 10:
+		an.notes += "\nPossessed of a deadly main attack, these avians are truly vicious and always press their attack once they wound an enemy."
+	case 11:
+		an.notes += "\nThese avians mate for life, are never encountered in packs larger than a pair of adults. If one is killed the other will automatically flee if possible."
+	}
+}
+
+func (an *animal) fungalQuirk(q int) {
+	switch q {
+	default:
+		panic("Quirk unknown: " + strconv.Itoa(q))
+	case 2:
+		an.notes += "\nThis Fungal is an absolutely bizarre colour and smells rancid. It loses all ranks in Stealth, cannot succeed at Stealth rolls and gains an Exotic Weapon."
+		delete(an.skills, sklStealth)
+	case 3:
+		an.notes += "\nUnlike other fungus-based life, this species has developed a rudimentary vocal structure. The sounds it can make may be extremely strange, similar to nothing else found in nature."
+	case 4:
+		an.notes += "\nThe Fungal can inflate itself with a light gas, allowing for a slow form of flight."
+	case 5:
+		an.notes += "\nThough capable of physical movement to attack or defend itself, this Fungal species is stationary and cannot change location."
+		//"Its behaviour changes to Siren and it gains +1d6 End. If the base species was herbivorous, it is now specialises in luring other fungals to their doom."
+		an.behaviour = "Siren"
+		an.addCharacteristic(chrEndurance, an.dicepool.RollNext("1d6").Sum())
+	case 6:
+		an.notes += "\nThis species propagates very quickly and easily, dwelling in large family structures with its progeny."
+		an.addCharacteristic(chrPack, an.dicepool.RollNext("1d6").Sum())
+	case 7:
+		an.notes += "\nVery soft in bodily structure, this fungal loses all Armour but gains +1d6 End."
+		an.armorScore = 0
+		an.addCharacteristic(chrEndurance, an.dicepool.RollNext("1d6").Sum())
+	case 8:
+		an.notes += "\nThe scent and outlandish appearance of this fungal terrifies other animals."
+		an.behaviour += "-Hijacker"
+	case 9:
+		an.notes += "\nUnfortunately for this fungal, its biological structure is extremely nutritious, capable of feeding even carnivores in its environment.\nWhen encountered, there is a 50% chance that a predator of another species is also in the area."
+	case 10:
+		an.notes += "\nCapable of rapid regrowth from even very small samples, this species must be completely destroyed or it will regenerate completely in " + an.dicepool.RollNext("1d6").SumStr() + " days."
+	case 11:
+		an.notes += "\nAlmost liquid in structure, this extremely slimy fungal moves at normal speed and is capable of extremely rapid motion when it hunts."
+		an.behaviour += "-Pouncer"
+		an.addCharacteristic(chrDexterity, 2)
+	}
+}
+
+func (an *animal) insectQuirk(q int) {
+	switch q {
+	default:
+		panic("Quirk unknown: " + strconv.Itoa(q))
+	case 2:
+		an.notes += "\nExtremely unusual in appearance, these insects have apparently useless and garish physical structures and barely fit in their own ecosystems."
+	case 3:
+		an.notes += "\nSlow moving because of heavy exoskeleton plating, these insects travel at half speed but gain 1 Armour in return."
+		an.armorScore++
+	case 4:
+		an.notes += "\nIf this insect has a Flight mode of travel, it loses it and gains +1d6 Str instead. If it does not, it gains flight and loses 1 Str and 1 Armour."
+		if an.movementType == "F" {
+			an.movementType = "W"
+			an.addCharacteristic(chrStrength, an.dicepool.RollNext("1d6").Sum())
+		} else {
+			an.movementType = "F"
+			an.addCharacteristic(chrStrength, an.dicepool.RollNext("1d6").Sum()*-1)
+		}
+	case 5:
+		an.notes += "\nThese insects form veritable swarms. They never have a Pack score less than 2 and they appear in four times the number as opposed to three."
+	case 6:
+		an.notes += "\nSolitary by nature, these insects have a Pack of 0 and exchange their behaviour type for Trapper. If they have the ability to fly, they become Pouncers instead. If the insects are herbivores, they just leave their prey to rot and eat the resulting fungus."
+		an.characteristics[chrPack] = 0
+		an.behaviour = "Trapper"
+		if an.movementType == "F" {
+			an.behaviour = "Pouncer"
+		}
+	case 7:
+		an.notes += "\nAcutely self-aware, these no longer triple their numbers when encountered."
+		an.addCharacteristic(chrIntelligence, 2)
+	case 8:
+		an.notes += "\nThese insects have a hive mind and a minimum Pack score of 6. One of their number has an Intelligence of 2, all the rest are 0 and serve its will without question."
+		if an.characteristics[chrPack] < 6 {
+			an.characteristics[chrPack] = 6
+		}
+	case 9:
+		an.notes += "\nEvolved in a particularly dangerous habitat, these insects developed an unusual defence. They gain an Exotic Weapon."
+		//Exotic Weapon
+	case 10:
+		an.notes += "\nThese insects have a decentralised nervous system and can be hacked apart into smaller creatures. In combat, any attack that inflicts Endurance damage has a 50% chance of splitting the insect in half. The resulting insects have their attack damage dice halved and divide their remaining Endurance between them. If this would result in an insect with a starting End of 3 or less, the insect dies instead of splitting."
+	case 11:
+		an.notes += "\nThe insect can generate a hypnotic drone. It gains the Siren behaviour in addition to its own."
+		an.behaviour += "-Siren"
+	}
+}
+
+func (an *animal) mammalQuirk(q int) {
+	switch q {
+	default:
+		panic("Quirk unknown: " + strconv.Itoa(q))
+	case 2:
+		an.notes += "\nThis mammal has an unusual mode of travel, be it gliding or swinging between trees in its home environment. If the animal is an omnivore, it gains the Pouncer behaviour instead of its normal one."
+		if an.diet == dietOmnivore {
+			an.behaviour = "Pouncer"
+		}
+	case 3:
+		an.notes += "\nExtremely swift."
+		an.size = an.size / 2
+		an.addCharacteristic(chrDexterity, an.dicepool.RollNext("1d6").Sum())
+	case 4:
+		an.notes += "\nThese animals have remarkably fast metabolisms, enabling them to recover quickly from injuries. They regain one lost Endurance point every other round of combat starting at the beginning of the second round."
+	case 5:
+		an.notes += "\nBright even for its class, these mammals show a devious cunning that borders on compulsive mischief. They gain Stealth and Deception."
+		an.addSkills(sklStealth)
+		an.addSkills(sklDeception)
+	case 6:
+		an.notes += "\nProfuse body hair marks this species as a sign of its innate adaptability."
+		an.addSkills(sklSurvival)
+	case 7:
+		an.notes += "\nHerd-oriented and nomadic, these mostly peaceful mammals."
+		an.addCharacteristic(chrPack, an.dicepool.RollNext("1d6").Sum())
+	case 8:
+		an.notes += "\nThese animals have prodigious horns and know how to use them in combat. They gain horns as a weapon type if they did not have them before and a rank of Melee (natural weapons)."
+		an.addSkills(sklMeleeNW)
+		an.weapon = append(an.weapon, "Horns")
+	case 9:
+		an.notes += "\nUnusually vicious, these mammals are hostile to any species but their own. They gain the Killer behaviour type in addition to their own. If they are already Killers, their Reaction Modifier increases to +2 and they gain 2 Str."
+		if an.behaviour == "Killer" {
+			an.reactionDM = an.reactionDM + 2
+			an.addCharacteristic(chrStrength, 2)
+		} else {
+			an.behaviour += "-Killer"
+		}
+	case 10:
+		an.notes += "\nAdapted to an aquatic environment even if they do not normally live near one."
+		if an.movementType != "S" {
+			an.movementType = "S"
+		} else {
+			an.notes += "Move at twice the normal speed."
+		}
+	case 11:
+		an.notes += "\nThis animal species is on the verge of evolving into sentience.\nInstinct score is 12 at a minimum."
+		an.addCharacteristic(chrIntelligence, 2)
+	}
+}
+
+func (an *animal) reptileQuirk(q int) {
+	switch q {
+	default:
+		panic("Quirk unknown: " + strconv.Itoa(q))
+	case 2:
+		an.notes += "\nOutlandish colours and adaptations make this reptile a bizarre sight and remarkably intimidating to other non-sentient species."
+	case 3:
+		an.notes += "\nMottled in appearance and adapted to its surroundings."
+		an.addSkills(sklStealth)
+	case 4:
+		an.notes += "\nSeveral of the scales on this reptile are jagged and sharp, letting it inflict 4 + the Effect in damage when it grapples. This becomes its main way to hunt if the animal eats live prey."
+	case 5:
+		an.notes += "\nAble to go dormant for long periods of time, may go for weeks or even months between meals."
+		an.addSkills(sklSurvival)
+	case 6:
+		an.notes += "\nThis reptile buries itself in its terrain, blending in and waiting for prey to ensnare."
+		an.addSkills(sklStealth)
+		an.behaviour = "Trapper"
+		if an.diet == dietHerbivore {
+			switch an.dicepool.RollNext("1d2").Sum() {
+			case 1:
+				an.diet = dietCarnivore
+			case 2:
+				an.diet = dietOmnivore
+			}
+		}
+	case 7:
+		an.notes += "\nThese reptiles see heat, allowing them to have normal vision even in total darkness."
+	case 8:
+		an.notes += "\nCapable of flying, these reptiles have adapted body structures that generate heat through wind friction, allowing them to stay warm during flight. They do not sleep, they never land intentionally and will die within " + an.dicepool.RollNext("1d6").SumStr() + " hours if grounded."
+		an.movementType = "F"
+	case 9:
+		an.notes += "\nUnlike other reptiles, these animals have no scales and rely on a dense hide for defence."
+		an.armorScore = an.armorScore / 2
+		an.addCharacteristic(chrDexterity, an.dicepool.RollNext("1d6").Sum())
+	case 10:
+		an.notes += "\nAn oddity even within an evolutionarily diverse class, this reptile has a very complex genetic history and gains two Exotic Weapons as a result."
+		//Exotic Weapon
+		//Exotic Weapon
+	case 11:
+		an.notes += "\nRelative safety in its environment has allowed this species to evolve mentally"
+		an.addCharacteristic(chrIntelligence, 1)
 	}
 }
 
