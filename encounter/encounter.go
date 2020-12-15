@@ -3,12 +3,14 @@ package encounter
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/devtools/cli/user"
+	"github.com/Galdoba/utils"
 )
 
 const (
@@ -72,9 +74,70 @@ Numerical Details
 
 func Test() {
 	fmt.Println("Test Begin")
-	an := NewAnimal(0)
+	an := NewAnimal("B534754-9")
 	fmt.Println(an)
+	fmt.Println(AnimalBreedSheet(an))
 	fmt.Println("Test End")
+}
+
+func AnimalBreedSheet(an animal) string {
+	abs := "ANIMAL BREED SHEET:\n"
+	abs += "Species Name: <UNKNOWN>\n"
+	abs += "Classification: " + classString(an.classification) + "\n"
+	abs += "Preffered Terrain: " + terrainString(an.prefferedTerrain) + "\n"
+	abs += "Diet: " + an.diet + "\n"
+	abs += "Behaviour: " + an.behaviour + "\n"
+	abs += "Movement Type: " + an.movementType + "\n"
+	abs += "CHARACTERISTICS:\n"
+	abs += "Strenght     : " + charPretty(an.characteristics[chrStrength]) + charDM(an.characteristics[chrStrength]) + "\n"
+	abs += "Dexterity    : " + charPretty(an.characteristics[chrDexterity]) + charDM(an.characteristics[chrDexterity]) + "\n"
+	abs += "Endurance    : " + charPretty(an.characteristics[chrEndurance]) + charDM(an.characteristics[chrEndurance]) + "\n"
+	abs += "Intelligence : " + charPretty(an.characteristics[chrIntelligence]) + charDM(an.characteristics[chrIntelligence]) + "\n"
+	abs += "Instinct     : " + charPretty(an.characteristics[chrInstinct]) + charDM(an.characteristics[chrInstinct]) + "\n"
+	abs += "Pack         : " + charPretty(an.characteristics[chrPack]) + charDM(an.characteristics[chrPack]) + "\n"
+	abs += "HITS: " + charPretty(an.characteristics[chrStrength]+an.characteristics[chrDexterity]+an.characteristics[chrEndurance]) + "\n"
+	s := strconv.FormatFloat(an.weight, 'f', -1, 64)
+	abs += "Size: " + charPretty(an.size) + " (" + s + " kg)\n"
+	abs += "SKILLS: \n"
+	for key := range an.skills {
+		skName := key
+		for len(skName) < 24 {
+			skName += " "
+		}
+		abs += skName + charPretty(an.skills[key]) + "\n"
+	}
+	return abs
+}
+
+func charPretty(chr int) string {
+	chrStr := ""
+
+	if chr < 10 && chr > -1 {
+		chrStr += " "
+	}
+	return chrStr + strconv.Itoa(chr)
+}
+
+func charDM(chr int) string {
+	dm := " ("
+	dmi := 0
+	if chr < 0 {
+		chr = 0
+	}
+	switch chr {
+	case 0:
+		dmi = -3
+	case 1, 2:
+		dmi = -2
+	case 3, 4, 5:
+		dmi = -1
+	default:
+		dmi = (chr / 2) - 2
+
+		dm += "+"
+	}
+	dm += strconv.Itoa(dmi) + ")"
+	return dm
 }
 
 type animal struct {
@@ -94,13 +157,13 @@ type animal struct {
 	armorType          string
 	armorScore         int
 	reactionDM         int
-	attackIF           int
-	fleeIF             int
+	attackIF           string
+	fleeIF             string
 	attackType         string
 	damageDice         int
 	damageMod          int
 	exoticWeapon       []string
-	weapon             []string
+	weapon             string
 	exoticWeaponEffect []string
 	descr              string
 	notes              string
@@ -108,10 +171,12 @@ type animal struct {
 	generationRollDm   int
 	evolutionRollDM    int
 	expectedRolls      []string
+	expectedSize       int
 	weight             float64
+	numbersEncountered string
 }
 
-func NewAnimal(seed ...int64) animal {
+func NewAnimal(uwp string, seed ...int64) animal {
 	seed64 := int64(0)
 	if len(seed) == 0 {
 		seed64 = time.Now().UnixNano()
@@ -127,17 +192,187 @@ func NewAnimal(seed ...int64) animal {
 	an.selectTerrain()
 	an.selectClass()
 	an.setMovement()
+	an.selectExpectedSize()
 	an.setDiet()
 	an.setAnimalBehaviour()
 	an.evolutionBase()
 	//quirks := an.rollQuirks()
 	benefits := an.rollBenefits()
 	an.generationRolls()
-	an.getBehaviourBenefits()
+
+	if an.expectedSize == -1 {
+		an.size = an.size + an.dicepool.RollNext("2d6").Sum()
+	}
+	//an.getBehaviourBenefits()
 	an.applyBenefits(benefits...)
-	an.size = an.size + an.dicepool.RollNext("2d6").Sum()
 	an.defineChrs()
+	an.getBehaviourBenefits()
+	an.numbersInPack()
+	fmt.Println("Animal Stats:")
+	fmt.Println(chrStrength, an.characteristics[chrStrength])
+	fmt.Println(chrDexterity, an.characteristics[chrDexterity])
+	fmt.Println(chrEndurance, an.characteristics[chrEndurance])
+	fmt.Println(chrIntelligence, an.characteristics[chrIntelligence])
+	fmt.Println(chrInstinct, an.characteristics[chrInstinct])
+	fmt.Println(chrPack, an.characteristics[chrPack])
+	fmt.Println("Total HP:", an.characteristics[chrStrength]+an.characteristics[chrDexterity]+an.characteristics[chrEndurance])
+	fmt.Println("Weight:", an.weight)
+	fmt.Println("Behavoir:", an.behaviour)
+	fmt.Print("Attack: ", an.damageDice, "d6\n")
+	fmt.Print("Armor: ", an.armorScore, "\n")
+	fmt.Print("Pack: ", an.numbersInPack(), "\n")
+	an.attackFleeBeh()
+	fmt.Print("Attack if: ", an.attackIF, "\n")
+	fmt.Print("Flee if: ", an.fleeIF, "\n")
+	an.modifyFromPlanet(uwp)
+	for strings.Contains(an.notes, "Impossible animal") {
+		fmt.Print("Impossible animal: retry\n")
+		an = NewAnimal(uwp)
+	}
 	return an
+}
+
+func (an *animal) modifyFromPlanet(uwp string) {
+	bt := []byte(uwp)
+	switch string(bt[1]) {
+	case "0", "1":
+		an.armorScore = an.armorScore - 2
+		an.addSkills(sklAthlethics)
+		if an.movementType == "F" {
+			an.movementType = "25% F"
+		}
+		an.addCharacteristic(chrStrength, -4)
+		an.addCharacteristic(chrDexterity, 4)
+		an.addCharacteristic(chrEndurance, -2)
+	case "2", "3", "4", "5":
+		an.armorScore = an.armorScore - 1
+		an.addSkills(sklAthlethics)
+		if an.movementType == "F" {
+			an.movementType = "50% F"
+		}
+		an.addCharacteristic(chrStrength, -2)
+		an.addCharacteristic(chrDexterity, 2)
+		an.addCharacteristic(chrEndurance, -1)
+	case "9", "A":
+		an.armorScore = an.armorScore + 1
+		an.addSkills(sklAthlethics)
+		if an.movementType == "F" {
+			an.movementType = "W"
+		}
+		an.addCharacteristic(chrStrength, 4)
+		an.addCharacteristic(chrDexterity, -1)
+		an.addCharacteristic(chrEndurance, 2)
+	}
+	switch string(bt[2]) {
+	case "0", "1":
+		an.armorScore = an.armorScore - 1
+		an.addCharacteristic(chrDexterity, 1)
+		an.addCharacteristic(chrEndurance, -1)
+		an.addCharacteristic(chrInstinct, 1)
+	case "2", "3":
+		an.armorScore = an.armorScore - 1
+		an.addCharacteristic(chrDexterity, 1)
+		an.addCharacteristic(chrPack, 1)
+	case "4", "5":
+		an.armorScore = an.armorScore - 2
+		an.addCharacteristic(chrDexterity, 2)
+		an.addCharacteristic(chrEndurance, -2)
+		an.addCharacteristic(chrPack, 1)
+	case "8":
+		an.armorScore = an.armorScore + 2
+		if an.movementType == "F" {
+			an.movementType = "W"
+		}
+		an.addCharacteristic(chrStrength, 2)
+		an.addCharacteristic(chrDexterity, -1)
+		an.addCharacteristic(chrEndurance, 3)
+		an.addCharacteristic(chrInstinct, -1)
+		an.addCharacteristic(chrPack, -1)
+	case "9":
+		an.armorScore = an.armorScore + 1
+		an.addSkills(sklSurvival)
+		if an.movementType == "F" {
+			an.movementType = "W"
+		}
+		an.addCharacteristic(chrEndurance, 2)
+		an.addCharacteristic(chrInstinct, -2)
+		an.addCharacteristic(chrPack, -2)
+	case "B":
+		an.addSkills(sklSurvival)
+		an.notes += "\nImmune to acids"
+		an.addCharacteristic(chrStrength, 1)
+		an.addCharacteristic(chrEndurance, 2)
+		an.addCharacteristic(chrInstinct, -1)
+		an.addCharacteristic(chrPack, -1)
+	case "C":
+		an.addSkills(sklSurvival)
+		an.notes += "\nImmune to acids and radiation"
+		an.addCharacteristic(chrEndurance, 3)
+		an.addCharacteristic(chrInstinct, -1)
+		an.addCharacteristic(chrPack, -1)
+	}
+	switch string(bt[3]) {
+	case "0", "1", "2":
+		an.addSkills(sklSurvival)
+		an.addSkills(sklStealth)
+		an.armorScore++
+		an.addCharacteristic(chrStrength, 1)
+		an.addCharacteristic(chrEndurance, 2)
+		an.addCharacteristic(chrInstinct, 2)
+		an.addCharacteristic(chrPack, -2)
+	case "3", "4":
+		an.armorScore++
+		if an.movementType == "S" {
+			an.movementType = "50% S"
+		}
+		an.addCharacteristic(chrStrength, 1)
+		an.addCharacteristic(chrDexterity, 1)
+		an.addCharacteristic(chrPack, 1)
+	case "8", "9", "A":
+		an.addSkills(sklAthlethics)
+		if an.movementType != "S" {
+			an.movementType += "/50% S"
+		}
+		an.addCharacteristic(chrDexterity, 2)
+		an.addCharacteristic(chrEndurance, 1)
+		an.addCharacteristic(chrIntelligence, 1)
+		an.addCharacteristic(chrPack, 1)
+	}
+	if an.armorScore < 0 {
+		an.armorScore = 0
+	}
+	for key := range an.characteristics {
+		if an.characteristics[key] < 0 {
+			an.characteristics[key] = 0
+		}
+	}
+}
+
+func (an *animal) numbersInPack() string {
+	if an.numbersEncountered != "" {
+		return an.numbersEncountered
+	}
+
+	switch an.characteristics[chrPack] {
+	case 0:
+		an.numbersEncountered = "1"
+	case 1, 2:
+		an.numbersEncountered = "1d3"
+	case 3, 4, 5:
+		an.numbersEncountered = "1d6"
+	case 6, 7, 8:
+		an.numbersEncountered = "2d6"
+	case 9, 10, 11:
+		an.numbersEncountered = "3d6"
+	case 12, 13, 14, 15:
+		an.numbersEncountered = "4d6"
+	default:
+		an.numbersEncountered = "5d6"
+	}
+	if strings.Contains(an.notes, "Their numbers tripled") {
+		an.numbersEncountered += " x 3"
+	}
+	return an.numbersEncountered
 }
 
 func (an *animal) defineChrs() {
@@ -234,18 +469,108 @@ func (an *animal) defineChrs() {
 	}
 	an.damageDice += (an.characteristics[chrStrength] / 10) + 1
 	an.defineArmor()
+	an.defineWeapon()
 	//--------------------------
-	fmt.Println("Animal Stats:")
-	fmt.Println(chrStrength, an.characteristics[chrStrength])
-	fmt.Println(chrDexterity, an.characteristics[chrDexterity])
-	fmt.Println(chrEndurance, an.characteristics[chrEndurance])
-	fmt.Println(chrIntelligence, an.characteristics[chrIntelligence])
-	fmt.Println(chrInstinct, an.characteristics[chrInstinct])
-	fmt.Println(chrPack, an.characteristics[chrPack])
-	fmt.Println("Total HP:", an.characteristics[chrStrength]+an.characteristics[chrDexterity]+an.characteristics[chrEndurance])
-	fmt.Println("Weight:", an.weight)
-	fmt.Print("Attack: ", an.damageDice, "d6\n")
-	fmt.Print("Armor: ", an.armorScore, "\n")
+
+}
+
+func (an *animal) defineWeapon() {
+	dm := 0
+	switch an.diet {
+	case dietCarnivore:
+		dm = 8
+	case dietHerbivore:
+		dm = -6
+	case dietOmnivore:
+		dm = 4
+	}
+	r := an.dicepool.RollNext("2d6").DM(dm).Sum()
+	if r < 1 {
+		r = 1
+	}
+	if r > 20 {
+		r = 20
+	}
+	switch r {
+	case 1:
+		an.weapon += "None"
+	case 2:
+		an.weapon += "Teeth"
+	case 3:
+		an.weapon += "Horns"
+	case 4:
+		an.weapon += "Hooves/Thrasher"
+	case 5:
+		an.weapon += "Hooves/Thrasher and Teeth"
+	case 6:
+		an.weapon += "Teeth"
+	case 7:
+		an.weapon += "Claws"
+		an.damageDice = an.damageDice + 1
+	case 8:
+		an.weapon += "Stinger"
+		an.damageDice = an.damageDice + 1
+	case 9:
+		an.weapon += "Thrasher"
+		an.damageDice = an.damageDice + 1
+	case 10:
+		an.weapon += "Claws and Teeth"
+		an.damageDice = an.damageDice + 2
+	case 11:
+		an.weapon += "Claws"
+		an.damageDice = an.damageDice + 2
+	case 12:
+		an.weapon += "Teeth"
+		an.damageDice = an.damageDice + 2
+	case 13:
+		an.weapon += "Thrasher"
+		an.damageDice = an.damageDice + 2
+	case 14:
+		an.weapon += "Claws and Teeth"
+		an.damageDice = an.damageDice + 2
+	case 15:
+		an.weapon += "Claws"
+		an.damageDice = an.damageDice + 2
+	case 16:
+		an.weapon += "Stinger"
+		an.damageDice = an.damageDice + 2
+	case 17:
+		an.weapon += "Thrasher"
+		an.damageDice = an.damageDice + 2
+	case 18:
+		an.weapon += "Teeth"
+		an.damageDice = an.damageDice + 3
+	case 19:
+		an.weapon += "Claws and Teeth"
+		an.damageDice = an.damageDice + 3
+	case 20:
+		an.weapon += "Thrasher"
+		an.damageDice = an.damageDice + 3
+	}
+}
+
+func (an *animal) addExoticWeapon() {
+	r := an.dicepool.RollNext("1d6").Sum()
+	switch r {
+	case 1:
+		an.exoticWeapon = append(an.exoticWeapon, "Diseased Attack")
+		an.exoticWeaponEffect = append(an.exoticWeaponEffect, "This animal has a bite or other physical attack that carries a dangerous disease. Any successful attack that damages the target’s Endurance may cause infection.")
+	case 2:
+		an.exoticWeapon = append(an.exoticWeapon, "Poisoned Attack")
+		an.exoticWeaponEffect = append(an.exoticWeaponEffect, "This animal has the ability to inject its target with venom, poisoning it in the same manner as with the Diseased Attack.")
+	case 3:
+		an.exoticWeapon = append(an.exoticWeapon, "Bleeding Wound")
+		an.exoticWeaponEffect = append(an.exoticWeaponEffect, "If a target suffered Endurance damage from one of this animal’s attacks, it continues to lose 1 Endurance point every round until it is given medical attention. This effect does not stack with multiple wounds.")
+	case 4:
+		an.exoticWeapon = append(an.exoticWeapon, "Bioelectricity")
+		an.exoticWeaponEffect = append(an.exoticWeaponEffect, "This animal carries an electrical charge and can use it to shock and stun its foes. This can be done once an encounter, is usually the first attack used by an animal and doubles the dice it rolls for damage with that attack. This Exotic Weapon should be used in conjunction with the Knockout Blow rule.")
+	case 5:
+		an.exoticWeapon = append(an.exoticWeapon, "Concealing Mist")
+		an.exoticWeaponEffect = append(an.exoticWeaponEffect, "The animal can emit a cloud of ink or vapour that conceals its actions. This is usable once in an encounter and grants the animal a +4 DM to one Stealth or Deception check taken at the same time.")
+	case 6:
+		an.exoticWeapon = append(an.exoticWeapon, "Ranged Strike")
+		an.exoticWeaponEffect = append(an.exoticWeaponEffect, " The animal has developed the ability to use a projectile attack of some kind. This uses the animal’s Melee (natural weapons) skill, has a range of Ranged (thrown) and does its normal damage minus 1d6 to a minimum of 1 point.")
+	}
 }
 
 func (an *animal) defineArmor() {
@@ -310,6 +635,29 @@ func (an *animal) selectTerrain() {
 	an.prefferedTerrain = t
 }
 
+func (an *animal) selectExpectedSize() {
+	fmt.Println("Select expected size [1-15] (0 - RANDOM):")
+	t := 0
+	err := errors.New("No Input")
+	for err != nil {
+		t, err = user.InputInt()
+		if t == 0 {
+			t = dice.Roll("2d6").Sum()
+			an.expectedSize = -1
+			fmt.Print("\r")
+			return
+		}
+		if t > 15 || t < 0 {
+			err = errors.New("Invalid Value")
+		}
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	}
+	fmt.Print("\r")
+	an.expectedSize = t
+}
+
 func terrainString(t int) string {
 	switch t {
 	case terrainClear:
@@ -349,6 +697,27 @@ func terrainString(t int) string {
 	}
 }
 
+func classString(class int) string {
+	switch class {
+	default:
+		return "<UNKNOWN>"
+	case 0:
+		return "Amphibian"
+	case 1:
+		return "Aquatic"
+	case 2:
+		return "Avian"
+	case 3:
+		return "Fungal"
+	case 4:
+		return "Insect"
+	case 5:
+		return "Mammal"
+	case 6:
+		return "Reptile"
+	}
+}
+
 func (an *animal) selectClass() {
 	fmt.Println("Select Class:")
 	fmt.Print("Roll Random  = [", -1, "]\n")
@@ -364,6 +733,7 @@ func (an *animal) selectClass() {
 	err := errors.New("No Input")
 	for err != nil {
 		t, err = user.InputInt()
+
 		if t == -1 {
 			t = dice.Roll("1d7").DM(-1).Sum()
 		}
@@ -842,7 +1212,7 @@ func (an *animal) fungalBenefit(b int) {
 	case 2:
 		an.addCharacteristic(chrEndurance, 2)
 	case 3:
-		//Exotic Weapon
+		an.addExoticWeapon()
 	case 4:
 		an.addCharacteristic(chrEndurance, an.dicepool.RollNext("1d6").Sum())
 	case 5:
@@ -860,7 +1230,7 @@ func (an *animal) insectBenefit(b int) {
 	case 2:
 		an.addGenerationRolls(rollEvolution)
 	case 3:
-		//Exotic Weapon
+		an.addExoticWeapon()
 	case 4:
 		an.addCharacteristic(chrEndurance, an.dicepool.RollNext("1d6").Sum())
 	case 5:
@@ -920,7 +1290,8 @@ func (an *animal) rollQuirks() {
 			continue
 		default:
 			roll--
-			rArr = append(rArr, r)
+			//rArr = append(rArr, r)
+			rArr = utils.AppendUniqueInt(rArr, r)
 		}
 	}
 	for _, q := range rArr {
@@ -1036,7 +1407,7 @@ func (an *animal) avianQuirk(q int) {
 		an.size = an.size - 4
 	case 6:
 		an.notes += "\nThese avians have adapted a very unusual way of dealing with enemies."
-		//Exotic Weapon
+		an.addExoticWeapon()
 	case 7:
 		an.notes += "\nThese avians have developed a way to emit calls that sound exactly like the cries of wounded prey. Using these to lure meals closer."
 		an.behaviour = "Siren"
@@ -1130,7 +1501,7 @@ func (an *animal) insectQuirk(q int) {
 		}
 	case 9:
 		an.notes += "\nEvolved in a particularly dangerous habitat, these insects developed an unusual defence. They gain an Exotic Weapon."
-		//Exotic Weapon
+		an.addExoticWeapon()
 	case 10:
 		an.notes += "\nThese insects have a decentralised nervous system and can be hacked apart into smaller creatures. In combat, any attack that inflicts Endurance damage has a 50% chance of splitting the insect in half. The resulting insects have their attack damage dice halved and divide their remaining Endurance between them. If this would result in an insect with a starting End of 3 or less, the insect dies instead of splitting."
 	case 11:
@@ -1167,7 +1538,7 @@ func (an *animal) mammalQuirk(q int) {
 	case 8:
 		an.notes += "\nThese animals have prodigious horns and know how to use them in combat. They gain horns as a weapon type if they did not have them before and a rank of Melee (natural weapons)."
 		an.addSkills(sklMeleeNW)
-		an.weapon = append(an.weapon, "Horns")
+		an.weapon = "Horns and "
 	case 9:
 		an.notes += "\nUnusually vicious, these mammals are hostile to any species but their own. They gain the Killer behaviour type in addition to their own. If they are already Killers, their Reaction Modifier increases to +2 and they gain 2 Str."
 		if an.behaviour == "Killer" {
@@ -1226,8 +1597,8 @@ func (an *animal) reptileQuirk(q int) {
 		an.addCharacteristic(chrDexterity, an.dicepool.RollNext("1d6").Sum())
 	case 10:
 		an.notes += "\nAn oddity even within an evolutionarily diverse class, this reptile has a very complex genetic history and gains two Exotic Weapons as a result."
-		//Exotic Weapon
-		//Exotic Weapon
+		an.addExoticWeapon()
+		an.addExoticWeapon()
 	case 11:
 		an.notes += "\nRelative safety in its environment has allowed this species to evolve mentally"
 		an.addCharacteristic(chrIntelligence, 1)
@@ -1247,7 +1618,7 @@ func (an *animal) setAnimalBehaviour() {
 	rll := an.dicepool.RollNext("1d6").Sum()
 	switch rll + (6 * an.classification) {
 	case 1:
-		rawData = "Pouncer -1 Filter -1 Carrion-Eater -1 "
+		rawData = "Pouncer -1 Filter -1 Carrion_Еater -1 "
 	case 2:
 		rawData = "Trapper -2 Filter +0 Gatherer -1 "
 	case 3:
@@ -1259,7 +1630,7 @@ func (an *animal) setAnimalBehaviour() {
 	case 6:
 		rawData = "Chaser -2 Grazer -2 Reducer -2 "
 	case 7:
-		rawData = "Eater -1 Filter -1 Carrion-Eater -1 "
+		rawData = "Eater -1 Filter -1 Carrion_Еater -1 "
 	case 8:
 		rawData = "Hunter -2 Filter +0 Eater -1 "
 	case 9:
@@ -1271,7 +1642,7 @@ func (an *animal) setAnimalBehaviour() {
 	case 12:
 		rawData = "Chaser -2 Grazer -2 Reducer -2 "
 	case 13:
-		rawData = "Hunter -1 Intimidator -1 Carrion-Eater -1 "
+		rawData = "Hunter -1 Intimidator -1 Carrion_Еater -1 "
 	case 14:
 		rawData = "Hunter +0 Intermittent +0 Eater -1 "
 	case 15:
@@ -1283,9 +1654,9 @@ func (an *animal) setAnimalBehaviour() {
 	case 18:
 		rawData = "Pouncer -2 Grazer -2 Reducer -2 "
 	case 19:
-		rawData = "Hunter -2 Intermittent -2 Carrion-Eater -1 "
+		rawData = "Hunter -2 Intermittent -2 Carrion_Еater -1 "
 	case 20:
-		rawData = "Hunter -1 Intermittent -1 Carrion-Eater +0 "
+		rawData = "Hunter -1 Intermittent -1 Carrion_Еater +0 "
 	case 21:
 		rawData = "Hunter -0 Intermittent -1 Eater +0 "
 	case 22:
@@ -1295,7 +1666,7 @@ func (an *animal) setAnimalBehaviour() {
 	case 24:
 		rawData = "Killer +0 Grazer -2 Reducer -2 "
 	case 25:
-		rawData = "Pouncer +0 Eater -2 Carrion-Eater -1 "
+		rawData = "Pouncer +0 Eater -2 Carrion_Еater -1 "
 	case 26:
 		rawData = "Hunter +1 Intermittent -1 Eater +0 "
 	case 27:
@@ -1307,7 +1678,7 @@ func (an *animal) setAnimalBehaviour() {
 	case 30:
 		rawData = "Chaser +0 Gatherer +0 Reducer -2 "
 	case 31:
-		rawData = "Pouncer +0 Eater -2 Carrion-Eater -1 "
+		rawData = "Pouncer +0 Eater -2 Carrion_Еater -1 "
 	case 32:
 		rawData = "Killer +1 Intermittent -1 Gatherer +0 "
 	case 33:
@@ -1319,7 +1690,7 @@ func (an *animal) setAnimalBehaviour() {
 	case 36:
 		rawData = "Hijacker +0 Gatherer +0 Reducer +0 "
 	case 37:
-		rawData = "Pouncer +0 Gatherer -1 Carrion-Eater -1 "
+		rawData = "Pouncer +0 Gatherer -1 Carrion_Еater -1 "
 	case 38:
 		rawData = "Killer +1 Intermittent -1 Gatherer +0 "
 	case 39:
@@ -1341,11 +1712,87 @@ func (an *animal) setAnimalBehaviour() {
 	an.reactionDM = rdm
 
 }
+
+func (an *animal) attackFleeBeh() {
+	behParts := strings.Split(an.behaviour, "-")
+	an.behaviour = ""
+	cleaned := []string{}
+	for i := range behParts {
+		cleaned = utils.AppendUniqueStr(cleaned, behParts[i])
+	}
+	sort.Strings(cleaned)
+	for i := range cleaned {
+		an.behaviour += cleaned[i] + "-"
+	}
+	an.behaviour = strings.TrimSuffix(an.behaviour, "-")
+	trueBeh := an.behaviour
+	an.behaviour = cleaned[0]
+	switch an.behaviour {
+	default:
+		panic("Unknown Behavoiur: " + an.behaviour)
+	case "Filter":
+		an.attackIF = strconv.Itoa(10+an.reactionDM) + "+"
+		an.fleeIF = strconv.Itoa(5+an.reactionDM) + "-"
+	case "Intermittent":
+		an.attackIF = strconv.Itoa(10+an.reactionDM) + "+"
+		an.fleeIF = strconv.Itoa(4+an.reactionDM) + "-"
+	case "Intermittent-Siren":
+		an.attackIF = strconv.Itoa(10+an.reactionDM) + "+, If it has surprise, it attacks"
+		an.fleeIF = strconv.Itoa(4+an.reactionDM) + "-, If it is Immobile, it cannot flee and attacks."
+	case "Grazer":
+		an.attackIF = strconv.Itoa(8+an.reactionDM) + "+"
+		an.fleeIF = strconv.Itoa(6+an.reactionDM) + "-"
+	case "Gatherer":
+		an.attackIF = strconv.Itoa(9+an.reactionDM) + "+"
+		an.fleeIF = strconv.Itoa(7+an.reactionDM) + "-"
+	case "Eater", "Hijacker-Eater":
+		an.attackIF = strconv.Itoa(5+an.reactionDM) + "+"
+		an.fleeIF = strconv.Itoa(4+an.reactionDM) + "-"
+	case "Killer", "Carrion_Еater-Killer", "Hijacker-Killer", "Gatherer-Killer-Reducer":
+		an.attackIF = strconv.Itoa(6+an.reactionDM) + "+"
+		an.fleeIF = strconv.Itoa(3+an.reactionDM) + "-"
+	case "Hijacker":
+		an.attackIF = strconv.Itoa(7+an.reactionDM) + "+"
+		an.fleeIF = strconv.Itoa(6+an.reactionDM) + "-"
+	case "Intimidator", "Carrion_Еater-Intimidator", "Intimidator-Carrion_Еater":
+		an.attackIF = strconv.Itoa(8+an.reactionDM) + "+"
+		an.fleeIF = strconv.Itoa(7+an.reactionDM) + "-"
+	case "Carrion_Еater":
+		an.attackIF = strconv.Itoa(11+an.reactionDM) + "+"
+		an.fleeIF = strconv.Itoa(7+an.reactionDM) + "-"
+	case "Reducer", "Reducer-Carrion_Еater":
+		an.attackIF = strconv.Itoa(10+an.reactionDM) + "+"
+		an.fleeIF = strconv.Itoa(7+an.reactionDM) + "-"
+	case "Trapper":
+		an.attackIF = "If the trapper has surprise, it attacks."
+		an.fleeIF = strconv.Itoa(5+an.reactionDM) + "-"
+	case "Pouncer":
+		an.attackIF = "If the Pouncer has surprise, it attacks."
+		an.fleeIF = "If the Pouncer is surprised, it flees. If it cannot flee, it attacks."
+	case "Hunter", "Hunter-Siren":
+		an.attackIF = "If the Hunter is heavier than a least one foe, it attacks on a " + strconv.Itoa(6+an.reactionDM) + "+. Otherwise it attacks on a " + strconv.Itoa(10+an.reactionDM) + "+"
+		an.fleeIF = strconv.Itoa(5+an.reactionDM) + "-"
+	case "Hunter-Killer":
+		an.attackIF = "If the Hunter-Killer is heavier than a least one foe, it attacks on a " + strconv.Itoa(6+an.reactionDM) + "+. Otherwise it attacks on a " + strconv.Itoa(10+an.reactionDM) + "+"
+		an.fleeIF = strconv.Itoa(3+an.reactionDM) + "-"
+	case "Chaser", "Chaser-Trapper":
+		an.attackIF = "If the chasers outnumber the foes, they attack."
+		an.fleeIF = strconv.Itoa(5+an.reactionDM) + "-"
+	case "Siren":
+		an.attackIF = "If the Siren has surprise, it attacks"
+		an.fleeIF = strconv.Itoa(4+an.reactionDM) + "-, If it is Immobile, it cannot flee and attacks."
+	}
+	an.behaviour = trueBeh
+}
+
 func (an *animal) getBehaviourBenefits() {
-	if strings.Contains(an.behaviour, "Carrion-Eater") {
+	if strings.Contains(an.behaviour, "Carrion_Еater") {
 		an.addCharacteristic(chrInstinct, 2)
 		an.size = an.size - 2
-		// If a Carrion-Eater has an Exotic Weapon(s), its first one is always Diseased Attack.
+		if len(an.exoticWeapon) > 0 {
+			an.exoticWeapon[0] = "Diseased Attack"
+			an.exoticWeaponEffect[0] = "This animal has a bite or other physical attack that carries a dangerous disease. Any successful attack that damages the target’s Endurance may cause infection."
+		}
 	} else {
 		if strings.Contains(an.behaviour, "Eater") {
 			an.addCharacteristic(chrEndurance, 4)
@@ -1548,7 +1995,7 @@ func (an *animal) amphibianEvolution() {
 	case 5:
 		an.addGenerationRolls(rollSocial)
 	case 6:
-		//Exotic Weapon
+		an.addExoticWeapon()
 	}
 }
 
@@ -1597,7 +2044,7 @@ func (an *animal) aquaticEvolution() {
 	case 5:
 		an.addGenerationRolls(rollSocial)
 	case 6:
-		//Exotic Weapon
+		an.addExoticWeapon()
 	}
 }
 
@@ -1646,7 +2093,7 @@ func (an *animal) avianEvolution() {
 	case 5:
 		an.addGenerationRolls(rollSocial)
 	case 6:
-		//Exotic Weapon
+		an.addExoticWeapon()
 	}
 }
 
@@ -1696,7 +2143,7 @@ func (an *animal) fungalEvolution() {
 	case 5:
 		an.addGenerationRolls(rollSocial)
 	case 6:
-		//Exotic Weapon
+		an.addExoticWeapon()
 	}
 }
 
@@ -1748,7 +2195,7 @@ func (an *animal) insectEvolution() {
 	case 5:
 		an.addGenerationRolls(rollSocial)
 	case 6:
-		//Exotic Weapon
+		an.addExoticWeapon()
 	}
 }
 
@@ -1805,7 +2252,7 @@ func (an *animal) mammalEvolution() {
 	case 5:
 		an.addGenerationRolls(rollSocial)
 	case 6:
-		//Exotic Weapon
+		an.addExoticWeapon()
 	}
 }
 
@@ -1846,7 +2293,7 @@ func (an *animal) reptileSocial() {
 func (an *animal) reptileEvolution() {
 	switch an.dicepool.RollNext("1d6").Sum() {
 	case 1:
-		//Exotic Weapon
+		an.addExoticWeapon()
 	case 2:
 		an.addSkills(sklMeleeNW)
 	case 3:
@@ -1857,6 +2304,6 @@ func (an *animal) reptileEvolution() {
 	case 5:
 		an.addGenerationRolls(rollSocial)
 	case 6:
-		//Exotic Weapon
+		an.addExoticWeapon()
 	}
 }
