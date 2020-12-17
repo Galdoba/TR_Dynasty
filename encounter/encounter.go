@@ -74,7 +74,7 @@ Numerical Details
 
 func Test() {
 	fmt.Println("Test Begin")
-	an := NewAnimal("B534754-9")
+	an := NewAnimal("B757754-9")
 	fmt.Println(an)
 	fmt.Println(AnimalBreedSheet(an))
 	fmt.Println("Test End")
@@ -106,7 +106,59 @@ func AnimalBreedSheet(an animal) string {
 		}
 		abs += skName + charPretty(an.skills[key]) + "\n"
 	}
+	abs += "ENCOUNTER DATA: \n"
+	rollNumber := strings.TrimSuffix(an.numbersEncountered, " x 3")
+	mult := 1
+	if strings.Contains(an.numbersEncountered, " x 3") {
+		mult = 3
+	}
+	numEnc := dice.Roll(rollNumber).Sum() * mult
+	abs += "Pack Size: " + an.numbersEncountered + " (" + strconv.Itoa(numEnc) + ")\n"
+	damage := strconv.Itoa(an.damageDice) + "d6"
+	if an.damageMod > 0 {
+		damage = damage + "+" + strconv.Itoa(an.damageMod)
+	}
+	abs += "Weapon: " + an.weapon + " (damage: " + damage + ")\n"
+	for i := range an.exoticWeapon {
+		abs += "Exotic Weapon: " + an.exoticWeapon[i] + "\n"
+		abs += "Exotic Weapon Effect: " + an.exoticWeaponEffect[i] + "\n"
+	}
+	abs += "Armor " + strconv.Itoa(an.armorScore) + "\n"
+	abs += "Reaction roll: " + dice.Roll("2d6").SumStr() + "\n"
+	abs += "Attack: " + an.attackIF + "\n"
+	abs += "Flee  : " + an.fleeIF + "\n"
+	abs += "NOTES:\n"
+	abs += an.notes
+	//moveTest := strconv.Itoa(an.size) + charDM(an.characteristics[chrDexterity])
+	abs += "Movement: " + movement(&an) + "\n"
+	abs += "Animal is " + edibility(an) + " (" + taste(an) + ")\n"
 	return abs
+}
+
+func movement(an *animal) string {
+	base := ((an.size / 2) + 2) * 100
+	base += (charDMint(an.characteristics[chrDexterity]) * 100)
+	if strings.Contains(an.movementType, "25%") {
+		base = base / 4
+	}
+	if strings.Contains(an.movementType, "50%") {
+		base = base / 2
+	}
+	if strings.Contains(an.movementType, "S") {
+		base = base * 2
+	}
+	if strings.Contains(an.movementType, "F") {
+		base = base * 3
+	}
+	base = base / 100
+	if base < 0 {
+		base = 0
+	}
+	return strconv.Itoa(base) + " m"
+}
+
+func roundFloat(fl float64) float64 {
+	return float64(int(fl*10)) / 10.0
 }
 
 func charPretty(chr int) string {
@@ -118,6 +170,23 @@ func charPretty(chr int) string {
 	return chrStr + strconv.Itoa(chr)
 }
 
+func charDMint(chr int) int {
+	dmi := 0
+	if chr < 0 {
+		chr = 0
+	}
+	switch chr {
+	case 0:
+		dmi = -3
+	case 1, 2:
+		dmi = -2
+	case 3, 4, 5:
+		dmi = -1
+	default:
+		dmi = (chr / 3) - 2
+	}
+	return dmi
+}
 func charDM(chr int) string {
 	dm := " ("
 	dmi := 0
@@ -132,7 +201,7 @@ func charDM(chr int) string {
 	case 3, 4, 5:
 		dmi = -1
 	default:
-		dmi = (chr / 2) - 2
+		dmi = (chr / 3) - 2
 
 		dm += "+"
 	}
@@ -208,28 +277,83 @@ func NewAnimal(uwp string, seed ...int64) animal {
 	an.defineChrs()
 	an.getBehaviourBenefits()
 	an.numbersInPack()
-	fmt.Println("Animal Stats:")
-	fmt.Println(chrStrength, an.characteristics[chrStrength])
-	fmt.Println(chrDexterity, an.characteristics[chrDexterity])
-	fmt.Println(chrEndurance, an.characteristics[chrEndurance])
-	fmt.Println(chrIntelligence, an.characteristics[chrIntelligence])
-	fmt.Println(chrInstinct, an.characteristics[chrInstinct])
-	fmt.Println(chrPack, an.characteristics[chrPack])
-	fmt.Println("Total HP:", an.characteristics[chrStrength]+an.characteristics[chrDexterity]+an.characteristics[chrEndurance])
-	fmt.Println("Weight:", an.weight)
-	fmt.Println("Behavoir:", an.behaviour)
-	fmt.Print("Attack: ", an.damageDice, "d6\n")
-	fmt.Print("Armor: ", an.armorScore, "\n")
-	fmt.Print("Pack: ", an.numbersInPack(), "\n")
 	an.attackFleeBeh()
-	fmt.Print("Attack if: ", an.attackIF, "\n")
-	fmt.Print("Flee if: ", an.fleeIF, "\n")
 	an.modifyFromPlanet(uwp)
-	for strings.Contains(an.notes, "Impossible animal") {
-		fmt.Print("Impossible animal: retry\n")
+	for strings.Contains(an.notes, "Imposible Animal") {
+		fmt.Print("Imposible Animal: retry\n")
 		an = NewAnimal(uwp)
 	}
+	fmt.Print(" \n")
 	return an
+}
+
+func edibility(an animal) string {
+	switch an.dicepool.FluxNext() {
+	default:
+		return "Unknown"
+	case -5, -4, -3, -2, -1, 0:
+		return "Not Edibile"
+	case 1, 2:
+		return "Marginal Edibility"
+	case 3, 4, 5:
+		return "Edible"
+	}
+}
+
+func taste(an animal) string {
+	switch an.dicepool.FluxNext() {
+	default:
+		return "Unknown"
+	case -5, -4:
+		return "Disgusting"
+	case -3:
+		return "Offensive"
+	case -2:
+		return "Bad"
+	case -1:
+		return "Slightly Off"
+	case 0:
+		return "Ordinary"
+	case 1:
+		return "Unusual"
+	case 2:
+		return "Good"
+	case 3:
+		return "Tasty"
+	case 4:
+		return "Delocious"
+	case 5:
+		return "Exquisite"
+	}
+}
+
+func potencial(an animal) string {
+	switch an.dicepool.FluxNext() {
+	default:
+		return "Unknown"
+	case -5:
+		return "Sensory Organs"
+	case -4:
+		return "Brain"
+	case -3:
+		return "Skeleton"
+	case -2:
+		return "Digestive Organs"
+	case -1:
+		return "Circulary Organs"
+	case 0:
+		return "Eggs and Reproductive"
+	case 1:
+		return "Secretions"
+	case 2:
+		return "Interiour Fluids"
+	case 3:
+		return "Respiratory Organs"
+	case 4:
+		return "Outer Coverings"
+	case 5:
+		return "Waste Process Organs"
+	}
 }
 
 func (an *animal) modifyFromPlanet(uwp string) {
@@ -459,6 +583,7 @@ func (an *animal) defineChrs() {
 		an.addCharacteristic(chrDexterity, 1)
 		an.addCharacteristic(chrEndurance, an.dicepool.RollNext("9d6").Sum())
 	}
+	an.weight = roundFloat(an.weight)
 	an.addCharacteristic(chrPack, an.dicepool.RollNext("2d6").Sum())
 	an.addCharacteristic(chrInstinct, an.dicepool.RollNext("2d6").Sum())
 	switch an.dicepool.RollNext("1d6").Sum() {
@@ -506,46 +631,46 @@ func (an *animal) defineWeapon() {
 		an.weapon += "Teeth"
 	case 7:
 		an.weapon += "Claws"
-		an.damageDice = an.damageDice + 1
+		an.damageMod = an.damageMod + 1
 	case 8:
 		an.weapon += "Stinger"
-		an.damageDice = an.damageDice + 1
+		an.damageMod = an.damageMod + 1
 	case 9:
 		an.weapon += "Thrasher"
-		an.damageDice = an.damageDice + 1
+		an.damageMod = an.damageMod + 1
 	case 10:
 		an.weapon += "Claws and Teeth"
-		an.damageDice = an.damageDice + 2
+		an.damageMod = an.damageMod + 2
 	case 11:
 		an.weapon += "Claws"
-		an.damageDice = an.damageDice + 2
+		an.damageMod = an.damageMod + 2
 	case 12:
 		an.weapon += "Teeth"
-		an.damageDice = an.damageDice + 2
+		an.damageMod = an.damageMod + 2
 	case 13:
 		an.weapon += "Thrasher"
-		an.damageDice = an.damageDice + 2
+		an.damageMod = an.damageMod + 2
 	case 14:
 		an.weapon += "Claws and Teeth"
-		an.damageDice = an.damageDice + 2
+		an.damageMod = an.damageMod + 2
 	case 15:
 		an.weapon += "Claws"
-		an.damageDice = an.damageDice + 2
+		an.damageMod = an.damageMod + 2
 	case 16:
 		an.weapon += "Stinger"
-		an.damageDice = an.damageDice + 2
+		an.damageMod = an.damageMod + 2
 	case 17:
 		an.weapon += "Thrasher"
-		an.damageDice = an.damageDice + 2
+		an.damageMod = an.damageMod + 2
 	case 18:
 		an.weapon += "Teeth"
-		an.damageDice = an.damageDice + 3
+		an.damageMod = an.damageMod + 3
 	case 19:
 		an.weapon += "Claws and Teeth"
-		an.damageDice = an.damageDice + 3
+		an.damageMod = an.damageMod + 3
 	case 20:
 		an.weapon += "Thrasher"
-		an.damageDice = an.damageDice + 3
+		an.damageMod = an.damageMod + 3
 	}
 }
 

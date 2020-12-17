@@ -80,6 +80,13 @@ func (dp *Dicepool) RollNext(code string) *Dicepool {
 	return dp
 }
 
+//FluxNext - Дает Flux, но сохраняет дайспул.
+func (dp *Dicepool) FluxNext() int {
+	d1 := dp.RollNext("1d6").Sum()
+	d2 := dp.RollNext("1d6").Sum()
+	return d1 - d2
+}
+
 func (dp *Dicepool) RollFromList(sl []string) string {
 	dp.result = nil
 	dp.dice, dp.edges = 1, len(sl)
