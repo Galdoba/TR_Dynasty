@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
+	"github.com/Galdoba/TR_Dynasty/TrvCore/ehex"
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
@@ -74,10 +74,59 @@ Numerical Details
 
 func Test() {
 	fmt.Println("Test Begin")
-	an := NewAnimal("B757754-9")
-	fmt.Println(an)
-	fmt.Println(AnimalBreedSheet(an))
+	// an := NewAnimal("B757754-9", -1, -1)
+	// fmt.Println(AnimalBreedSheet(an))
+	// fmt.Println("SHORT DESCR:\n", ShortDescr(an))
+	EncounterTable()
 	fmt.Println("Test End")
+}
+
+func EncounterTable() {
+	fmt.Print("UWP: ")
+	uwp, err := user.InputStr()
+	fmt.Print("Biome: ")
+	ter, err := user.InputInt()
+	fmt.Print("Class: ")
+	cl, err := user.InputInt()
+	if err != nil {
+		panic(2)
+	}
+	animalMap := make(map[int]animal)
+	for i := 2; i <= 12; i++ {
+		if i == 7 {
+			fmt.Print("#7	Event\n")
+			continue
+		}
+		animalMap[i] = NewAnimal(uwp+strconv.Itoa(i), ter, cl)
+		fmt.Print("#", i, "	", ShortDescr(animalMap[i]), "\n")
+
+	}
+	fmt.Print("Select Animal #")
+	num, err := user.InputInt()
+	if an, ok := animalMap[num]; ok {
+		fmt.Println(AnimalBreedSheet(an))
+	} else {
+		fmt.Println("No animal with #" + strconv.Itoa(num))
+	}
+	fmt.Print("Press 'ENTER' to exit")
+	uwp, err = user.InputStr()
+}
+
+func ShortDescr(an animal) string {
+	damage := strconv.Itoa(an.damageDice) + "d6"
+	if an.damageMod > 0 {
+		damage = damage + "+" + strconv.Itoa(an.damageMod)
+	}
+	sd := an.diet + " " + an.behaviour + " " + classString(an.classification) + "   " +
+		ehex.New(an.characteristics[chrStrength]).String() +
+		ehex.New(an.characteristics[chrDexterity]).String() +
+		ehex.New(an.characteristics[chrEndurance]).String() +
+		ehex.New(an.characteristics[chrIntelligence]).String() +
+		ehex.New(an.characteristics[chrInstinct]).String() +
+		ehex.New(an.characteristics[chrPack]).String() +
+		"   Armor " + ehex.New(an.armorScore).String() + "   " + an.weapon + "/" + damage +
+		"   F" + an.fleeIF + "/A" + an.attackIF
+	return sd
 }
 
 func AnimalBreedSheet(an animal) string {
@@ -130,8 +179,9 @@ func AnimalBreedSheet(an animal) string {
 	abs += "NOTES:\n"
 	abs += an.notes
 	//moveTest := strconv.Itoa(an.size) + charDM(an.characteristics[chrDexterity])
-	abs += "Movement: " + movement(&an) + "\n"
-	abs += "Animal is " + edibility(an) + " (" + taste(an) + ")\n"
+	abs += "\nMovement: " + movement(&an) + "\n"
+	abs += "Animal is " + edibility(an) + " and tastes " + taste(an) + " with most nutrient part being " + potencial(an) + "\n"
+	abs += "Training is " + training(an) + "\n"
 	return abs
 }
 
@@ -245,34 +295,24 @@ type animal struct {
 	numbersEncountered string
 }
 
-func NewAnimal(uwp string, seed ...int64) animal {
-	seed64 := int64(0)
-	if len(seed) == 0 {
-		seed64 = time.Now().UnixNano()
-	} else {
-		seed64 = seed[0]
-	}
+//NewAnimal - Creates New Animal, uwp defines seed and planet features
+//territory, class - defines location and class. -2 for pure random, -1 for semi-random
+func NewAnimal(uwp string, territory, class int) animal {
+	seed64 := utils.SeedFromString(uwp)
 	an := animal{}
 
 	an.skills = make(map[string]int)
 	an.characteristics = make(map[string]int)
 	an.dicepool = dice.New(seed64)
-
-	an.selectTerrain()
-	an.selectClass()
+	an.selectTerrain(territory)
+	an.selectClass(class)
 	an.setMovement()
-	an.selectExpectedSize()
 	an.setDiet()
 	an.setAnimalBehaviour()
 	an.evolutionBase()
-	//quirks := an.rollQuirks()
 	benefits := an.rollBenefits()
 	an.generationRolls()
-
-	if an.expectedSize == -1 {
-		an.size = an.size + an.dicepool.RollNext("2d6").Sum()
-	}
-	//an.getBehaviourBenefits()
+	an.size = an.size + an.dicepool.RollNext("2d6").Sum()
 	an.applyBenefits(benefits...)
 	an.defineChrs()
 	an.getBehaviourBenefits()
@@ -280,10 +320,8 @@ func NewAnimal(uwp string, seed ...int64) animal {
 	an.attackFleeBeh()
 	an.modifyFromPlanet(uwp)
 	for strings.Contains(an.notes, "Imposible Animal") {
-		fmt.Print("Imposible Animal: retry\n")
-		an = NewAnimal(uwp)
+		an = NewAnimal(uwp+"r", territory, -1)
 	}
-	fmt.Print(" \n")
 	return an
 }
 
@@ -319,7 +357,7 @@ func taste(an animal) string {
 	case 2:
 		return "Good"
 	case 3:
-		return "Tasty"
+		return "Quite Tasty"
 	case 4:
 		return "Delocious"
 	case 5:
@@ -353,6 +391,27 @@ func potencial(an animal) string {
 		return "Outer Coverings"
 	case 5:
 		return "Waste Process Organs"
+	}
+}
+
+func training(an animal) string {
+	switch an.dicepool.FluxNext() {
+	default:
+		return "Unknown"
+	case -5, -4, -3, -2, -1:
+		return "Not Possible"
+	case 0:
+		return "Almost Impossible (16)"
+	case 1:
+		return "Formidable (14)"
+	case 2:
+		return "Very Difficult (12)"
+	case 3:
+		return "Difficult (10)"
+	case 4:
+		return "Average (8)"
+	case 5:
+		return "Routine (6)"
 	}
 }
 
@@ -723,26 +782,33 @@ func (an *animal) weightFlux(base float64) {
 	an.weight = base + (base * fl)
 }
 
-func (an *animal) selectTerrain() {
-	fmt.Println("Select terrain:")
-	fmt.Print("Roll Random   = [", -1, "]\n")
-	fmt.Print("Clear         = [", terrainClear, "]\n")
-	fmt.Print("Plain         = [", terrainPlain, "]\n")
-	fmt.Print("Desert        = [", terrainDesert, "]\n")
-	fmt.Print("Hills         = [", terrainHills, "]\n")
-	fmt.Print("Mountain      = [", terrainMountain, "]\n")
-	fmt.Print("Forest        = [", terrainForest, "]\n")
-	fmt.Print("Woods         = [", terrainWoods, "]\n")
-	fmt.Print("Jungle        = [", terrainJungle, "]\n")
-	fmt.Print("Rainforest    = [", terrainRainforest, "]\n")
-	fmt.Print("Rough/Broken  = [", terrainRoughBroken, "]\n")
-	fmt.Print("Swamp/Marsh   = [", terrainSwampMarsh, "]\n")
-	fmt.Print("Beach/Shore   = [", terrainBeachShore, "]\n")
-	fmt.Print("Riverbank     = [", terrainRiverbank, "]\n")
-	fmt.Print("Shallow Ocean = [", terrainShallowOcean, "]\n")
-	fmt.Print("Open Ocean    = [", terrainOpenOcean, "]\n")
-	fmt.Print("Deep Ocean    = [", terrainDeepOcean, "]\n")
-	t := -1
+func (an *animal) selectTerrain(t int) {
+	if t < -1 || t > 15 {
+		fmt.Println("Select terrain:")
+		fmt.Print("Roll Random   = [", -1, "]\n")
+		fmt.Print("Clear         = [", terrainClear, "]\n")
+		fmt.Print("Plain         = [", terrainPlain, "]\n")
+		fmt.Print("Desert        = [", terrainDesert, "]\n")
+		fmt.Print("Hills         = [", terrainHills, "]\n")
+		fmt.Print("Mountain      = [", terrainMountain, "]\n")
+		fmt.Print("Forest        = [", terrainForest, "]\n")
+		fmt.Print("Woods         = [", terrainWoods, "]\n")
+		fmt.Print("Jungle        = [", terrainJungle, "]\n")
+		fmt.Print("Rainforest    = [", terrainRainforest, "]\n")
+		fmt.Print("Rough/Broken  = [", terrainRoughBroken, "]\n")
+		fmt.Print("Swamp/Marsh   = [", terrainSwampMarsh, "]\n")
+		fmt.Print("Beach/Shore   = [", terrainBeachShore, "]\n")
+		fmt.Print("Riverbank     = [", terrainRiverbank, "]\n")
+		fmt.Print("Shallow Ocean = [", terrainShallowOcean, "]\n")
+		fmt.Print("Open Ocean    = [", terrainOpenOcean, "]\n")
+		fmt.Print("Deep Ocean    = [", terrainDeepOcean, "]\n")
+	} else {
+		if t == -1 {
+			t = an.dicepool.RollNext("1d16").DM(-1).Sum()
+		}
+		an.prefferedTerrain = t
+		return
+	}
 	err := errors.New("No Input")
 	for err != nil {
 		t, err = user.InputInt()
@@ -843,18 +909,24 @@ func classString(class int) string {
 	}
 }
 
-func (an *animal) selectClass() {
-	fmt.Println("Select Class:")
-	fmt.Print("Roll Random  = [", -1, "]\n")
-	fmt.Print("Amphibians   = [", 0, "]\n")
-	fmt.Print("Aquatic      = [", 1, "]\n")
-	fmt.Print("Avians       = [", 2, "]\n")
-	fmt.Print("Fungals      = [", 3, "]\n")
-	fmt.Print("Insect       = [", 4, "]\n")
-	fmt.Print("Mammals      = [", 5, "]\n")
-	fmt.Print("Reptiles     = [", 6, "]\n")
-
-	t := -1
+func (an *animal) selectClass(t int) {
+	if t < -1 || t > 6 {
+		fmt.Println("Select Class:")
+		fmt.Print("Roll Random  = [", -1, "]\n")
+		fmt.Print("Amphibians   = [", 0, "]\n")
+		fmt.Print("Aquatic      = [", 1, "]\n")
+		fmt.Print("Avians       = [", 2, "]\n")
+		fmt.Print("Fungals      = [", 3, "]\n")
+		fmt.Print("Insect       = [", 4, "]\n")
+		fmt.Print("Mammals      = [", 5, "]\n")
+		fmt.Print("Reptiles     = [", 6, "]\n")
+	} else {
+		if t == -1 {
+			t = an.dicepool.RollNext("1d7").DM(-1).Sum()
+		}
+		an.classification = t
+		return
+	}
 	err := errors.New("No Input")
 	for err != nil {
 		t, err = user.InputInt()
@@ -1892,19 +1964,19 @@ func (an *animal) attackFleeBeh() {
 		an.attackIF = "If the trapper has surprise, it attacks."
 		an.fleeIF = strconv.Itoa(5+an.reactionDM) + "-"
 	case "Pouncer":
-		an.attackIF = "If the Pouncer has surprise, it attacks."
-		an.fleeIF = "If the Pouncer is surprised, it flees. If it cannot flee, it attacks."
+		an.attackIF = " If the Pouncer has surprise, it attacks."
+		an.fleeIF = " If the Pouncer is surprised, it flees. If it cannot flee, it attacks."
 	case "Hunter", "Hunter-Siren":
-		an.attackIF = "If the Hunter is heavier than a least one foe, it attacks on a " + strconv.Itoa(6+an.reactionDM) + "+. Otherwise it attacks on a " + strconv.Itoa(10+an.reactionDM) + "+"
+		an.attackIF = " If the Hunter is heavier than a least one foe, it attacks on a " + strconv.Itoa(6+an.reactionDM) + "+. Otherwise it attacks on a " + strconv.Itoa(10+an.reactionDM) + "+"
 		an.fleeIF = strconv.Itoa(5+an.reactionDM) + "-"
 	case "Hunter-Killer":
-		an.attackIF = "If the Hunter-Killer is heavier than a least one foe, it attacks on a " + strconv.Itoa(6+an.reactionDM) + "+. Otherwise it attacks on a " + strconv.Itoa(10+an.reactionDM) + "+"
+		an.attackIF = " If the Hunter-Killer is heavier than a least one foe, it attacks on a " + strconv.Itoa(6+an.reactionDM) + "+. Otherwise it attacks on a " + strconv.Itoa(10+an.reactionDM) + "+"
 		an.fleeIF = strconv.Itoa(3+an.reactionDM) + "-"
 	case "Chaser", "Chaser-Trapper":
-		an.attackIF = "If the chasers outnumber the foes, they attack."
+		an.attackIF = " If the chasers outnumber the foes, they attack."
 		an.fleeIF = strconv.Itoa(5+an.reactionDM) + "-"
 	case "Siren":
-		an.attackIF = "If the Siren has surprise, it attacks"
+		an.attackIF = " If the Siren has surprise, it attacks"
 		an.fleeIF = strconv.Itoa(4+an.reactionDM) + "-, If it is Immobile, it cannot flee and attacks."
 	}
 	an.behaviour = trueBeh
