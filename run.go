@@ -1,18 +1,12 @@
 package main
 
-import (
-	"fmt"
-
-	"github.com/Galdoba/TR_Dynasty/dice"
-	"github.com/Galdoba/devtools/cli/user"
-
-	"github.com/Galdoba/TR_Dynasty/npc/npcmakerv2"
-	"github.com/Galdoba/TR_Dynasty/wrld"
-)
-
 func main() {
-	plnt := wrld.PickWorld()
-
+	// plnt := wrld.PickWorld()
+	// st, err := starport.From(plnt)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// fmt.Print(st.Info())
 	//uwp := profile.NewUWP(plnt.UWP())
 	//encounter.EncounterTable(uwp.String())
 
@@ -23,13 +17,13 @@ func main() {
 
 	//skimming.Test()
 	//routine.StartRoutine()
-	fmt.Print("Enter Career: ")
-	carArgs, err := user.InputStr()
-	if err != nil {
-		panic(err)
-	}
-	trv := npcmakerv2.NewTraveller(plnt, dice.New(0).RollFromList(npcmakerv2.SearchCareers(carArgs)))
-	fmt.Println(trv.String())
+	// fmt.Print("Enter Career: ")
+	// carArgs, err := user.InputStr()
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// trv := npcmakerv2.NewTraveller(plnt, dice.New(0).RollFromList(npcmakerv2.SearchCareers(carArgs)))
+	// fmt.Println(trv.String())
 	//w := pickWorld()
 	//entity.Test()
 	//hyperjump.StartJumpEvent(w)

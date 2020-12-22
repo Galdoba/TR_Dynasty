@@ -30,14 +30,12 @@ type lawReport struct {
 
 func NewLawReport(uwpStr string) (lawReport, error) {
 	lr := lawReport{}
-	uwp, err := profile.NewUWP(uwpStr)
-	if err != nil {
-		return lr, err
-	}
+	uwp := profile.NewUWP(uwpStr)
+
 	lr.dp = dice.New(utils.SeedFromString(uwpStr))
 	lr.levelOf = make(map[string]int)
-	lr.levelOf[lawOverall] = TrvCore.EhexToDigit(uwp.Laws())
-	lr.levelOf[goverment] = TrvCore.EhexToDigit(uwp.Govr())
+	lr.levelOf[lawOverall] = uwp.Laws().Value()
+	lr.levelOf[goverment] = uwp.Govr().Value()
 	lr.determineContraband()
 	lr.determineActivity()
 	return lr, nil

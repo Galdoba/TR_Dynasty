@@ -30,7 +30,7 @@ remainingT - (MaxJumps - T) количество оставшихся итера
 
 func Test() {
 	fmt.Println("Run Test")
-	path, err := PlotCourse("Clarke", "Kteiroa", 3)
+	path, err := PlotCourse("Hilfer", "Arunisiir", 2)
 	fmt.Println("Path", path, err)
 	if err != nil {
 		return
