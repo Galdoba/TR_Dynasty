@@ -39,6 +39,7 @@ type Traveller struct {
 	originWorld     wrld.World
 	characteristics entity.Characteristic
 	skills          entity.Skill
+	counters        map[string]int
 	career          string
 	rank            int
 	term            int
@@ -51,6 +52,7 @@ func NewTraveller(originWorld wrld.World, career string) Traveller {
 	trv.skills = entity.NewSkillMap()
 	trv.characteristics = entity.NewCharacteristicMap()
 	trv.originWorld = originWorld //TODO: сделать мир опциональным
+	trv.counters = make(map[string]int)
 	trv.term = 2 + TrvCore.FluxGood()
 	trv.rank = 0
 	for _, val := range RaceChars() {
@@ -58,7 +60,22 @@ func NewTraveller(originWorld wrld.World, career string) Traveller {
 	}
 	trv.trainBackgroundSkills()
 	trv.getCareerCodes()
+	//trv.getBenefits()
+
 	//fmt.Println("===")
+	return trv
+}
+
+type Condition interface {
+	Apply(string, string)
+}
+
+type condition struct {
+	table, index string
+}
+
+func NewTraveller2() Traveller {
+	trv := Traveller{}
 	return trv
 }
 

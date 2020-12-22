@@ -481,8 +481,21 @@ type newUWPr struct {
 	data map[string]ehex.DataRetriver
 }
 
-func NewUWP2(str string) *newUWPr {
+func (u *newUWPr) String() string {
+	return u.Starport().String() + u.Size().String() + u.Atmo().String() + u.Hydr().String() + u.Pops().String() + u.Govr().String() + u.Laws().String() + "-" + u.TL().String()
+}
+
+func NewUWP(str string) *newUWPr {
 	u := newUWPr{}
+	u.data = make(map[string]ehex.DataRetriver)
+	u.data[constant.PrStarport] = ehex.New(str[0])
+	u.data[constant.PrSize] = ehex.New(str[1])
+	u.data[constant.PrAtmo] = ehex.New(str[2])
+	u.data[constant.PrHydr] = ehex.New(str[3])
+	u.data[constant.PrPops] = ehex.New(str[4])
+	u.data[constant.PrGovr] = ehex.New(str[5])
+	u.data[constant.PrLaws] = ehex.New(str[6])
+	u.data[constant.PrTL] = ehex.New(str[8])
 	return &u
 }
 

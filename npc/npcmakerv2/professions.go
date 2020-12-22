@@ -226,6 +226,7 @@ func init() {
 	SaT["B0=11=2ma"] = []string{"INT 6", "INT 7", "INT 5"}
 	SaT["B0=11=3"] = []string{Investigate, Computers, Stealth, GunCombat, Deception, Streetwise}
 	SaT["B0=11=3ma"] = []string{"INT 6", "INT 5", "INT 7"}
+	SaT["B0=11bnft"] = []string{"Scientific Equipment", "INT +1", "Ship Share", "Weapon", "Combat Implant", pickAnyOf("SOC +1", "Combat Implant"), "TAS Membership"}
 
 	SaT["B0=12pd"] = []string{STR, DEX, END, Gambler, Medic, MeleeUnarmed}
 	SaT["B0=12ss"] = []string{Drive, Athletics, GunCombat, Recon, Melee, HeavyWeapon}
@@ -237,6 +238,7 @@ func init() {
 	SaT["B0=12=2ma"] = []string{"END 5", "STR 6", "EDU 6"}
 	SaT["B0=12=3"] = []string{Mechanic, Drive, Flyer, Recon, Gunner, Sensors}
 	SaT["B0=12=3ma"] = []string{"END 5", "DEX 7", "INT 5"}
+	SaT["B0=12bnft"] = []string{"Combat Implant", "INT +1", "EDU +1", "Weapon", "Armor", pickAnyOf("END +1", "Combat Implant"), "SOC +1"}
 
 	SaT["B0=13pd"] = []string{EDU, INT, Carouse, Gambler, Drive, Jackofalltrades}
 	SaT["B0=13ss"] = []string{Drive, Flyer, Streetwise, Melee, Steward, Profession}
@@ -248,6 +250,7 @@ func init() {
 	SaT["B0=13=2ma"] = []string{"EDU 5", "END 4", "EDU 8"}
 	SaT["B0=13=3"] = []string{Animals, Athletics, Jackofalltrades, Drive, Survival, Recon}
 	SaT["B0=13=3ma"] = []string{"EDU 5", "INT 7", "END 5"}
+	SaT["B0=13bnft"] = []string{"Ship Share", "Ally", "INT +1", "Gun", "EDU +1", "Two Ship Shares", "TAS Membership"}
 
 	SaT["B0=14pd"] = []string{STR, END, DEX, Jackofalltrades, END, INT}
 	SaT["B0=14ss"] = []string{Athletics, MeleeUnarmed, Recon, Streetwise, Stealth, Survival}
@@ -259,6 +262,7 @@ func init() {
 	SaT["B0=14=2ma"] = []string{"EDU 2", "END 7", "INT 7"}
 	SaT["B0=14=3"] = []string{PilotSmallcraft, Mechanic, Astrogation, Vaccsuit, AthleticsDEX, GunCombat}
 	SaT["B0=14=3ma"] = []string{"EDU 2", "DEX 7", "END 7"}
+	SaT["B0=14bnft"] = []string{"Contact", "Weapon", "Ally", "Weapon", "EDU +1", "Ship Share", "Two Ship Shares"}
 
 	SaT["B0=15pd"] = []string{DEX, INT, SOC, EDU, Carouse, Stealth}
 	SaT["B0=15ss"] = []string{Art, Art, Carouse, Deception, Persuade, Steward}
@@ -270,6 +274,7 @@ func init() {
 	SaT["B0=15=2ma"] = []string{"INT 5", "EDU 7", "INT 5"}
 	SaT["B0=15=3"] = []string{pickAnyOf(ArtPerformer, ArtVisualMedia, ArtInstrument), pickAnyOf(AthleticsDEX, AthleticsEND), Carouse, Deception, Stealth, Streetwise}
 	SaT["B0=15=3ma"] = []string{"INT 5", "INT 5", "DEX 7"}
+	SaT["B0=15bnft"] = []string{"Contact", "SOC +1", "Contact", "SOC +1", "INT +1", "Two Ship Shares", "SOC +1 and EDU +1"}
 
 	SaT["B0=16pd"] = []string{STR, DEX, END, Gambler, MeleeUnarmed, MeleeBlade}
 	SaT["B0=16ss"] = []string{Athletics, Vaccsuit, Tactics, HeavyWeapon, GunCombat, Stealth}
@@ -281,6 +286,7 @@ func init() {
 	SaT["B0=16=2ma"] = []string{"END 6", "END 6", "EDU 6"}
 	SaT["B0=16=3"] = []string{Vaccsuit, HeavyWeapon, Recon, MeleeBlade, TacticsMilitary, GunCombat}
 	SaT["B0=16=3ma"] = []string{"END 6", "END 7", "EDU 5"}
+	SaT["B0=16bnft"] = []string{"Armor", "INT +1", "EDU +1", "Weapon", "TAS Membership", pickAnyOf("Armor", "END +1"), "SOC +2"}
 
 	SaT["B0=17pd"] = []string{STR, DEX, END, INT, MeleeBlade, Streetwise}
 	SaT["B0=17ss"] = []string{Drive, Vaccsuit, Broker, Steward, Comms, Persuade}
@@ -292,6 +298,7 @@ func init() {
 	SaT["B0=17=2ma"] = []string{"INT 4", "DEX 6", "INT 6"}
 	SaT["B0=17=3"] = []string{Admin, Advocate, Broker, Streetwise, Deception, Persuade}
 	SaT["B0=17=3ma"] = []string{"INT 4", "EDU 5", "INT 7"}
+	SaT["B0=17bnft"] = []string{"Blade", "INT +1", "EDU +1", "Gun", "Ship Share", "Free Trader", "Free Trader"}
 
 	SaT["B0=18pd"] = []string{STR, DEX, END, INT, EDU, SOC}
 	SaT["B0=18ss"] = []string{Pilot, Vaccsuit, AthleticsDEX, Gunner, Mechanic, GunCombat}
@@ -303,6 +310,7 @@ func init() {
 	SaT["B0=18=2ma"] = []string{"INT 6", "INT 6", "EDU 6"}
 	SaT["B0=18=3"] = []string{Pilot, Flyer, Gunner, PilotSmallcraft, Astrogation, AthleticsDEX}
 	SaT["B0=18=3ma"] = []string{"INT 6", "DEX 7", "EDU 5"}
+	SaT["B0=18bnft"] = []string{pickAnyOf("Personal Vehicle", "Ship Share"), "INT +1", pickAnyOf("EDU +1", "Two Ship Shares"), "Weapon", "TAS Membership", pickAnyOf("Ship's Boat", "Two Ship Shares"), "SOC +2"}
 
 	SaT["B0=19pd"] = []string{Carouse, EDU, Deception, DEX, MeleeBlade, SOC}
 	SaT["B0=19ss"] = []string{Admin, Advocate, Comms, Diplomat, Investigate, Persuade}
@@ -314,6 +322,7 @@ func init() {
 	SaT["B0=19=2ma"] = []string{"SOC 10", "INT 5", "SOC 7"}
 	SaT["B0=19=3"] = []string{Carouse, Deception, Flyer, Streetwise, Gambler, Jackofalltrades}
 	SaT["B0=19=3ma"] = []string{"SOC 10", "SOC 3", "INT 8"}
+	SaT["B0=19bnft"] = []string{"Ship Share", "Two Ship Shares", "Blade", "SOC +1", "TAS Membership", "Yacht", "SOC +1 and Yacht"}
 
 	SaT["B0=1Apd"] = []string{Carouse, DEX, END, Gambler, Melee, GunCombat}
 	SaT["B0=1Ass"] = []string{Deception, Recon, Athletics, GunCombat, Stealth, Streetwise}
@@ -325,6 +334,7 @@ func init() {
 	SaT["B0=1A=2ma"] = []string{"DEX 6", "END 6", "STR 6"}
 	SaT["B0=1A=3"] = []string{Pilot, Astrogation, Gunner, Engineer, Vaccsuit, Melee}
 	SaT["B0=1A=3ma"] = []string{"DEX 6", "DEX 6", "INT 6"}
+	SaT["B0=1Abnft"] = []string{"Ship Share", "Weapon", "INT +1", "1D Ship Shares", "Armor", "DEX +1", "2D Ship Shares"}
 
 	SaT["B0=1Bpd"] = []string{INT, EDU, SOC, DEX, END, Computers}
 	SaT["B0=1Bss"] = []string{Comms, Computers, Diplomat, Medic, Investigate, ScienceAny}
@@ -336,6 +346,7 @@ func init() {
 	SaT["B0=1B=2ma"] = []string{"INT 6", "EDU 4", "INT 8"}
 	SaT["B0=1B=3"] = []string{Medic, Comms, Investigate, Medic, Persuade, ScienceAny}
 	SaT["B0=1B=3ma"] = []string{"INT 6", "EDU 4", "EDU 8"}
+	SaT["B0=1Bbnft"] = []string{"INT +1", "EDU +1", "Two Ship Shares", "SOC +1", "Scientific Equipment", "Lab Ship", "Lab Ship"}
 
 	SaT["B0=1Cpd"] = []string{STR, DEX, END, INT, EDU, Jackofalltrades}
 	SaT["B0=1Css"] = []string{pickAnyOf(PilotSpacecraft, PilotSmallcraft), Survival, Mechanic, Astrogation, Comms, GunCombat}
@@ -347,6 +358,7 @@ func init() {
 	SaT["B0=1C=2ma"] = []string{"INT 5", "END 6", "INT 8"}
 	SaT["B0=1C=3"] = []string{Sensors, PilotSpacecraft, PilotSmallcraft, ScienceLife, Stealth, Recon}
 	SaT["B0=1C=3ma"] = []string{"INT 5", "END 7", "EDU 7"}
+	SaT["B0=1Cbnft"] = []string{"Ship Share", "INT +1", "EDU +1", "Weapon", "Weapon", "Scout Ship", "Scout Ship"}
 
 	SaT["B1=11pd"] = []string{SOC, DEX, END, EDU, STR, Carouse}
 	SaT["B1=11ss"] = []string{Investigate, Streetwise, Admin, GunCombat, Athletics, Drive}
@@ -358,6 +370,7 @@ func init() {
 	SaT["B1=11=2ma"] = []string{"INT 5", "END 8", "INT 6"}
 	SaT["B1=11=3"] = []string{pickAnyOf(Pilot, Seafarer), Sensors, Comms, Recon, GunnerTurret, Vaccsuit}
 	SaT["B1=11=3ma"] = []string{"INT 5", "DEX 6", "EDU 8"}
+	SaT["B1=11bnft"] = []string{"+1 Trust, Contact", "INT +1", "+1 Trust, Network (any)", "Law Enforcement Gear", "Law Enforcement Gear, +1 Trust", "SOC +1", "TAS Membership"}
 }
 
 func pickAnyOf(list ...string) string {
@@ -374,6 +387,7 @@ func (trv *Traveller) getCareerCodes() {
 	book, career, spec := data[0], data[1], data[2]
 	ae := "---"
 	co := "---"
+	bnft := "---"
 	edu, err := trv.characteristics.GetValue(EDU)
 	soc, err := trv.characteristics.GetValue(SOC)
 	if err != nil {
@@ -390,6 +404,7 @@ func (trv *Traveller) getCareerCodes() {
 	sat = append(sat, SaT[book+"="+career+ae]...)
 	sat = append(sat, SaT[book+"="+career+co]...)
 	sat = append(sat, SaT[book+"="+career+"="+spec]...)
+	sat = append(sat, SaT[book+"="+career+bnft]...)
 	//for i := range sat {
 	//fmt.Println(sat[i])
 	//trv.Learn(sat[i])
@@ -431,7 +446,36 @@ func (trv *Traveller) getCareerCodes() {
 		}
 		//	fmt.Println("Career Training:", entity.GetFromCode(3, val))
 	}
+	totalBenefits := trv.term + ((1 + trv.rank) / 2)
+	benefits := []string{}
+	bnftPool := SaT[book+"="+career+"bnft"]
+	for i := 0; i < totalBenefits; i++ {
+		if len(bnftPool) == 0 {
+			fmt.Print("TODO: Benefits for " + trv.career + "\n")
+			break
+		}
+		benefits = append(benefits, SaT[book+"="+career+"bnft"][dice.Roll("1d6").DM(trv.benefitDM()-1).Sum()])
+	}
+	for i, v := range benefits {
+		fmt.Print("Get Benefit ", i+1, ": ", v, "\n")
+	}
 }
+
+func (trv *Traveller) benefitDM() int {
+	if trv.counters["benefit+"] > 0 {
+		trv.counters["benefit+"]--
+		return 1
+	}
+	return 0
+}
+
+// func (trv *Traveller) getBenefits() {
+// 	totalBenefits := trv.term + ((1 + trv.rank) / 2)
+// 	fmt.Print("Test: ", trv.career)
+// 	for i := 0; i < totalBenefits; i++ {
+// 		fmt.Print("Test: ", dice.New(0).RollFromList(SaT[trv.career]))
+// 	}
+// }
 
 func (trv *Traveller) Learn(code string) {
 	//fmt.Println("Learn:", code)

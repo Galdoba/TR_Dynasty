@@ -3,14 +3,18 @@ package main
 import (
 	"fmt"
 
-	"github.com/Galdoba/TR_Dynasty/encounter"
-	"github.com/Galdoba/TR_Dynasty/otu"
-	"github.com/Galdoba/TR_Dynasty/wrld"
+	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/devtools/cli/user"
+
+	"github.com/Galdoba/TR_Dynasty/npc/npcmakerv2"
+	"github.com/Galdoba/TR_Dynasty/wrld"
 )
 
 func main() {
-	encounter.Test()
+	plnt := wrld.PickWorld()
+
+	//uwp := profile.NewUWP(plnt.UWP())
+	//encounter.EncounterTable(uwp.String())
 
 	//mission.Test()
 
@@ -19,49 +23,19 @@ func main() {
 
 	//skimming.Test()
 	//routine.StartRoutine()
-	// propose := npcmakerv2.SearchCareers("Agent")
-	// for i := range propose {
-	// 	fmt.Println(propose[i])
-	// }
-
+	fmt.Print("Enter Career: ")
+	carArgs, err := user.InputStr()
+	if err != nil {
+		panic(err)
+	}
+	trv := npcmakerv2.NewTraveller(plnt, dice.New(0).RollFromList(npcmakerv2.SearchCareers(carArgs)))
+	fmt.Println(trv.String())
 	//w := pickWorld()
 	//entity.Test()
 	//hyperjump.StartJumpEvent(w)
 	// starport.FullInfo(w)
 
 	//autoGM.AutoGM()
-}
-
-func pickWorld() wrld.World {
-	dataFound := false
-	for !dataFound {
-		input := userInputStr("Enter world's Name, Hex or UWP: ")
-		data, err := otu.GetDataOn(input)
-		if err != nil {
-			fmt.Print("WARNING: " + err.Error() + "\n")
-			continue
-		}
-		w, err := wrld.FromOTUdata(data)
-		if err != nil {
-			fmt.Print(err.Error() + "\n")
-			continue
-		}
-		return w
-	}
-	fmt.Println("This must not happen!")
-	return wrld.World{}
-}
-
-func userInputStr(msg ...string) string {
-	for i := range msg {
-		fmt.Print(msg[i])
-	}
-	str, err := user.InputStr()
-	if err != nil {
-		fmt.Print(err.Error())
-		return err.Error()
-	}
-	return str
 }
 
 //OB Ia Ia Ia II II II II

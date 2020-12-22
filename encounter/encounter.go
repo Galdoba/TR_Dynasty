@@ -77,17 +77,39 @@ func Test() {
 	// an := NewAnimal("B757754-9", -1, -1)
 	// fmt.Println(AnimalBreedSheet(an))
 	// fmt.Println("SHORT DESCR:\n", ShortDescr(an))
-	EncounterTable()
+	EncounterTable("11111")
 	fmt.Println("Test End")
 }
 
-func EncounterTable() {
-	fmt.Print("UWP: ")
-	uwp, err := user.InputStr()
+func EncounterTable(uwp string) {
+	fmt.Print("terrainClear        = 0\n")
+	fmt.Print("terrainPlain        = 1\n")
+	fmt.Print("terrainDesert       = 2\n")
+	fmt.Print("terrainHills        = 3\n")
+	fmt.Print("terrainMountain     = 4\n")
+	fmt.Print("terrainForest       = 5\n")
+	fmt.Print("terrainWoods        = 6\n")
+	fmt.Print("terrainJungle       = 7\n")
+	fmt.Print("terrainRainforest   = 8\n")
+	fmt.Print("terrainRoughBroken  = 9\n")
+	fmt.Print("terrainSwampMarsh   = 10\n")
+	fmt.Print("terrainBeachShore   = 11\n")
+	fmt.Print("terrainRiverbank    = 12\n")
+	fmt.Print("terrainShallowOcean = 13\n")
+	fmt.Print("terrainOpenOcean    = 14\n")
+	fmt.Print("terrainDeepOcean    = 15\n")
 	fmt.Print("Biome: ")
 	ter, err := user.InputInt()
-	fmt.Print("Class: ")
-	cl, err := user.InputInt()
+	// fmt.Print("Roll Random  = [", -1, "]\n")
+	// fmt.Print("Amphibians   = [", 0, "]\n")
+	// fmt.Print("Aquatic      = [", 1, "]\n")
+	// fmt.Print("Avians       = [", 2, "]\n")
+	// fmt.Print("Fungals      = [", 3, "]\n")
+	// fmt.Print("Insect       = [", 4, "]\n")
+	// fmt.Print("Mammals      = [", 5, "]\n")
+	// fmt.Print("Reptiles     = [", 6, "]\n")
+	// fmt.Print("Class: ")
+	// cl, err := user.InputInt()
 	if err != nil {
 		panic(2)
 	}
@@ -97,7 +119,7 @@ func EncounterTable() {
 			fmt.Print("#7	Event\n")
 			continue
 		}
-		animalMap[i] = NewAnimal(uwp+strconv.Itoa(i), ter, cl)
+		animalMap[i] = NewAnimal(uwp+strconv.Itoa(i), ter, -1)
 		fmt.Print("#", i, "	", ShortDescr(animalMap[i]), "\n")
 
 	}
@@ -321,6 +343,11 @@ func NewAnimal(uwp string, territory, class int) animal {
 	an.modifyFromPlanet(uwp)
 	for strings.Contains(an.notes, "Imposible Animal") {
 		an = NewAnimal(uwp+"r", territory, -1)
+	}
+	for key := range an.characteristics {
+		if an.characteristics[key] < 1 {
+			an.characteristics[key] = 1
+		}
 	}
 	return an
 }
@@ -804,7 +831,7 @@ func (an *animal) selectTerrain(t int) {
 		fmt.Print("Deep Ocean    = [", terrainDeepOcean, "]\n")
 	} else {
 		if t == -1 {
-			t = an.dicepool.RollNext("1d16").DM(-1).Sum()
+			t = dice.Roll("1d16").DM(-1).Sum()
 		}
 		an.prefferedTerrain = t
 		return

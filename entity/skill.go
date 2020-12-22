@@ -254,7 +254,7 @@ func (sm *SkillMap) Train(skillCode string) {
 	sm.Set(spCode, sm.Get(spCode).value+1)
 }
 
-func distributeSpeciality(sm *SkillMap, groupeCodes []string) string {
+func distributeSpeciality(sm *SkillMap, groupeCodes []string) string { //выбираем случайно из группы уже имеющихся но те что есть имеют меньше приоритета
 	if len(groupeCodes) == 1 {
 		return groupeCodes[0]
 	}

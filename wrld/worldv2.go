@@ -1,12 +1,13 @@
 package wrld
 
 import (
+	"fmt"
 	"strings"
 
-	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/profile"
+	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
 )
 
@@ -66,7 +67,7 @@ func (w *World) UWP() string {
 //CodePops - return UWP data
 func (w *World) CodePops() string {
 	if val, ok := w.data[worldUWP]; ok {
-		uwp := profile.NewUWP2(val)
+		uwp := profile.NewUWP(val)
 		// if err != nil {
 		// 	return err.Error()
 		// }
@@ -78,7 +79,7 @@ func (w *World) CodePops() string {
 //CodeTL - return UWP data
 func (w *World) CodeTL() string {
 	if val, ok := w.data[worldUWP]; ok {
-		uwp := profile.NewUWP2(val)
+		uwp := profile.NewUWP(val)
 		// if err != nil {
 		// 	return err.Error()
 		// }
@@ -263,13 +264,21 @@ func (w World) SecondSurvey() []string {
 }
 
 func (w *World) checkLtHtTradeCodes() {
-
-	if TrvCore.EhexToDigit(w.CodeTL()) <= 5 {
+	uwp := profile.NewUWP(w.UWP())
+	if uwp.TL().Value() <= 5 {
 		w.data[worldTradeClassifications] += " Lt "
 	}
-	if TrvCore.EhexToDigit(w.CodeTL()) >= 12 {
+	if uwp.TL().Value() >= 12 {
 		w.data[worldTradeClassifications] += " Ht "
 	}
+
+	// if TrvCore.EhexToDigit(w.CodeTL()) <= 5 {
+	// 	w.data[worldTradeClassifications] += " Lt "
+	// }
+	// if TrvCore.EhexToDigit(w.CodeTL()) >= 12 {
+	// 	w.data[worldTradeClassifications] += " Ht "
+	// }
+
 	// if TrvCore.EhexToDigit(w.data[constant.PrTL]) <= TrvCore.EhexToDigit("5") {
 	// 	fmt.Println(TrvCore.EhexToDigit(w.data[constant.PrTL]))
 	// 	fmt.Println(w.data[constant.PrTL])
@@ -280,4 +289,28 @@ func (w *World) checkLtHtTradeCodes() {
 	// 	w.data[worldTradeClassifications] += " Ht "
 	// }
 	w.data[worldTradeClassifications] = strings.TrimSuffix(w.data[worldTradeClassifications], " ")
+}
+
+func PickWorld() World {
+	dataFound := false
+	for !dataFound {
+		fmt.Print("Enter world's Name, Hex or UWP: ")
+		input, err := user.InputStr()
+		if err != nil {
+
+		}
+		data, err := otu.GetDataOn(input)
+		if err != nil {
+			fmt.Print("WARNING: " + err.Error() + "\n")
+			continue
+		}
+		w, err := FromOTUdata(data)
+		if err != nil {
+			fmt.Print(err.Error() + "\n")
+			continue
+		}
+		return w
+	}
+	fmt.Println("This must not happen!")
+	return World{}
 }
