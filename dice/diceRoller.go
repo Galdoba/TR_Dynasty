@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Galdoba/utils"
 )
 
 //Dicepool -
@@ -39,12 +41,9 @@ type Dicepool struct {
 // 	*/
 // }
 
-func New(seed int64) *Dicepool {
+func New() *Dicepool {
 	dp := Dicepool{}
-	dp.seed = seed
-	if dp.seed == 0 {
-		dp.seed = time.Now().UTC().UnixNano()
-	}
+	dp.seed = time.Now().UTC().UnixNano()
 	dp.src = rand.NewSource(dp.seed)
 	dp.rand = *rand.New(dp.src)
 	return &dp
@@ -206,7 +205,20 @@ func (dp *Dicepool) ModPerDie(s int) *Dicepool {
 }
 
 //SetSeed - фиксирует результат броска
-func (dp *Dicepool) SetSeed(s int64) *Dicepool {
+func (dp *Dicepool) SetSeed(key interface{}) *Dicepool {
+	var s int64
+	switch key.(type) {
+	default:
+		return dp
+	case int:
+		s = int64(key.(int))
+	case int32:
+		s = int64(key.(int32))
+	case int64:
+		s = key.(int64)
+	case string:
+		s = utils.SeedFromString(key.(string))
+	}
 	dp.seed = s
 	dp.result = nil
 	dp.src = rand.NewSource(dp.seed)

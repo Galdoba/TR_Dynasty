@@ -8,7 +8,6 @@ import (
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/profile"
 	"github.com/Galdoba/devtools/cli/user"
-	"github.com/Galdoba/utils"
 )
 
 const (
@@ -226,7 +225,7 @@ func FromOTUdata(otuData otu.Info) (World, error) {
 	w.data[worldNobility] = otuData.Nobility()
 	w.data[worldNumOfWorlds] = otuData.Worlds()
 	w.data["RU"] = otuData.RU()
-	w.dicepool = *dice.New(utils.SeedFromString(w.data[worldNAME]))
+	w.dicepool = *dice.New().SetSeed(w.data[worldNAME] + w.data[worldNAME])
 	return w, nil
 }
 

@@ -32,7 +32,7 @@ func NewLawReport(uwpStr string) (lawReport, error) {
 	lr := lawReport{}
 	uwp := profile.NewUWP(uwpStr)
 
-	lr.dp = dice.New(utils.SeedFromString(uwpStr))
+	lr.dp = dice.New().SetSeed(uwpStr)
 	lr.levelOf = make(map[string]int)
 	lr.levelOf[lawOverall] = uwp.Laws().Value()
 	lr.levelOf[goverment] = uwp.Govr().Value()

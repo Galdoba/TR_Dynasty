@@ -7,7 +7,6 @@ import (
 	. "github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/wrld"
-	"github.com/Galdoba/utils"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 )
@@ -46,7 +45,7 @@ func defineStats(world wrld.World) {
 //NewSecurity - creates random obj to draw info from using World data
 func NewSecurity(world *wrld.World) *Security {
 	sp := &Security{}
-	dicepool = dice.New(utils.SeedFromString(world.UWP()))
+	dicepool = dice.New().SetSeed(world.UWP())
 	pops := world.GetСharacteristic(PrPops).Value()
 	defineStats(*world)
 

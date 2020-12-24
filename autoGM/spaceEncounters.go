@@ -1,48 +1,38 @@
 package autoGM
 
 import (
-	"errors"
 	"fmt"
 
 	law "github.com/Galdoba/TR_Dynasty/Law"
-	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/constant"
 
 	"github.com/Galdoba/TR_Dynasty/dice"
-	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/profile"
 	"github.com/Galdoba/TR_Dynasty/wrld"
-	"github.com/Galdoba/devtools/cli/user"
 )
 
 func EncounterMgT2Core() {
-	err := errors.New("No Input")
-
-	var travellDays int
-	for err != nil {
-		fmt.Print("Enter days: ")
-		travellDays, err = user.InputInt()
-	}
 	event := "no encounter"
-	for i := 0; i < travellDays; i++ {
+	i := 0
+	for {
+		i++
 		eventRoll := dice.Roll("1d6").Sum()
 		event = "no encounter"
 		if eventRoll == 6 {
 			event = "encounter " + dice.RollD66()
-			fmt.Print("Day ", i+1, ": ", event+" happen"+"\n")
+			fmt.Print("Day ", i, ": ", event+" happen"+"\n")
 			break
 		}
-		fmt.Print("Day ", i+1, ": ", event+"\n")
+
 	}
 	fmt.Print(event + "\n")
-	w := pickWorld()
+	w := wrld.PickWorld()
 	m1, m2 := encounterMods(w)
 	fmt.Print(m1, m2)
 
 }
 
 func encounterMods(w wrld.World) (int, int) {
-
 	m1, m2 := 0, 0
 	if isHighTraffic(w) {
 		fmt.Print("High Traffic\n")
@@ -68,39 +58,14 @@ func encounterMods(w wrld.World) (int, int) {
 ///////////////////////////////////
 //helpers
 
-func pickWorld() wrld.World {
-	err := errors.New("No Input")
-	for err != nil {
-		input := ""
-		fmt.Print("Enter world's Name, Hex or UWP: ")
-		input, err = user.InputStr()
-		otuData, errI := otu.GetDataOn(input)
-		if errI != nil {
-			fmt.Print("WARNING: " + err.Error() + "\n")
-			continue
-		}
-		w, errO := wrld.FromOTUdata(otuData)
-		if errO != nil {
-			fmt.Print(err.Error() + "\n")
-			continue
-		}
-		//output := "Data retrived: " + w.Name() + " (" + w.UWP() + ")\n"
-		//printSlow(output)
-		return w
-
-	}
-	fmt.Println("This must not happen!")
-	return wrld.World{}
-}
-
 func starport(w wrld.World) string {
-	prf, _ := profile.NewUWP(w.UWP())
-	return prf.Starport()
+	prf := profile.NewUWP(w.UWP())
+	return prf.Starport().String()
 }
 
 func lawLevel(w wrld.World) int {
-	prf, _ := profile.NewUWP(w.UWP())
-	return TrvCore.EhexToDigit(prf.Laws())
+	prf := profile.NewUWP(w.UWP())
+	return prf.Laws().Value()
 }
 
 func isHighTraffic(w wrld.World) bool {

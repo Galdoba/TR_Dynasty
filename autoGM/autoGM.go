@@ -3,13 +3,17 @@ package autoGM
 import (
 	"fmt"
 
+	"github.com/Galdoba/TR_Dynasty/autoGM/encounters"
 	"github.com/Galdoba/TR_Dynasty/dice"
 )
 
 func AutoGM() {
+	//mission.Test()
 	//RunACFlowchart(9)
 
-	EncounterMgT2Core()
+	e := encounters.New()
+	e.RollShipEncounterMGT1CG()
+	e.Express()
 }
 
 func RunACFlowchart(tn int) {
@@ -44,6 +48,18 @@ type shipEncounter struct {
 PlanetSideEvent{
 	type (Urban/Rural/Wilderness)
 }
+
+
+*/
+
+/*
+arrival system check list:
+space travel event roll
+ship encounter roll
+pirate event roll
+
+
+
 
 
 */

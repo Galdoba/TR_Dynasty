@@ -1,6 +1,11 @@
 package main
 
+import "github.com/Galdoba/TR_Dynasty/autoGM"
+
 func main() {
+	//w := wrld.PickWorld()
+	//fmt.Println(w.SecondSurvey())
+	autoGM.AutoGM()
 	// plnt := wrld.PickWorld()
 	// st, err := starport.From(plnt)
 	// if err != nil {

@@ -325,7 +325,7 @@ func NewAnimal(uwp string, territory, class int) animal {
 
 	an.skills = make(map[string]int)
 	an.characteristics = make(map[string]int)
-	an.dicepool = dice.New(seed64)
+	an.dicepool = dice.New().SetSeed(seed64)
 	an.selectTerrain(territory)
 	an.selectClass(class)
 	an.setMovement()
