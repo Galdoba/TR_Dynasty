@@ -45,14 +45,6 @@ type shipEncounter struct {
 }
 
 /*
-PlanetSideEvent{
-	type (Urban/Rural/Wilderness)
-}
-
-
-*/
-
-/*
 arrival system check list:
 space travel event roll
 ship encounter roll

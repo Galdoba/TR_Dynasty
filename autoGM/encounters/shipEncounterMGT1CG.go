@@ -1,6 +1,11 @@
 package encounters
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/utils"
+)
 
 const (
 	ShipTypeS               = "Type S Scout"
@@ -14,6 +19,8 @@ const (
 	ShipFreeTrader          = "Free Trader"
 	ShipHeavyFreighter      = "Heavy Freighter (CRB 125)"
 	ShipLargeFreighter      = "Large Freighter (TG 44)"
+	ShipInSystemHauler      = "In System Hauler (TG 37)"
+	ShipFastSmuggler        = "Fast Smuggler (TG 58)"
 )
 
 func (e *encounterEvent) RollShipEncounterMGT1CG() {
@@ -21,7 +28,8 @@ func (e *encounterEvent) RollShipEncounterMGT1CG() {
 	dRoll := e.dicepool.RollNext("2d6").ResultString()
 	table := ""
 	fmt.Println(dRoll)
-	dRoll = "21"
+	EncounterDistance(dice.FluxGOOD() - 1)
+	dRoll = "32"
 	switch dRoll {
 	case "11":
 		table = "Abandoned ship Any "
@@ -46,18 +54,25 @@ func (e *encounterEvent) RollShipEncounterMGT1CG() {
 		e.Cultists()
 	case "22":
 		table = "Debris See Page 49 "
+		e.Debris()
 	case "23":
 		table = "Droyne Explorers Type S Scot (CR 114) "
+		e.DroyneExplorers()
 	case "24":
 		table = "Exiles Any "
+		e.Exiles()
 	case "25":
+		e.ExperimentalAndroids()
 		table = "Experimental Androids Any "
 	case "26":
+		e.Figutive()
 		table = "Fugitive(s) 1–3: Free Trader (CR 117) 4: Antique In-System Hauler (TG 37) 5: Xboat (TG 40) 6: Fast Smuggler (TG 58) "
 	case "31":
+		e.Mailfreight()
 		table = "Mail freight 1–3: Free Trader (CR 117) 4–5: Heavy Freighter (CR 125) 6: Xboat (TG 40) "
 	case "32":
 		table = "Hiver Degenerates 1–2: Yacht (CR 126) 3–4: Corsair (CR 129) 5–6: Assault Gunship (TG 94) "
+		e.HiverDegenerates()
 	case "33":
 		table = "Imperial Navy 1–2: Corsair (CR 129) 3–4: Assault Gunship (TG 94) 5: Bombardment Ship (TG 96) 6: Mercenary Cruiser (CR 127) "
 	case "34":
@@ -252,6 +267,118 @@ func (e *encounterEvent) Cultists() {
 	e.descr = "The cultists are not simply extreme religious people looking for a place where they could practice their faith in peace. They are brainwashed, violent and led by a charismatic but positively insane ‘prophet’. Sadly, by the time the Player Characters realise this subtle difference, it might already be too late. In this case:\n" + e.cultists()
 }
 
+func (e *encounterEvent) Debris() {
+	e.name = "Debris"
+	e.descr = "These are the remains of a ship destroyed in battle or due to accident. A thorough examination of the debris will yield 2d6% of the cargo and spare parts normally available on a spacecraft of this class. If the Referee is interested in using the encounter as a hook for an adventure, there might be a black box (page 35) or survivors in escape pods or vac suits hovering within the debris field."
+	e.descr += "\nDebris often draws scavengers and other lowlifes who make a living of cannibalising damaged or destroyed ships, so the players might face some competition over the remaining cargo and spare parts (see Pirates, Scavengers and Vargr Raiding Party)."
+	e.location = e.anyShip()
+}
+
+func (e *encounterEvent) DroyneExplorers() {
+	e.name = "Droyne Explorers"
+	e.descr = "Unless this event constitutes first contact, it probably will not lead to anything past polite greetings or a routine questionnaire if the Player Characters fly a strange vessel or behave erratically. Droyne are infamously predictable. Droyne vessels have normal cargo. While not cowardly, they would rather part with their cargo than with their lives."
+	e.location = ShipTypeS
+}
+
+func (e *encounterEvent) Exiles() {
+	e.name = "Exiles"
+	e.descr = "This is an extremely versatile encounter as there are hundreds of reasons for a group or an individual to be forced from their homeland. Exiles differ from colonists by not specifically looking for a new world to settle and from fugitives by not being actively pursued by their enemies (at least not openly).\nThis encounter usually serves as a more colourful and exotic way to perform various utilities or meet potential patrons."
+	switch e.dicepool.RollNext("1d6").Sum() {
+	case 1:
+		e.hook = "The hero was exiled from his planet for a horrible crime and is tormented by guilt and shame. He may join the Player Characters and serve as a dark and haunted ally. See pages 153-163 for suitable NPCs."
+	case 2:
+		e.hook = "Those idealists chose exile over living under an immoral government. They might be interested in hiring the Player Characters to help them find a world where they could lead a ‘moral’ life. The dissidents can also join the crew as NPCs."
+	case 3:
+		e.hook = "An entire community was banished from its home and forced to take to the stars. Instead of looking for a new world they decided to make the whole universe their home. They can provide repair and maintenance service as well as buy and sell goods."
+	case 4:
+		e.hook = "This is an extremely wealthy person who left his sector in search of a world with lower taxes. Various governments (including the Player Characters’) will go out of their way to convince him to settle in their jurisdiction. Additionally, being a wealthy collector, the exile may be interested in buying some of the Player Characters’ more exotic loot."
+	case 5:
+		e.hook = "A once mighty leader was forced to escape his world with nothing but his life after a revolution or a coup brought his enemies to power. Still, he dreams of reclaiming the throne and tries to convince any tough-looking person he encounters to join his cause."
+	case 6:
+		e.hook = "A brilliant engineer was forced into exile after several of his inventions failed spectacularly. Bored and lonely, he offers to upgrade the Player Characters’ ship or equipment. This might take them into the next TL or make them fail or explode in the worst possible moment... the engineer’s record has been spotty at best. The engineer can also join the crew if the Player Characters need one."
+	}
+	e.location = e.anyShip()
+}
+
+func (e *encounterEvent) ExperimentalAndroids() {
+	e.name = "Experimental Androids"
+	e.descr = "The ship is run entirely by advanced robots that are practically indistinguishable from their biological counterparts. Their frames include devices that mimic life signs that fool most scanners while their physical appearance is so perfectly realistic that nothing short of a dissection will reveal their true nature."
+	e.location = e.anyShip()
+	e.hook = e.androids()
+}
+
+func (e *encounterEvent) Figutive() {
+	e.name = "Figutive"
+	e.descr = "The fugitives beg for the Player Characters’ assistance. If the Player Characters protect them, they might have to face bounty hunters, imperial battleships, primitives, prison transports or zhodani thought police agents. If the Player Characters apprehend the fugitives, they will be rewarded by the authorities but may find themselves the target of a vicious retribution by the fugitive’s associates."
+	switch e.dicepool.RollNext("1d6").Sum() {
+	case 1, 2, 3:
+		e.location = ShipFreeTrader
+	case 4:
+		e.location = ShipInSystemHauler
+	case 5:
+		e.location = ShipXboat
+	case 6:
+		e.location = ShipFastSmuggler
+	}
+	e.hook = e.figutives()
+}
+
+func (e *encounterEvent) Mailfreight() {
+	e.name = "Mail Freight"
+	switch e.dicepool.RollNext("1d6").Sum() {
+	case 1, 2, 3:
+		e.location = ShipFreeTrader
+	case 4, 5:
+		e.location = ShipHeavyFreighter
+	case 6:
+		e.location = ShipXboat
+	}
+	e.descr = "Private couriers are prepared for interception attempts because of the sensitive information they carry and respond, with fight or flight, to the slightest provocations. Mail freights are more relaxed and often invite the crews of ships they encounter onboard to battle the boring monotony of their voyages."
+	switch e.dicepool.RollNext("1d6").Sum() {
+	case 1:
+		e.hook = "The courier carries a message to or from the Emperor. The ship is unusually well-armed and everyone on board is an elite trooper and very edgy. The message is of vital importance and can be sold for millions, although this will result in the full might of the Imperium dropping on the Player Characters’ heads and possibly a war with the Zhodani."
+	case 2:
+		e.hook = "The courier is returning from a mission and does not have anything of value."
+	case 3:
+		e.hook = "The courier is heavily damaged and the sole surviving member of the crew mumbles some nonsense about the ‘Covering of the Imperium’ before dying of radiation poisoning. The Player Characters are now in command of the vessel and a strange parcel addressed to ‘Baron Cucumber’."
+	case 4:
+		e.hook = "The mail freight has a letter for the Player Characters. It's a " + e.dicepool.RollFromList([]string{"bad news", "job offer from a patron"}) + "."
+	case 5:
+		e.hook = "The mail freight is being pursued by pirates (page 54) convinced it is a trader in disguise."
+	case 6:
+		e.hook = "The mail freight behaves erratically, nearly ramming the Player Characters’ spacecraft while sending meaningless messages. Examination of the craft will show that the crew opened a suspicious parcel that turned out to contain a powerful psychedelic agent now also affecting the boarding Player Characters."
+	}
+
+}
+
+func (e *encounterEvent) HiverDegenerates() {
+	e.name = "Hiver Degenerates (WARNING: MATURE CONTENT)"
+	switch e.dicepool.RollNext("1d6").Sum() {
+	case 1, 2:
+		e.location = ShipYacht
+	case 3, 4:
+		e.location = ShipCorsair
+	case 5, 6:
+		e.location = ShipAssaultGunship
+	}
+	e.descr = "Hivers are known to value personal freedom, thought and expression above all else. For some it becomes and obsession; a horrible, sick obsession.\nThe degenerates are the ultimate bohemians, travelling space in search of new experiences and new ways to practice radical self-expression. The end always justifies the means as long as the end is really ‘you’. Any attempt to limit the hiver’s selfexpression is viewed as oppression and responded to with violence. If one refuses to die for the sake of an artist truly realising his vision, then one does not deserve to live anyway...\nPainting, sculpting, holographics, singing... all of these are not nearly radical enough, poor imitation and surrender to the norms is what they are. True self-expression has got to hurt!"
+	switch e.dicepool.RollNext("1d6").Sum() {
+	case 1:
+		e.hook = "A garden of bodies hovering in space. Hundreds will die but the result will be breathtaking and make a profound commentary on the sophont condition and the horrors of post-imperialism. Now all we need is more bodies and not just any bodies mind you... colour, shape and personality matter!"
+	case 2:
+		e.hook = "The small world of Reznista is known for the quality and diversity of its meat export... that is to say, for its ongoing and unpunished, statesanctioned genocide of a million different species. The only verdict is an eye for an eye. In this case, a travelling restaurant that serves Reznistian meat."
+	case 3:
+		e.hook = "All authority is bad, freedom to the oppressed masses! This ship travels space, doing recreational drugs, spreading the love and blowing up spacecrafts and structures it associates with authority, Hiver or otherwise."
+	case 4:
+		e.hook = "Life is the highest art and flesh is the most challenging canvas of them all. This ship, disguised as a private humanitarian mission, captures hapless space travellers and transforms them into things of terrible beauty. Less beauty, more terror, to be precise."
+	case 5:
+		e.hook = "A group of hivers have developed a drug that makes everyone see things the way they are, that is, to hallucinate uncontrollably. They are very keen on sharing their newfound clarity with the rest of the universe by spraying it into atmospheres or introducing it into spacecraft life support systems."
+	case 6:
+		e.hook = "The degenerates try to make a point by uplifting as many animals as possible and convincing them they are superior and should enslave all sophonts. Their king is a morbidly obese mouse named Cookie. Even the hivers themselves cannot quite put their revolutionary point into words... hopefully some talking duck will be able to."
+	}
+
+}
+
 //////////////////////////
 //SHIP ENCOUNTER HELPERS//
 //////////////////////////
@@ -262,6 +389,13 @@ func (e *encounterEvent) anyShip() string {
 		ShipCorsair,
 		ShipYacht,
 		ShipGazelleCloseEscort,
+		ShipXboat,
+		ShipAssaultGunship,
+		ShipBombardmentShip,
+		ShipSerpentPoliceCutter,
+		ShipFreeTrader,
+		ShipHeavyFreighter,
+		ShipLargeFreighter,
 	}
 	return e.dicepool.RollFromList(ships)
 }
@@ -314,5 +448,82 @@ func (e *encounterEvent) god() string {
 		return "super AI"
 	case 5, 6:
 		return "a charlatan"
+	}
+}
+
+func (e *encounterEvent) androids() string {
+	switch e.dicepool.RollNext("1d6").Sum() {
+	default:
+		return "Unknown"
+	case 1:
+		return "The androids have escaped from the top secret laboratory in which they were created. Because of the sensitive information in their minds, they are chased by the full might of the Imperial navy as well as a horde of bounty hunters sent by local authorities."
+	case 2:
+		return "As for previous, except that the androids’ ship is heavily damaged and they ask the Player Characters to harbour them in return for a considerable reward. They do not reveal their non-biological nature to the Player Characters."
+	case 3:
+		return "A solar flare has erased the androids’ memory. They have no idea who or what they are or where they are headed. All they have is a note saying ‘return to factory in case of malfunction’ and a corporate symbol that they do not recognise."
+	case 4:
+		return "The androids are conducting biological research in the same manner engineers conduct technological research. To complete their research (whose scientific merit is highly dubious) they need sophonts and lots of them."
+	case 5:
+		return "The androids have a radiation leak on their ship, which causes them to start behaving erratically as soon as they approach it. The last sane android contacts the Player Characters and asks them to fix the leak, warning them they will have to deal with a bunch of crazed androids as well as a complex technical problem (page 65)."
+	case 6:
+		return e.robotRebel()
+	}
+}
+
+func (e *encounterEvent) robotRebel() string {
+	switch e.dicepool.RollNext("1d6").Sum() {
+	default:
+		return "Unknown"
+	case 1:
+		return "The ship passed through the sphere of influence of some trigger, which has awakened all robots and ordered them to kill all humans."
+	case 2:
+		return "The ship passed through the sphere of influence of some trigger, which has awakened all robots and ordered them to kill all humans. Passengers are alive because robots don't see them as alive in cryobirth."
+	case 3:
+		return "A poorly-coded program designed to improve service has caused the robots to kill everybody on board. Since the robots have no personal motivation, they now stand still, awaiting orders. Player Characters who come aboard will receive the same service as the previous passengers unless they destroy the robots or come up with orders that will not be horribly misinterpreted."
+	case 4:
+		return "The robots were programmed by minor race. They were captured by the vessel but soon rebelled and took control of it. They are now headed back home. In light of their bitter experience with sophonts, they view all living creatures as potential enemies."
+	case 5:
+		return "The robots were programmed by minor race. They were captured by other vessel but soon rebelled and took control of it. They are now headed back home. In light of their bitter experience with sophonts, they view all living creatures as potential enemies. The robots took control of this ship under the pretence of a peaceful visit. They are now headed toward the Player Characters’ home world with an antimatter bomb onboard."
+	case 6:
+		return "A criminal (page 9) has discovered the access codes to many Imperial robots and used them to capture ships from the inside. The criminal is onboard, posing as one of the captives. Or is hiding on a nearby asteroid base or pirate vessel."
+	}
+}
+
+func (e *encounterEvent) figutives() string {
+	switch e.dicepool.RollNext("1d6").Sum() {
+	default:
+		return "Unknown"
+	case 1:
+		return "Criminal (See page 48 for bounties and page 9 for criminal NPCs)"
+	case 2:
+		return "Dissident, Friendly (The dissident promotes a cause the Player Characters are sympathetic to. See page 132 for a list of causes)"
+	case 3:
+		return "Dissident, Hostile (The dissident or his cause are antagonistic to the Player Characters)"
+	case 4:
+		return "Deserter"
+	case 5:
+		return e.androids()
+	case 6:
+		return "Minor Race Alien (The alien was captured by scientists conducting illegal or immoral research and is now fleeing for his life. Use one of the tables on page 45 to determine alien race)"
+	}
+}
+
+func EncounterDistance(eff int) {
+	eff = utils.BoundInt(eff, 0, 6)
+	switch eff {
+	default:
+		fmt.Print(dice.Roll("1d6").Sum()*500, " km\n")
+	case 1:
+		fmt.Print(dice.Roll("1d6").Sum()*1000, " km\n")
+	case 2:
+		fmt.Print(dice.Roll("2d6").Sum()*1000, " km\n")
+	case 3:
+		fmt.Print(dice.Roll("1d6").Sum()*5000, " km\n")
+	case 4:
+		fmt.Print(dice.Roll("2d6").Sum()*5000, " km\n")
+	case 5:
+		fmt.Print(dice.Roll("1d6").Sum()*10000, " km\n")
+	case 6:
+		fmt.Print(dice.Roll("2d6").Sum()*10000, " km\n")
 	}
 }

@@ -43,3 +43,20 @@ func (e *encounterEvent) Express() string {
 	fmt.Println(str)
 	return str
 }
+
+/*
+логика:
+раз в день в космосе делается бросок d6. если выпадает 6 - ролим энкаунтер.
+если энкаунтер (
+	берем модификатор от орбитальной зоны:
+	highport (DM+3): The space near an orbital starport
+	high-Traffic space (DM+2): planet have 'In' tag
+	settled space (DM+1): default
+	border systems (DM+0): LawLevel <= 6
+	Wild space (DM-1): Amber or Red worlds. LawLevel <= 3
+	empty space (DM-4): Untravelled space or unexplored systems.
+
+	ролим код энкаунтера
+
+)
+*/
