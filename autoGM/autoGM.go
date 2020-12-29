@@ -5,15 +5,20 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/autoGM/encounters"
 	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/wrld"
 )
 
 func AutoGM() {
 	//mission.Test()
 	//RunACFlowchart(9)
-
+	w := wrld.PickWorld()
+	fmt.Println(w.SecondSurvey())
 	e := encounters.New()
-	e.RollShipEncounterMGT1CG()
-	e.Express()
+	e.SetWorld(&w)
+	key := e.RollKeySpaceEncounter()
+	fmt.Println("key = ", key, encounters.EncounterMapCRB(key))
+	//e.RollShipEncounterMGT1CG()
+	//e.Express()
 }
 
 func RunACFlowchart(tn int) {

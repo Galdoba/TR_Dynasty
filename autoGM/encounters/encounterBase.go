@@ -2,12 +2,16 @@ package encounters
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/wrld"
+	"github.com/Galdoba/utils"
 )
 
 type encounterEvent struct {
 	dicepool   *dice.Dicepool
+	world      *wrld.World
 	name       string
 	eventClass string
 	location   string
@@ -30,6 +34,10 @@ func (e *encounterEvent) SetSeed(seed interface{}) {
 	e.dicepool.SetSeed(seed)
 }
 
+func (e *encounterEvent) SetWorld(w *wrld.World) {
+	e.world = w
+}
+
 func (e *encounterEvent) Express() string {
 	str := "Class: " + e.eventClass
 	str += "\nEvent: " + e.name
@@ -44,8 +52,30 @@ func (e *encounterEvent) Express() string {
 	return str
 }
 
+func (e *encounterEvent) RollKeySpaceEncounter() string {
+	if e.world == nil {
+		return "World not defined!"
+	}
+	dm := e.world.ImportanceVal()
+	//fmt.Print("Min:", 1+dm, " Max:", 6+dm, "\n")
+	d1 := e.dicepool.RollNext("1d6").DM(dm).Sum()
+	d1 = utils.BoundInt(d1, 0, 9)
+	d2 := e.dicepool.RollNext("1d6").Sum()
+	key := strconv.Itoa(d1) + strconv.Itoa(d2)
+	return key
+}
+
 /*
 логика:
+arrival
+--
+spaceFlight
+HighPort Dock
+
+
+
+
+
 раз в день в космосе делается бросок d6. если выпадает 6 - ролим энкаунтер.
 если энкаунтер (
 	берем модификатор от орбитальной зоны:

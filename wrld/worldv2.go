@@ -2,6 +2,7 @@ package wrld
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/dice"
@@ -108,18 +109,18 @@ func (w *World) ImportanceEx() string {
 	return "--NO DATA--"
 }
 
-// //Importance - return Importance data
-// func (w *World) ImportanceVal() int {
-// 	if val, ok := w.data[worldImportanceEx]; ok {
-// 		val = strings.TrimPrefix(val, "{")
-// 		val = strings.TrimPrefix(val, " ")
-// 		val = strings.TrimSuffix(val, "}")
-// 		val = strings.TrimSuffix(val, " ")
-// 		im, _ := strconv.Atoi(val) //TODO: Err
-// 		return im
-// 	}
-// 	return -999
-// }
+//ImportanceVal - return Importance As Int
+func (w *World) ImportanceVal() int {
+	if val, ok := w.data[worldImportanceEx]; ok {
+		val = strings.TrimPrefix(val, "{")
+		val = strings.TrimPrefix(val, " ")
+		val = strings.TrimSuffix(val, "}")
+		val = strings.TrimSuffix(val, " ")
+		im, _ := strconv.Atoi(val) //TODO: Err
+		return im
+	}
+	return -999
+}
 
 //EconomicEx - return EconomicEx data
 func (w *World) EconomicEx() string {
