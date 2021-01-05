@@ -11,7 +11,7 @@ import (
 	"github.com/Galdoba/utils"
 )
 
-func RandomUWP(planetType ...string) string {
+func RandomUWP(dicepool *dice.Dicepool, planetType ...string) string {
 	var result string
 	var pType string
 	pType = constant.WTpHospitable
@@ -21,30 +21,34 @@ func RandomUWP(planetType ...string) string {
 			pType = constant.WTpHospitable
 		}
 	}
+	mainworldPops := 15
 	if len(planetType) > 1 {
-		utils.SetSeed(utils.SeedFromString(planetType[1]))
+		mainworldPops = TrvCore.EhexToDigit(planetType[1])
 	}
+	// if len(planetType) > 1 {
+	// 	utils.SetSeed(utils.SeedFromString(planetType[1]))
+	// }
 	//fmt.Println("Set pType as:", pType)
 	//////////SIZE
 	var size int
 	switch pType {
 	default:
-		size = rollStat(2, -2, 0)
+		size = rollStat(dicepool, 2, -2, 0)
 		if size == 10 {
-			size = rollStat(1, 9, 0)
+			size = rollStat(dicepool, 1, 9, 0)
 		}
 	case constant.WTpRadWorld, constant.WTpStormWorld:
-		size = rollStat(2, 0, 0)
+		size = rollStat(dicepool, 2, 0, 0)
 	case constant.WTpInferno:
-		size = rollStat(1, 6, 0)
+		size = rollStat(dicepool, 1, 6, 0)
 	case constant.WTpBigWorld:
-		size = rollStat(2, 7, 0)
+		size = rollStat(dicepool, 2, 7, 0)
 	case constant.WTpWorldlet:
-		size = rollStat(1, -3, 0)
+		size = rollStat(dicepool, 1, -3, 0)
 	case constant.WTpPlanetoid:
 		size = 0
 	case constant.WTpGG:
-		size = rollStat(0, 26+flux(), 0)
+		size = rollStat(dicepool, 0, 26+flux(), 0)
 	}
 	size = utils.BoundInt(size, 0, 32)
 	//uwp.data[constant.PrSize] = ehex(size)
@@ -54,11 +58,11 @@ func RandomUWP(planetType ...string) string {
 	var atmo int
 	switch pType {
 	default:
-		atmo = rollStat(0, size+flux(), 0)
+		atmo = rollStat(dicepool, 0, size+flux(), 0)
 	case constant.WTpPlanetoid:
 		atmo = 0
 	case constant.WTpStormWorld:
-		atmo = rollStat(0, size+flux(), 4)
+		atmo = rollStat(dicepool, 0, size+flux(), 4)
 	case constant.WTpInferno:
 		atmo = TrvCore.EhexToDigit("B")
 	}
@@ -77,11 +81,11 @@ func RandomUWP(planetType ...string) string {
 	}
 	switch pType {
 	default:
-		hydr = rollStat(0, atmo+flux(), dm)
+		hydr = rollStat(dicepool, 0, atmo+flux(), dm)
 	case constant.WTpPlanetoid, constant.WTpInferno:
 		hydr = 0
 	case constant.WTpStormWorld, constant.WTpInnerWorld:
-		hydr = rollStat(0, atmo+flux(), dm-4)
+		hydr = rollStat(dicepool, 0, atmo+flux(), dm-4)
 	}
 	if size < 2 {
 		hydr = 0
@@ -92,22 +96,23 @@ func RandomUWP(planetType ...string) string {
 
 	//////////POPS
 	var pops int
-	dm = 0
+	dm = -10
 	switch pType {
 	default:
-		pops = rollStat(2, -2, dm)
+		pops = rollStat(dicepool, 2, -2, dm)
 		if pops == 10 {
-			pops = rollStat(2, 3, dm)
+			pops = rollStat(dicepool, 2, 3, dm)
 		}
 	case constant.WTpRadWorld, constant.WTpInferno, constant.WTpGG:
 		pops = 0
 	case constant.WTpIceWorld, constant.WTpStormWorld:
-		pops = rollStat(2, -2, -6)
+		pops = rollStat(dicepool, 2, -2, -6)
 	case constant.WTpInnerWorld:
-		pops = rollStat(2, -2, -4)
+		pops = rollStat(dicepool, 2, -2, -4)
 	}
 
-	pops = utils.BoundInt(pops, 0, TrvCore.EhexToDigit("Y"))
+	pops = utils.BoundInt(pops, 0, mainworldPops-1)
+
 	//uwp.data[constant.PrPops] = ehex(pops)
 	result = result + TrvCore.DigitToEhex(pops)
 
@@ -115,7 +120,7 @@ func RandomUWP(planetType ...string) string {
 	var govr int
 	switch pType {
 	default:
-		govr = rollStat(0, pops+flux(), 0)
+		govr = rollStat(dicepool, 0, pops+flux(), 0)
 	case constant.WTpRadWorld, constant.WTpInferno:
 		govr = 0
 	}
@@ -130,7 +135,7 @@ func RandomUWP(planetType ...string) string {
 	var laws int
 	switch pType {
 	default:
-		laws = rollStat(0, govr+flux(), 0)
+		laws = rollStat(dicepool, 0, govr+flux(), 0)
 	}
 	if pops == 0 {
 		laws = 0
@@ -143,7 +148,7 @@ func RandomUWP(planetType ...string) string {
 	var stprt string
 	switch pType {
 	default:
-		st := pops - rollStat(1, 0, 0)
+		st := pops - rollStat(dicepool, 1, 0, 0)
 		switch st {
 		default:
 			if st > 3 {
@@ -168,7 +173,7 @@ func RandomUWP(planetType ...string) string {
 		if pops < 5 {
 			dm = dm - 1
 		}
-		if pops > 3 {
+		if pops < 3 {
 			dm = dm - 2
 		}
 		r := utils.RollDice("2d6", dm)
@@ -248,21 +253,124 @@ func RandomUWP(planetType ...string) string {
 		case 13:
 			dm -= 2
 		}
-		tl = rollStat(1, 0, dm)
+		tl = rollStat(dicepool, 1, 0, dm)
 	case constant.WTpRadWorld, constant.WTpInferno, constant.WTpGG:
 		tl = 0
 	}
-
+	if pops == 0 && tl < 9 {
+		tl = 0
+	}
 	tl = utils.BoundInt(tl, 0, TrvCore.EhexToDigit("Y"))
+
 	//uwp.data[constant.PrTL] = ehex(tl)
 	result = result + "-" + TrvCore.DigitToEhex(tl)
 	return result
 }
 
-func rollStat(die, mod, dm int) int {
+func RandomUWPShort(dicepool *dice.Dicepool, planetType ...string) string {
+	var result string
+	var pType string
+	pType = constant.WTpHospitable
+	if len(planetType) > 0 {
+		pType = planetType[0]
+		if !constant.WorldTypeValid(pType) {
+			pType = constant.WTpHospitable
+		}
+	}
+	// if len(planetType) > 1 {
+	// 	utils.SetSeed(utils.SeedFromString(planetType[1]))
+	// }
+	//fmt.Println("Set pType as:", pType)
+	//////////SIZE
+	var size int
+	switch pType {
+	default:
+		size = rollStat(dicepool, 2, -2, 0)
+		if size == 10 {
+			size = rollStat(dicepool, 1, 9, 0)
+		}
+	case constant.WTpRadWorld, constant.WTpStormWorld:
+		size = rollStat(dicepool, 2, 0, 0)
+	case constant.WTpInferno:
+		size = rollStat(dicepool, 1, 6, 0)
+	case constant.WTpBigWorld:
+		size = rollStat(dicepool, 2, 7, 0)
+	case constant.WTpWorldlet:
+		size = rollStat(dicepool, 1, -3, 0)
+	case constant.WTpPlanetoid:
+		size = 0
+	case constant.WTpGG:
+		size = rollStat(dicepool, 0, 26+flux(), 0)
+	}
+	size = utils.BoundInt(size, 0, 32)
+	//uwp.data[constant.PrSize] = ehex(size)
+	result = TrvCore.DigitToEhex(size)
+
+	//////////ATMO
+	var atmo int
+	switch pType {
+	default:
+		atmo = rollStat(dicepool, 0, size+flux(), 0)
+	case constant.WTpPlanetoid:
+		atmo = 0
+	case constant.WTpStormWorld:
+		atmo = rollStat(dicepool, 0, size+flux(), 4)
+	case constant.WTpInferno:
+		atmo = TrvCore.EhexToDigit("B")
+	}
+	if size == 0 {
+		atmo = 0
+	}
+	atmo = utils.BoundInt(atmo, 0, TrvCore.EhexToDigit("F"))
+	//uwp.data[constant.PrAtmo] = ehex(atmo)
+	result = result + TrvCore.DigitToEhex(atmo)
+
+	//////////HYDRO
+	var hydr int
+	dm := 0
+	if atmo < 2 || atmo > 9 {
+		dm = -4
+	}
+	switch pType {
+	default:
+		hydr = rollStat(dicepool, 0, atmo+flux(), dm)
+	case constant.WTpPlanetoid, constant.WTpInferno:
+		hydr = 0
+	case constant.WTpStormWorld, constant.WTpInnerWorld:
+		hydr = rollStat(dicepool, 0, atmo+flux(), dm-4)
+	}
+	if size < 2 {
+		hydr = 0
+	}
+	hydr = utils.BoundInt(hydr, 0, TrvCore.EhexToDigit("A"))
+	//uwp.data[constant.PrHydr] = ehex(hydr)
+	result = result + TrvCore.DigitToEhex(hydr)
+
+	result = result + TrvCore.DigitToEhex(0)
+	result = result + TrvCore.DigitToEhex(0)
+	result = result + TrvCore.DigitToEhex(0)
+
+	//////////Starport
+	var stprt string
+	switch pType {
+	default:
+		stprt = "X"
+	case constant.WTpInferno, constant.WTpGG:
+		stprt = "Y"
+	}
+	//uwp.data[constant.PrStarport] = stprt
+	result = stprt + result
+
+	////////////////////TL
+	tl := 0
+	result = result + "-" + TrvCore.DigitToEhex(tl)
+	return result
+}
+
+func rollStat(dp *dice.Dicepool, die, mod, dm int) int {
 	d := strconv.Itoa(die)
 	//r := utils.RollDice(d+"d6", mod+dm)
-	r := dice.Roll(d + "d6").DM(mod + dm).Sum()
+	r := dp.RollNext(d + "d6").DM(mod + dm).Sum()
 	return r
 }
 
@@ -386,6 +494,178 @@ func CalculateTradeCodes(uwp string) []string {
 				res = append(res, constant.TradeCodeWaterWorld)
 			}
 
+		}
+	}
+	return res
+}
+
+func CalculateTradeCodesT5(uwp string, mwTags []string, mw bool, hz int) []string {
+	tradeCodes := constant.TravelCodesT5()
+	var res []string
+	for _, tc := range tradeCodes {
+		switch tc {
+		default:
+		case constant.TradeCodeAsteroid:
+			if matchTradeClassificationRequirements(uwp, "0 0 0 -- -- -- --") {
+				res = append(res, constant.TradeCodeAsteroid)
+			}
+		case constant.TradeCodeDesert:
+			if matchTradeClassificationRequirements(uwp, "-- 23456789ABCDEFS 0 -- -- -- --") {
+				res = append(res, constant.TradeCodeDesert)
+			}
+		case constant.TradeCodeFluidOceans:
+			if matchTradeClassificationRequirements(uwp, "-- ABCDEF 123456789A -- -- -- --") {
+				res = append(res, constant.TradeCodeFluidOceans)
+			}
+		case constant.TradeCodeGarden:
+			if matchTradeClassificationRequirements(uwp, "678 568 567 -- -- -- --") {
+				res = append(res, constant.TradeCodeGarden)
+			}
+		case constant.TradeCodeHellworld:
+			if matchTradeClassificationRequirements(uwp, "3456789ABC 2479ABC 012 -- -- -- --") || hz <= -2 {
+				res = append(res, constant.TradeCodeHellworld)
+			}
+		case constant.TradeCodeIceCapped:
+			if matchTradeClassificationRequirements(uwp, "-- 01 123456789A -- -- -- --") {
+				res = append(res, constant.TradeCodeIceCapped)
+			}
+		case constant.TradeCodeOceanWorld:
+			if matchTradeClassificationRequirements(uwp, "ABCDEF -- A -- -- -- --") {
+				res = append(res, constant.TradeCodeOceanWorld)
+			}
+		case constant.TradeCodeVacuum:
+			if matchTradeClassificationRequirements(uwp, "-- 0 -- -- -- -- --") {
+				res = append(res, constant.TradeCodeVacuum)
+			}
+		case constant.TradeCodeWaterWorld:
+			if matchTradeClassificationRequirements(uwp, "-- -- A -- -- -- --") {
+				res = append(res, constant.TradeCodeWaterWorld)
+			}
+			//Population
+		case constant.TradeCodeDieback:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- 0 0 0 123456789ABCDEFG") {
+				res = append(res, constant.TradeCodeDieback)
+			}
+		case constant.TradeCodeBarren:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- 0 0 0 0") {
+				res = append(res, constant.TradeCodeBarren)
+			}
+		case constant.TradeCodeLowPopulation:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- 123 -- -- --") {
+				res = append(res, constant.TradeCodeLowPopulation)
+			}
+		case constant.TradeCodeNonIndustrial:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- 456 -- -- --") {
+				res = append(res, constant.TradeCodeNonIndustrial)
+			}
+		case constant.TradeCodePreHigh:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- 8 -- -- --") {
+				res = append(res, constant.TradeCodePreHigh)
+			}
+		case constant.TradeCodeHighPopulation:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- 9ABCDEF -- -- --") {
+				res = append(res, constant.TradeCodeHighPopulation)
+			}
+			//Secondary
+		case constant.TradeCodeFarming:
+			if matchTradeClassificationRequirements(uwp, "-- 456789 45678 23456 -- -- --") && mw == false {
+				res = append(res, constant.TradeCodeFarming)
+			}
+			//
+		case constant.TradeCodeMining:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- 23456 -- -- --") && mw == false {
+				for _, val := range mwTags {
+					if val != "In" {
+						continue
+					}
+					res = append(res, constant.TradeCodeMining)
+				}
+				//res = append(res, constant.TradeCodeAgricultural)
+			}
+		case constant.TradeCodeMilitaryRule:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- -- -- -- ABCDEF") && mw == false {
+				res = append(res, constant.TradeCodeMilitaryRule)
+			}
+		case constant.TradeCodePenalColony:
+			if matchTradeClassificationRequirements(uwp, "-- 23AB 12345 3456 6 6789 --") && mw == false {
+				res = append(res, constant.TradeCodePenalColony)
+			}
+		case constant.TradeCodeReserve:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- 01234 6 045 --") && mw == false {
+				res = append(res, constant.TradeCodeReserve)
+			}
+			//Political
+		case constant.TradeCodeColony:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- 56789A 6 0123 --") {
+				res = append(res, constant.TradeCodeColony)
+			}
+			//Climate
+		case constant.TradeCodeFrozen:
+			if matchTradeClassificationRequirements(uwp, "23456789 -- 123456789A -- -- -- --") && hz >= 1 {
+				res = append(res, constant.TradeCodeFrozen)
+			}
+		case constant.TradeCodeHot:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- -- -- -- --") && hz == -1 {
+				res = append(res, constant.TradeCodeHot)
+			}
+		case constant.TradeCodeCold:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- -- -- -- --") && hz == 1 {
+				res = append(res, constant.TradeCodeCold)
+			}
+		case constant.TradeCodeTropic:
+			if matchTradeClassificationRequirements(uwp, "6789 456789 34567 -- -- -- --") && hz == -1 {
+				res = append(res, constant.TradeCodeTropic)
+			}
+		case constant.TradeCodeTundra:
+			if matchTradeClassificationRequirements(uwp, "6789 456789 34567 -- -- -- --") && hz == 1 {
+				res = append(res, constant.TradeCodeTundra)
+			}
+
+		//Economic
+		case constant.TradeCodeHighTech:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- -- -- -- CDEFGH") {
+				res = append(res, constant.TradeCodeHighTech)
+			}
+		case constant.TradeCodeLowTech:
+			if matchTradeClassificationRequirements(uwp, "-- -- -- -- -- -- 12345") {
+				res = append(res, constant.TradeCodeLowTech)
+			}
+		case constant.TradeCodePreAgricultural:
+			if matchTradeClassificationRequirements(uwp, "-- 456789 45678 48 -- -- --") {
+				res = append(res, constant.TradeCodePreAgricultural)
+			}
+		case constant.TradeCodeAgricultural:
+			if matchTradeClassificationRequirements(uwp, "-- 456789 45678 567 -- -- --") {
+				res = append(res, constant.TradeCodeAgricultural)
+			}
+		case constant.TradeCodeNonAgricultural:
+			if matchTradeClassificationRequirements(uwp, "-- 0123 0123 6789ABCDEF -- -- --") {
+				res = append(res, constant.TradeCodeNonAgricultural)
+			}
+		case constant.TradeCodePrisonExileCamp:
+			if matchTradeClassificationRequirements(uwp, "-- 23AB 12345 3456 -- 6789 --") && mw == true {
+				res = append(res, constant.TradeCodePrisonExileCamp)
+			}
+		case constant.TradeCodePreIndustrial:
+			if matchTradeClassificationRequirements(uwp, "-- 012479 -- 78 -- -- --") {
+				res = append(res, constant.TradeCodePreIndustrial)
+			}
+		case constant.TradeCodeIndustrial:
+			if matchTradeClassificationRequirements(uwp, "-- 012479ABC -- 9ABCDEF -- -- --") {
+				res = append(res, constant.TradeCodeIndustrial)
+			}
+		case constant.TradeCodePoor:
+			if matchTradeClassificationRequirements(uwp, "-- 2345 0123 -- -- -- --") {
+				res = append(res, constant.TradeCodePoor)
+			}
+		case constant.TradeCodePreRich:
+			if matchTradeClassificationRequirements(uwp, "-- 68 -- 59 -- -- --") {
+				res = append(res, constant.TradeCodePreRich)
+			}
+		case constant.TradeCodeRich:
+			if matchTradeClassificationRequirements(uwp, "-- 68 -- 678 -- -- --") {
+				res = append(res, constant.TradeCodeRich)
+			}
 		}
 	}
 	return res

@@ -16,6 +16,25 @@ type Table struct {
 	colWidth []int
 }
 
+func FromSlice(sl []string) (Table, error) {
+	t := Table{}
+	colNum := 0
+	for i := range sl {
+		t.lines = append(t.lines, sl[i])
+		if colNum == 0 {
+			cols := strings.Split(sl[i], "	")
+			colNum = len(cols)
+		} else {
+			//fmt.Println("Debug:", sl[i])
+			if colNum != len(strings.Split(sl[i], "	")) {
+				return Table{}, errors.New("Table NOT formatted properly: " + sl[i])
+			}
+		}
+	}
+	t.updateColWidth()
+	return t, nil
+}
+
 func NewTable(path string) (Table, error) {
 	t := Table{}
 	file, err := os.Open(path)

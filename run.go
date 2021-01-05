@@ -1,13 +1,16 @@
 package main
 
-import "github.com/Galdoba/TR_Dynasty/autoGM"
+import "github.com/Galdoba/TR_Dynasty/starsystem"
 
 func main() {
+
+	starsystem.Test()
+
 	//w := wrld.PickWorld()
 	//fmt.Println(w.SecondSurvey())
 	//stats := spaceship.Statistics("Gazelle")
 	//fmt.Println(stats)
-	autoGM.AutoGM()
+	//autoGM.AutoGM()
 	// plnt := wrld.PickWorld()
 	// st, err := starport.From(plnt)
 	// if err != nil {

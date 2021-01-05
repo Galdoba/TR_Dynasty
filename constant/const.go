@@ -15,14 +15,14 @@ const (
 	PrTL                = "TL"
 	WTpHospitable       = "Hospitable"
 	WTpPlanetoid        = "Planetoid"
-	WTpIceWorld         = "IceWorld"
-	WTpRadWorld         = "RadWorld"
+	WTpIceWorld         = "Ice World"
+	WTpRadWorld         = "Radioactive"
 	WTpInferno          = "Inferno"
-	WTpBigWorld         = "BigWorld"
+	WTpBigWorld         = "Big World"
 	WTpWorldlet         = "Worldlet"
-	WTpInnerWorld       = "InnerWorld"
-	WTpStormWorld       = "StormWorld"
-	WTpGG               = "GG"
+	WTpInnerWorld       = "Inner World"
+	WTpStormWorld       = "Storm World"
+	WTpGG               = "Gas Gigant"
 	MerchantTypeCommon  = "Common"
 	MerchantTypeTrade   = "Trade"
 	MerchantTypeNeutral = "Neutral"
@@ -107,6 +107,62 @@ func TravelCodesMgT2() []string {
 		TradeCodeWaterWorld,
 		TravelCodeAmber,
 		TravelCodeRed,
+	}
+}
+
+func TravelCodesT5() []string {
+	return []string{
+		TradeCodeAgricultural,
+		TradeCodeAsteroid,
+		TradeCodeBarren,
+		TradeCodeDesert,
+		TradeCodeFluidOceans,
+		TradeCodeGarden,
+		TradeCodeHighPopulation,
+		TradeCodeHighTech,
+		TradeCodeIceCapped,
+		TradeCodeIndustrial,
+		TradeCodeLowPopulation,
+		TradeCodeLowTech,
+		TradeCodeNonAgricultural,
+		TradeCodeNonIndustrial,
+		TradeCodePoor,
+		TradeCodeRich,
+		TradeCodeVacuum,
+		TradeCodeWaterWorld,
+		TravelCodeAmber,
+		TravelCodeRed,
+		TradeCodeHellworld,
+		TradeCodeOceanWorld,
+		TradeCodeDieback,
+		TradeCodePreHigh,
+		TradeCodePreAgricultural,
+		TradeCodePrisonExileCamp,
+		TradeCodePreIndustrial,
+		TradeCodePreRich,
+		TradeCodeFrozen,
+		TradeCodeHot,
+		TradeCodeCold,
+		TradeCodeLocked,
+		TradeCodeTropic,
+		TradeCodeTundra,
+		TradeCodeTwilightZone,
+		TradeCodeFarming,
+		TradeCodeMining,
+		TradeCodeMilitaryRule,
+		TradeCodePenalColony,
+		TradeCodeReserve,
+		TradeCodeSubsectorCapital,
+		TradeCodeSectorCapital,
+		TradeCodeCapital,
+		TradeCodeColony,
+		TradeCodeSatellite,
+		TradeCodeForbidden,
+		TradeCodePuzzle,
+		TradeCodeDangerous,
+		TradeCodeDataRepository,
+		TradeCodeAncientSite,
+		TradeCodeDeepSpace,
 	}
 }
 
