@@ -21,10 +21,15 @@ func RandomUWP(dicepool *dice.Dicepool, planetType ...string) string {
 			pType = constant.WTpHospitable
 		}
 	}
+	mainworldUWP := newUWPr{}
 	mainworldPops := 15
+	//mainworldTL := 30
 	if len(planetType) > 1 {
-		mainworldPops = TrvCore.EhexToDigit(planetType[1])
+		mainworldUWP = *NewUWP(planetType[1])
+		mainworldPops = mainworldUWP.Pops().Value()
+		//	mainworldTL = mainworldUWP.TL().Value()
 	}
+
 	// if len(planetType) > 1 {
 	// 	utils.SetSeed(utils.SeedFromString(planetType[1]))
 	// }
@@ -48,7 +53,7 @@ func RandomUWP(dicepool *dice.Dicepool, planetType ...string) string {
 	case constant.WTpPlanetoid:
 		size = 0
 	case constant.WTpGG:
-		size = rollStat(dicepool, 0, 26+flux(), 0)
+		size = rollStat(dicepool, 0, 26+dicepool.FluxNext(), 0)
 	}
 	size = utils.BoundInt(size, 0, 32)
 	//uwp.data[constant.PrSize] = ehex(size)
@@ -58,11 +63,11 @@ func RandomUWP(dicepool *dice.Dicepool, planetType ...string) string {
 	var atmo int
 	switch pType {
 	default:
-		atmo = rollStat(dicepool, 0, size+flux(), 0)
+		atmo = rollStat(dicepool, 0, size+dicepool.FluxNext(), 0)
 	case constant.WTpPlanetoid:
 		atmo = 0
 	case constant.WTpStormWorld:
-		atmo = rollStat(dicepool, 0, size+flux(), 4)
+		atmo = rollStat(dicepool, 0, size+dicepool.FluxNext(), 4)
 	case constant.WTpInferno:
 		atmo = TrvCore.EhexToDigit("B")
 	}
@@ -81,11 +86,11 @@ func RandomUWP(dicepool *dice.Dicepool, planetType ...string) string {
 	}
 	switch pType {
 	default:
-		hydr = rollStat(dicepool, 0, atmo+flux(), dm)
+		hydr = rollStat(dicepool, 0, atmo+dicepool.FluxNext(), dm)
 	case constant.WTpPlanetoid, constant.WTpInferno:
 		hydr = 0
 	case constant.WTpStormWorld, constant.WTpInnerWorld:
-		hydr = rollStat(dicepool, 0, atmo+flux(), dm-4)
+		hydr = rollStat(dicepool, 0, atmo+dicepool.FluxNext(), dm-4)
 	}
 	if size < 2 {
 		hydr = 0
@@ -96,7 +101,38 @@ func RandomUWP(dicepool *dice.Dicepool, planetType ...string) string {
 
 	//////////POPS
 	var pops int
-	dm = -10
+	msp := 15
+	dm = -3
+	if &mainworldUWP != nil && mainworldUWP.TL().Value() < 9 {
+		//dm = dm + (-1 * (9 - utils.BoundInt(mainworldUWP.TL().Value(), 0, 9)))
+		msp = 10
+		if mainworldUWP.TL().Value() < 9 {
+			msp = 0
+		}
+		switch atmo {
+		case 0, 1, 2, 3, 10, 11, 12:
+			msp = 0
+		case 5, 7, 9:
+			msp = msp - 1
+		case 4:
+			msp = msp - 2
+		case 13, 14, 15:
+			msp = msp - 3
+		}
+		switch size {
+		case 5, 6, 7:
+			msp = msp - 1
+		case 1, 2, 3, 4:
+			msp = msp - 2
+		}
+		switch hydr {
+		case 1, 2, 10:
+			msp = msp - 1
+		case 0:
+			msp = msp - 2
+		}
+
+	}
 	switch pType {
 	default:
 		pops = rollStat(dicepool, 2, -2, dm)
@@ -106,12 +142,13 @@ func RandomUWP(dicepool *dice.Dicepool, planetType ...string) string {
 	case constant.WTpRadWorld, constant.WTpInferno, constant.WTpGG:
 		pops = 0
 	case constant.WTpIceWorld, constant.WTpStormWorld:
-		pops = rollStat(dicepool, 2, -2, -6)
+		pops = rollStat(dicepool, 2, -2, -6+dm)
 	case constant.WTpInnerWorld:
-		pops = rollStat(dicepool, 2, -2, -4)
+		pops = rollStat(dicepool, 2, -2, -4+dm)
 	}
-
+	msp = utils.BoundInt(msp, 0, 15)
 	pops = utils.BoundInt(pops, 0, mainworldPops-1)
+	pops = utils.BoundInt(pops, 0, msp)
 
 	//uwp.data[constant.PrPops] = ehex(pops)
 	result = result + TrvCore.DigitToEhex(pops)
@@ -120,14 +157,38 @@ func RandomUWP(dicepool *dice.Dicepool, planetType ...string) string {
 	var govr int
 	switch pType {
 	default:
-		govr = rollStat(dicepool, 0, pops+flux(), 0)
+		govr = rollStat(dicepool, 0, pops+dicepool.FluxNext(), 0)
+		if &mainworldUWP != nil {
+			govrRoll := dicepool.RollNext("1d6").Sum()
+			if mainworldUWP.Govr().Value() == 6 {
+				govrRoll = govrRoll + pops
+			}
+			if mainworldUWP.Govr().Value() > 6 {
+				govrRoll--
+			}
+			govrRoll = utils.BoundInt(govrRoll, 1, 6)
+			switch govrRoll {
+			case 1:
+				govr = 0
+			case 2:
+				govr = 1
+			case 3:
+				govr = 2
+			case 4:
+				govr = 3
+			case 5, 6:
+				govr = 6
+			}
+		}
 	case constant.WTpRadWorld, constant.WTpInferno:
 		govr = 0
 	}
+
 	if pops == 0 {
 		govr = 0
 	}
 	govr = utils.BoundInt(govr, 0, TrvCore.EhexToDigit("F"))
+
 	//uwp.data[constant.PrGovr] = ehex(govr)
 	result = result + TrvCore.DigitToEhex(govr)
 
@@ -135,7 +196,7 @@ func RandomUWP(dicepool *dice.Dicepool, planetType ...string) string {
 	var laws int
 	switch pType {
 	default:
-		laws = rollStat(dicepool, 0, govr+flux(), 0)
+		laws = rollStat(dicepool, 0, govr+dicepool.FluxNext(), 0)
 	}
 	if pops == 0 {
 		laws = 0
@@ -252,14 +313,39 @@ func RandomUWP(dicepool *dice.Dicepool, planetType ...string) string {
 			dm += 1
 		case 13:
 			dm -= 2
+		case 14, 15:
+			dm -= 1
 		}
 		tl = rollStat(dicepool, 1, 0, dm)
 	case constant.WTpRadWorld, constant.WTpInferno, constant.WTpGG:
 		tl = 0
 	}
+	// if pops > 0 {
+	// decline := 0
+	// switch tl {
+	// case 0, 1, 2, 3, 4, 5, 6, 7, 8:
+	// 	decline = dicepool.RollNext("1d6").DM(-3).Sum()
+	// case 9, 10:
+	// 	decline = dicepool.RollNext("1d6").Sum()
+	// case 11, 12, 13:
+	// 	decline = dicepool.RollNext("2d6").Sum()
+	// default:
+	// 	decline = dicepool.RollNext("3d6").Sum()
+	// }
+	// decline = utils.BoundInt(decline, 0, 18)
+	// tl = tl - decline
+
+	// }
 	if pops == 0 && tl < 9 {
 		tl = 0
 	}
+	//if stprt == "Y" ||
+	if &mainworldUWP != nil {
+		if mainworldUWP.TL().Value() <= tl {
+			tl = 0
+		}
+	}
+
 	tl = utils.BoundInt(tl, 0, TrvCore.EhexToDigit("Y"))
 
 	//uwp.data[constant.PrTL] = ehex(tl)
@@ -300,7 +386,7 @@ func RandomUWPShort(dicepool *dice.Dicepool, planetType ...string) string {
 	case constant.WTpPlanetoid:
 		size = 0
 	case constant.WTpGG:
-		size = rollStat(dicepool, 0, 26+flux(), 0)
+		size = rollStat(dicepool, 0, 26+dicepool.FluxNext(), 0)
 	}
 	size = utils.BoundInt(size, 0, 32)
 	//uwp.data[constant.PrSize] = ehex(size)
@@ -310,11 +396,11 @@ func RandomUWPShort(dicepool *dice.Dicepool, planetType ...string) string {
 	var atmo int
 	switch pType {
 	default:
-		atmo = rollStat(dicepool, 0, size+flux(), 0)
+		atmo = rollStat(dicepool, 0, size+dicepool.FluxNext(), 0)
 	case constant.WTpPlanetoid:
 		atmo = 0
 	case constant.WTpStormWorld:
-		atmo = rollStat(dicepool, 0, size+flux(), 4)
+		atmo = rollStat(dicepool, 0, size+dicepool.FluxNext(), 4)
 	case constant.WTpInferno:
 		atmo = TrvCore.EhexToDigit("B")
 	}
@@ -333,11 +419,11 @@ func RandomUWPShort(dicepool *dice.Dicepool, planetType ...string) string {
 	}
 	switch pType {
 	default:
-		hydr = rollStat(dicepool, 0, atmo+flux(), dm)
+		hydr = rollStat(dicepool, 0, atmo+dicepool.FluxNext(), dm)
 	case constant.WTpPlanetoid, constant.WTpInferno:
 		hydr = 0
 	case constant.WTpStormWorld, constant.WTpInnerWorld:
-		hydr = rollStat(dicepool, 0, atmo+flux(), dm-4)
+		hydr = rollStat(dicepool, 0, atmo+dicepool.FluxNext(), dm-4)
 	}
 	if size < 2 {
 		hydr = 0
@@ -583,8 +669,21 @@ func CalculateTradeCodesT5(uwp string, mwTags []string, mw bool, hz int) []strin
 				//res = append(res, constant.TradeCodeAgricultural)
 			}
 		case constant.TradeCodeMilitaryRule:
-			if matchTradeClassificationRequirements(uwp, "-- -- -- -- -- -- ABCDEF") && mw == false {
-				res = append(res, constant.TradeCodeMilitaryRule)
+			if matchTradeClassificationRequirements(uwp, "-- -- -- -- -- -- --") && mw == false {
+				for _, val := range mwTags {
+					if val != "Ph" && val != "Hi" {
+						continue
+					}
+					dp := dice.New().SetSeed(uwp + uwp)
+					dm := 0
+					if val == "Hi" {
+						dm++
+					}
+					if dp.RollNext("2d6").DM(dm).Sum() >= 12 {
+						res = append(res, constant.TradeCodeMining)
+					}
+				}
+				//				res = append(res, constant.TradeCodeMilitaryRule)
 			}
 		case constant.TradeCodePenalColony:
 			if matchTradeClassificationRequirements(uwp, "-- 23AB 12345 3456 6 6789 --") && mw == false {

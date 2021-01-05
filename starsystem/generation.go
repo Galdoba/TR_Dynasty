@@ -244,19 +244,44 @@ func from(world wrld.World) SystemDetails {
 				for _, val := range profile.CalculateTradeCodesT5(lnData[6], nil, false, hz) {
 					lnData[8] += val + " "
 				}
-				if uwp.Starport().String() != "Y" && uwp.Starport().String() != "X" {
-					lnData[1] += "*"
-				}
-				if uwp.TL().Value() > 8 {
-					lnData[1] += "*"
-				}
 				if uwp.Pops().Value() > 0 {
-					lnData[1] += "*"
+					lnData[1] += "(!)"
+				}
+				if uwp.Starport().String() == "A" {
+					if uwp.Pops().Value() >= 7 {
+						lnData[1] += "H"
+					}
+					lnData[1] += "D"
+				}
+				if uwp.Starport().String() == "B" {
+					if uwp.Pops().Value() >= 8 {
+						lnData[1] += "H"
+					}
+					lnData[1] += "D"
+				}
+				if uwp.Starport().String() == "C" {
+					if uwp.Pops().Value() >= 9 {
+						lnData[1] += "H"
+					}
+					lnData[1] += "D"
+				}
+				if uwp.Starport().String() == "D" {
+					lnData[1] += "D"
+				}
+				if uwp.Starport().String() == "H" || uwp.Starport().String() == "E" {
+					lnData[1] += "B"
 				}
 
+				if uwp.TL().Value() > 9 {
+					lnData[1] += "*"
+				}
 				if uwp.TL().Value() > 0 {
 					lnData[1] += "*"
 				}
+				if uwp.TL().Value() > 12 {
+					lnData[1] += "*"
+				}
+
 			}
 		}
 
@@ -341,10 +366,10 @@ func (d *SystemDetails) makeDetailLine(s, i int, pType string, st string, mainwo
 	line += st + "	" + pType + "	"
 
 	if pType != "Mainworld" {
-		mwUWP := profile.NewUWP(mainworld.UWP())
-		mwPops := mwUWP.Pops().String()
+		//mwUWP := profile.NewUWP(mainworld.UWP())
+
 		//mwTags := profile.CalculateTradeCodesT5(mainworld.UWP(), []string{}, true, hz)
-		line += profile.RandomUWP(d.dicepool, pType, mwPops)
+		line += profile.RandomUWP(d.dicepool, pType, mainworld.UWP())
 
 	}
 	return line
