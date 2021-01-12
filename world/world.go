@@ -132,8 +132,8 @@ func NewWorld(name string) World {
 	world.name = name
 	world.stat = make(map[string]int)
 	world.data = make(map[string]string)
-	seed := utils.SeedFromString(name)
-	world.dp = dice.New(seed)
+	//seed := utils.SeedFromString(name)
+	world.dp = dice.New().SetSeed(name)
 
 	// if !uwpValid(uwp) {
 	// 	uwp = "RANDOM"
@@ -2525,7 +2525,7 @@ func FromUWP(uwp string) World {
 	}
 	w := World{}
 	w.data = make(map[string]string)
-	w.dp = dice.New(utils.SeedFromString(uwp))
+	w.dp = dice.New().SetSeed(uwp)
 	w.MergeUWP(uwp)
 	return w
 }

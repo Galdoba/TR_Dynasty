@@ -117,4 +117,8 @@ func AUnitsToMegameters(au float64) float64 {
 	return utils.RoundFloat64(au*149597.9, 3)
 }
 
+const (
+	AU2Megameters = 149597.9
+)
+
 //au = 149597900

@@ -5,9 +5,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Galdoba/TR_Dynasty/Astrogation"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/tab"
 	"github.com/Galdoba/devtools/cli/user"
+	"github.com/Galdoba/utils"
 
 	"github.com/Galdoba/TR_Dynasty/profile"
 
@@ -20,9 +22,6 @@ import (
 
 func Test() {
 	world := wrld.PickWorld()
-	//fmt.Println(world)
-	//	fmt.Println(world.Stellar())
-	//parsedStellar := parseStellar(world.Stellar())
 
 	from(world)
 }
@@ -65,7 +64,7 @@ type bodyDetails struct {
 	name             string
 	uwp              string
 	tags             string
-	diameter         int
+	diameter         float64
 	orbitDistance    float64
 	jumpPointToOrbit float64
 	orbitSpeed       int
@@ -82,9 +81,12 @@ func newBody(str string, dp *dice.Dicepool) bodyDetails {
 		if sz == 0 {
 			sz = 400
 		}
-		d := int(float64(sz+(dp.FluxNext()*100)+dp.FluxNext()*10+dp.FluxNext()) * 1.6)
+		d := float64(sz+(dp.FluxNext()*100)+dp.FluxNext()*10+dp.FluxNext()) * 1.6
+		d = utils.RoundFloat64(d, 3)
 		bd.diameter = d
-		bd.jumpPointToOrbit = float64(bd.diameter*90) / 10
+		bd.jumpPointToOrbit = utils.RoundFloat64(float64(bd.diameter*90)/10, 3)
+		fmt.Println("Size km:", d, "name", bd.name, "JP", bd.jumpPointToOrbit)
+		fmt.Println("Size km:", d, "name", bd.name, "JP au", utils.RoundFloat64(bd.jumpPointToOrbit/Astrogation.AU2Megameters, 2))
 	}
 
 	bd.tags = data[8]
@@ -149,7 +151,7 @@ func from(world wrld.World) SystemDetails {
 	}
 	for s := 1; s <= len(starMap); s++ {
 		//hz := strconv.Itoa(getHZ(starData[s-1]))
-		detailLine := "	 	" + starData[s-1] + "	-1	 	 	 	 "
+		detailLine := "	 	" + starData[s-1] + "	-1	 	 	 	**	starSize"
 		tabl = append(tabl, detailLine)
 		for j, _ := range starMap[s] {
 			nSat := 0
@@ -183,6 +185,7 @@ func from(world wrld.World) SystemDetails {
 				if nSat > 0 {
 					detailLine += strconv.Itoa(nSat)
 				}
+				detailLine += "	"
 				tabl = append(tabl, detailLine)
 			}
 
@@ -194,12 +197,12 @@ func from(world wrld.World) SystemDetails {
 				detailLine := d.makeDetailLine(s, j, satType, strconv.Itoa(sat), world, getHZ(starData[s-1]))
 				if strings.Contains(detailLine, "Mainworld") {
 					detailLine = strings.TrimSuffix(detailLine, "Mainworld	")
-					detailLine += world.Name() + "	" + world.UWP()
+					detailLine += world.Name() + "	" + world.UWP() + "	"
 
 				}
 
 				if detailLine != "" {
-					detailLine = world.Hex() + "	" + world.Name() + "	" + detailLine + "	"
+					detailLine = world.Hex() + "	" + world.Name() + "	" + detailLine + "	" + "	"
 					tabl = append(tabl, detailLine)
 				}
 			}
@@ -211,6 +214,7 @@ func from(world wrld.World) SystemDetails {
 		lnData := strings.Split(v, "	")
 		lnData = append(lnData, "")
 		lnData = append(lnData, "")
+
 		hz := 0
 		starNum := 0
 		switch lnData[2] {
@@ -224,6 +228,8 @@ func from(world wrld.World) SystemDetails {
 		starHZ := getHZ(starData[starNum])
 		planetHZ, _ := strconv.Atoi(lnData[3])
 		hz = planetHZ - starHZ
+		//tsrSize := 0 TODO: от диаметра звезды определяем радиус тени с которым сравниваем радиус тени планеты - проверить есть ли оно у меня уже в Астронавигации
+		starJZ := "test JZ " + strconv.Itoa(starNum)
 		lnData[9] = strconv.Itoa(hz)
 		lnData[1] = ""
 		if lnData[0] == "Star" {
@@ -308,6 +314,7 @@ func from(world wrld.World) SystemDetails {
 			lnData[8] = ""
 			lnData[9] = ""
 		}
+		lnData[10] = starJZ
 		tabl[k] = concatSlice(lnData)
 	}
 	table, err := tab.FromSlice(tabl)
