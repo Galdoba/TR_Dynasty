@@ -81,17 +81,25 @@ func newBody(str string, dp *dice.Dicepool) bodyDetails {
 		if sz == 0 {
 			sz = 400
 		}
-		d := float64(sz+(dp.FluxNext()*100)+dp.FluxNext()*10+dp.FluxNext()) * 1.6
-		d = utils.RoundFloat64(d, 3)
-		bd.diameter = d
-		bd.jumpPointToOrbit = utils.RoundFloat64(float64(bd.diameter*90)/10, 3)
-		fmt.Println("Size km:", d, "name", bd.name, "JP", bd.jumpPointToOrbit)
-		fmt.Println("Size km:", d, "name", bd.name, "JP au", utils.RoundFloat64(bd.jumpPointToOrbit/Astrogation.AU2Megameters, 2))
+		dKm := sz + (((dp.FluxNext()*100)+dp.FluxNext()*10+dp.FluxNext())*1600)/1000 //диаметр планеты в километрах
+		dMm := utils.RoundFloat64(float64(dKm)/1000, 3)                              //диаметр планеты в мегаметрах
+		jp := dMm * 100                                                              //точка прыжка в мегаметрах
+		jpAU := utils.RoundFloat64(jp/149597.9, 3)
+		fmt.Println(dKm, "size km", dMm, "size Mm", jp, "jp", jpAU, "jpAU", bd.name)
+		dFl := utils.RoundFloat64(float64(dKm), 3)
+		bd.tags = data[8]
+		fl, _ := strconv.ParseFloat(data[7], 64)
+		bd.orbitDistance = fl // орбита
+		bd.diameter = dFl
+		//pShadow := utils.RoundFloat64(float64(bd.diameter*100)/10, 3)
+		sDiam, _ := strconv.ParseFloat(data[10], 64)
+		Astrogation.JumpPointDistanceExtended(bd.orbitDistance, dKm, sDiam)
+
+		bd.jumpPointToOrbit = utils.RoundFloat64(float64(bd.diameter*100)/10, 3)
+		//fmt.Println("Size km:", d, "name", bd.name, "JP", bd.jumpPointToOrbit)
+		//fmt.Println("Size km:", d, "name", bd.name, "JP au", utils.RoundFloat64(bd.jumpPointToOrbit/Astrogation.AU2Megameters, 2))
 	}
 
-	bd.tags = data[8]
-	fl, _ := strconv.ParseFloat(data[7], 64)
-	bd.orbitDistance = fl
 	return bd
 }
 
@@ -229,7 +237,9 @@ func from(world wrld.World) SystemDetails {
 		planetHZ, _ := strconv.Atoi(lnData[3])
 		hz = planetHZ - starHZ
 		//tsrSize := 0 TODO: от диаметра звезды определяем радиус тени с которым сравниваем радиус тени планеты - проверить есть ли оно у меня уже в Астронавигации
-		starJZ := "test JZ " + strconv.Itoa(starNum)
+		solDiamMm := 13927.7
+		starJZ := strconv.FormatFloat(StarDiameter(starData[starNum])*solDiamMm/Astrogation.AU2Megameters, 'f', 2, 64)
+		//TODO: переразобраться с точками прыжка на бумаге с примерами!!
 		lnData[9] = strconv.Itoa(hz)
 		lnData[1] = ""
 		if lnData[0] == "Star" {
@@ -315,6 +325,9 @@ func from(world wrld.World) SystemDetails {
 			lnData[9] = ""
 		}
 		lnData[10] = starJZ
+		fmt.Println(lnData[2] + lnData[3] + lnData[4])
+		fmt.Println("planetaryOrbit =", lnData[7])
+		fmt.Println("StarDiam =")
 		tabl[k] = concatSlice(lnData)
 	}
 	table, err := tab.FromSlice(tabl)
@@ -519,6 +532,10 @@ func getHZ(star string) int {
 	hzMap["MV"] = 0
 	hzMap["MVI"] = 0
 	hzMap["MD"] = 0
+	if val, ok := hzMap[spectral+size]; !ok {
+		fmt.Println(val, star, spectral+size)
+		panic("star class unrecognized")
+	}
 	return hzMap[spectral+size]
 
 }

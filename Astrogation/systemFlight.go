@@ -58,6 +58,29 @@ func JumpPointDistance(world *world.World) (megaMeters float64) {
 	return planetJSDistance
 }
 
+func JumpPointDistanceExtended(planetOrbitAU float64, planetSizeKm int, starDiameter float64) float64 {
+	starShadow := utils.RoundFloat64((starDiameter*13927.2)/AU2Megameters, 2)
+	planetShadow := utils.RoundFloat64(float64(planetSizeKm*100*1000)/AU2Megameters, 2)
+	jumpPoint := planetShadow
+	if starShadow > planetShadow+planetOrbitAU {
+		jumpPoint = starShadow
+	}
+	jumpPoint = utils.RoundFloat64(jumpPoint, 2)
+	return jumpPoint
+}
+
+/*
+sunD := 13927.7
+sS = 0.76
+pO = 0.64
+pS = 0.12
+jP = pO + pS
+if sS > jP {
+jP = sS
+}
+
+*/
+
 //TravelTime - distance считается в Мегаметрах (тясяча км), thrust - среднее ускореение которое может поддерживать пилот
 //на протяжении перелета. Возвращает количество часов требуемое для перелета.
 // TODO: рассмотреть необходимость и возможность ввести тест меру эффекта от теста 'Pilot(Routine, DEX)'
