@@ -7,8 +7,6 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/Astrogation"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
-	"github.com/Galdoba/TR_Dynasty/tab"
-	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
 
 	"github.com/Galdoba/TR_Dynasty/profile"
@@ -23,7 +21,12 @@ import (
 func Test() {
 	world := wrld.PickWorld()
 
-	from(world)
+	d := from(world)
+	for _, val := range cyclePlanetbodyNames() {
+		if bd, ok := d.bodyDetail[val]; ok {
+			fmt.Println(bd.String())
+		}
+	}
 }
 
 func parseStellarData(w wrld.World) []string {
@@ -64,10 +67,21 @@ type bodyDetails struct {
 	name             string
 	uwp              string
 	tags             string
+	bodyType         string
 	diameter         float64
 	orbitDistance    float64
 	jumpPointToOrbit float64
 	orbitSpeed       int
+}
+
+func (bd *bodyDetails) String() string {
+	str := ""
+	str += bd.nomena
+	str += "	" + bd.name
+	str += "	" + bd.uwp
+	str += "	" + bd.bodyType
+	str += "	" + bd.tags
+	return str
 }
 
 func newBody(str string, dp *dice.Dicepool) bodyDetails {
@@ -83,21 +97,25 @@ func newBody(str string, dp *dice.Dicepool) bodyDetails {
 		}
 		dKm := sz + (((dp.FluxNext()*100)+dp.FluxNext()*10+dp.FluxNext())*1600)/1000 //диаметр планеты в километрах
 		dMm := utils.RoundFloat64(float64(dKm)/1000, 3)                              //диаметр планеты в мегаметрах
-		jp := dMm * 100                                                              //точка прыжка в мегаметрах
-		jpAU := utils.RoundFloat64(jp/149597.9, 3)
-		fmt.Println(dKm, "size km", dMm, "size Mm", jp, "jp", jpAU, "jpAU", bd.name)
-		dFl := utils.RoundFloat64(float64(dKm), 3)
+		jp := dMm * 100                                                              //точка JP без учета тени звезды
+		sDiam, _ := strconv.ParseFloat(data[10], 64)                                 //диаметр звезды
+		sShadow := Astrogation.StarJumpShadowAU(sDiam)                               //тень звезды в AU
+		dFl := utils.RoundFloat64(float64(dKm), 3)                                   //
+		fl, _ := strconv.ParseFloat(data[7], 64)                                     //
+		bd.orbitDistance = fl                                                        // орбита в AU
+		bd.diameter = dFl                                                            //
+		trueJP := jp                                                                 //
+		if sShadow > bd.orbitDistance {                                              //если орбита покрывает планету то точка выхода считается от солнца и вычитает орбиту планеты от тени звезды
+			addTravell := sShadow - bd.orbitDistance
+			trueJP = addTravell * Astrogation.AU2Megameters
+		}
+		trueJP = utils.RoundFloat64(trueJP, 3)
+		bd.jumpPointToOrbit = trueJP
 		bd.tags = data[8]
-		fl, _ := strconv.ParseFloat(data[7], 64)
-		bd.orbitDistance = fl // орбита
-		bd.diameter = dFl
-		//pShadow := utils.RoundFloat64(float64(bd.diameter*100)/10, 3)
-		sDiam, _ := strconv.ParseFloat(data[10], 64)
-		Astrogation.JumpPointDistanceExtended(bd.orbitDistance, dKm, sDiam)
-
-		bd.jumpPointToOrbit = utils.RoundFloat64(float64(bd.diameter*100)/10, 3)
-		//fmt.Println("Size km:", d, "name", bd.name, "JP", bd.jumpPointToOrbit)
-		//fmt.Println("Size km:", d, "name", bd.name, "JP au", utils.RoundFloat64(bd.jumpPointToOrbit/Astrogation.AU2Megameters, 2))
+		bd.bodyType = data[5]
+		//fmt.Println(data)
+	} else {
+		bd.bodyType = data[1]
 	}
 
 	return bd
@@ -217,29 +235,31 @@ func from(world wrld.World) SystemDetails {
 		}
 	}
 	plOrbit := ""
+	starNum := 0
 	for k, v := range tabl {
-		//		fmt.Println(k, "||", v)
+		fmt.Println(k, "||", v)
 		lnData := strings.Split(v, "	")
 		lnData = append(lnData, "")
 		lnData = append(lnData, "")
 
 		hz := 0
-		starNum := 0
+
 		switch lnData[2] {
 		case "Alpha":
 			starNum = 0
+			fmt.Println("SET ALPHA")
 		case "Beta":
 			starNum = 1
+			fmt.Println("SET BETA")
 		case "Gamma":
 			starNum = 2
+			fmt.Println("SET GAMMA")
 		}
 		starHZ := getHZ(starData[starNum])
 		planetHZ, _ := strconv.Atoi(lnData[3])
 		hz = planetHZ - starHZ
-		//tsrSize := 0 TODO: от диаметра звезды определяем радиус тени с которым сравниваем радиус тени планеты - проверить есть ли оно у меня уже в Астронавигации
 		solDiamMm := 13927.7
 		starJZ := strconv.FormatFloat(StarDiameter(starData[starNum])*solDiamMm/Astrogation.AU2Megameters, 'f', 2, 64)
-		//TODO: переразобраться с точками прыжка на бумаге с примерами!!
 		lnData[9] = strconv.Itoa(hz)
 		lnData[1] = ""
 		if lnData[0] == "Star" {
@@ -316,40 +336,40 @@ func from(world wrld.World) SystemDetails {
 		}
 		lnData[7] = plOrbit
 		if lnData[6] == " " {
-			//lnData[5] = lnData[2]
+			lnData[5] = lnData[2]
+			lnData[2] = TrvCore.NumToGreek(starNum)
+			fmt.Println(starNum, lnData[2], "---------------")
+			lnData[0] = world.Hex()
 			//lnData[2] = "Star"
-			lnData[1] = "Star"
+			//lnData[1] = "Star"
 			lnData[3] = ""
+			lnData[4] = ""
 			lnData[7] = ""
 			lnData[8] = ""
 			lnData[9] = ""
 		}
 		lnData[10] = starJZ
-		fmt.Println(lnData[2] + lnData[3] + lnData[4])
-		fmt.Println("planetaryOrbit =", lnData[7])
-		fmt.Println("StarDiam =")
 		tabl[k] = concatSlice(lnData)
 	}
-	table, err := tab.FromSlice(tabl)
-	if err != nil {
-		panic(err)
-	}
-	table.PTPrint()
 
 	for _, val := range tabl {
 		key := drawKey(val)
+		fmt.Println(key, "||", val)
 		d.bodyDetail[key] = newBody(val, d.dicepool)
 	}
 
-	fmt.Println(d.bodyDetail)
-	k, _ := user.InputStr()
-	fmt.Println(d.bodyDetail[k])
+	//fmt.Println(d.bodyDetail)
+
+	//fmt.Println(d.bodyDetail[k])
 	return d
 }
 
 func drawKey(val string) string {
 	data := strings.Split(val, "	")
-	key := data[2] + " " + data[3]
+	key := data[2]
+	if data[3] != "" {
+		key += " " + data[3]
+	}
 	if data[4] != "" {
 		key += " " + data[4]
 	}
@@ -696,6 +716,21 @@ func locateOrbit(d SystemDetails, bOrbit string) string {
 	}
 
 	return strconv.FormatFloat(dO[flux+5], 'f', 2, 64)
+}
+
+func cyclePlanetbodyNames() []string {
+	var names []string
+	for _, star := range []string{"Alpha", "Beta", "Gamma"} {
+		names = append(names, star)
+		for p := 0; p < 20; p++ {
+			planet := strconv.Itoa(p)
+			names = append(names, star+" "+planet)
+			for _, sat := range []string{"a", "b", "c", "d", "e"} {
+				names = append(names, star+" "+planet+" "+sat)
+			}
+		}
+	}
+	return names
 }
 
 /*

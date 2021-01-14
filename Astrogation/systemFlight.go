@@ -69,6 +69,13 @@ func JumpPointDistanceExtended(planetOrbitAU float64, planetSizeKm int, starDiam
 	return jumpPoint
 }
 
+func StarJumpShadowAU(starDiameter float64) float64 {
+	//13927200 km = diameter of Sun (1 Sol)
+	starShadow := utils.RoundFloat64((starDiameter*13927.2)/AU2Megameters*100, 2)
+
+	return starShadow
+}
+
 /*
 sunD := 13927.7
 sS = 0.76
@@ -89,6 +96,15 @@ func TravelTime(distance float64, thrust float64) (travelHours float64) {
 	travelHours = math.Sqrt(distance / thrust / 32.4) // SQRT(Distance (MegaMeters) / Acceleration (G or Trust) / 32.4) -- result Time (Hours) -- 32400 - это вес при 1G
 	travelHours = utils.RoundFloat64(travelHours, 1)
 	return travelHours
+}
+
+//TravelTime - distance считается в Мегаметрах (тясяча км), thrust - среднее ускореение которое может поддерживать пилот
+//на протяжении перелета. Возвращает количество часов требуемое для перелета.
+// TODO: рассмотреть необходимость и возможность ввести тест меру эффекта от теста 'Pilot(Routine, DEX)'
+//или механики Risk/Reward в Merchant Prince.
+func TravelTimeStr(distance float64, thrust float64) string {
+	tH := TravelTime(distance, thrust)
+	return hoursToTimeStr(tH)
 }
 
 //TravelTimeAU - distance считается в AU (Астрономическая единица), thrust - среднее ускореение которое может поддерживать пилот
@@ -123,5 +139,5 @@ func hoursToTimeStr(hours float64) string {
 		//hh++
 		mm += 60
 	}
-	return strconv.Itoa(dd) + " days	" + strconv.Itoa(hh) + " hours	" + strconv.Itoa(mm) + " minutes"
+	return strconv.Itoa(dd) + " days " + strconv.Itoa(hh) + " hours " + strconv.Itoa(mm) + " minutes"
 }
