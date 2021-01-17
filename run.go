@@ -2,16 +2,13 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Galdoba/utils"
-
-	puller "github.com/Galdoba/TR_Dynasty/otu/otuPuller"
 )
 
 func main() {
-	puller.PullOtuData()
-	lines := utils.LinesFromFile("data.txt")
-	fmt.Println(lines)
+	
 	//starsystem.Test()
 
 	//w := wrld.PickWorld()

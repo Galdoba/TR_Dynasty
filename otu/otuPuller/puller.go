@@ -6,6 +6,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
+
+	"github.com/Galdoba/utils"
 )
 
 //PullOtuData -
@@ -50,6 +53,71 @@ func PullOtuData() {
 		fmt.Println(err)
 		return
 	}
+	lines := utils.LinesFromTXT("data.txt")
+	fmt.Println(lines)
+	for i, val := range lines {
+		fmt.Println("Check entry", i)
+		fmt.Println(val)
+		if val != "Sector	SS	Hex	Name	UWP	Bases	Remarks	Zone	PBG	Allegiance	Stars	{Ix}	(Ex)	[Cx]	Nobility	W	RU" {
+			utils.AddLineToFile("dataClean.txt", val)
+		}
+	}
+	fmt.Println("Formatting...")
+	linesC := utils.LinesFromTXT("dataClean.txt")
+	//Sector	SS	Hex	Name	UWP	Bases	Remarks	Zone	PBG	Allegiance	Stars	{Ix}	(Ex)	[Cx]	Nobility	W	RU
+	mapLen := make(map[int]int)
+	mapLen[0] = 6
+	mapLen[1] = 2
+	mapLen[2] = 4
+	mapLen[3] = 28
+	mapLen[4] = 9
+	mapLen[5] = 5
+	mapLen[6] = 44
+	mapLen[7] = 4
+	mapLen[8] = 3
+	mapLen[9] = 10
+	mapLen[10] = 29
+	mapLen[11] = 7
+	mapLen[12] = 7
+	mapLen[13] = 6
+	mapLen[14] = 8
+	mapLen[15] = 2
+	mapLen[16] = 5
+	total := len(lines)
+	for i, val := range linesC {
+
+		if i == 1 {
+			template := []string{}
+			for col := 0; col < 17; col++ {
+				template = append(template, "-")
+				for len(template[col]) < mapLen[col] {
+					template[col] += "-"
+				}
+
+			}
+			tempF := strings.Join(template, " ")
+			utils.AddLineToFile("dataFormatted.txt", tempF)
+		}
+		data := strings.Split(val, "	")
+		//fmt.Print("Formatting Line ", i)
+		for col := 0; col < 17; col++ {
+			// if mapLen[col] < len(data[col]) {
+			// 	mapLen[col] = len(data[col])
+			// }
+			// fmt.Print(mapLen[col], " ")
+			// sum += mapLen[col]
+			for len(data[col]) < mapLen[col] {
+				data[col] += " "
+				//		fmt.Print(".")
+			}
+		}
+		dataF := strings.Join(data, " ")
+		utils.AddLineToFile("dataFormatted.txt", dataF)
+		//fmt.Print("ok\n")
+		//fmt.Println(dataF)
+		fmt.Print(i, " of ", total, " complete\r")
+	}
+	//6 2 4 28 9 5 44 4 3 10 29 7 7 6 8 2 5  - Line 66191 - max len(line):179
 }
 
 func allSectors() []string {
