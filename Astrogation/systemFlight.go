@@ -70,8 +70,8 @@ func JumpPointDistanceExtended(planetOrbitAU float64, planetSizeKm int, starDiam
 }
 
 func StarJumpShadowAU(starDiameter float64) float64 {
-	//13927200 km = diameter of Sun (1 Sol)
-	starShadow := utils.RoundFloat64((starDiameter*13927.2)/AU2Megameters*100, 2)
+	//1392720 km = diameter of Sun (1 Sol)
+	starShadow := utils.RoundFloat64((starDiameter*1392.7)/AU2Megameters*100, 2)
 
 	return starShadow
 }
@@ -134,7 +134,7 @@ func hoursToTimeStr(hours float64) string {
 	dd := int(hours) / 24
 	hh := int(hours) % 24
 	mm := int((hours - utils.RoundFloat64(hours, 0)) * 60)
-	fmt.Println(hours, utils.RoundFloat64(hours, 0))
+	//fmt.Println(hours, utils.RoundFloat64(hours, 0))
 	if mm < 0 {
 		//hh++
 		mm += 60

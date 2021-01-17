@@ -7,6 +7,7 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/Astrogation"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
+	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
 
 	"github.com/Galdoba/TR_Dynasty/profile"
@@ -20,13 +21,20 @@ import (
 
 func Test() {
 	world := wrld.PickWorld()
-
+	fmt.Println(world)
 	d := from(world)
 	for _, val := range cyclePlanetbodyNames() {
 		if bd, ok := d.bodyDetail[val]; ok {
-			fmt.Println(bd.String())
+			fmt.Println(bd.ShortInfo())
 		}
 	}
+	fmt.Println("Enter planetary for details:")
+	key, _ := user.InputStr()
+	if bd, ok := d.bodyDetail[key]; ok {
+		fmt.Println(bd.FullInfo())
+		fmt.Println(d.bodyDetail[key])
+	}
+	fmt.Println("END PROGRAMM")
 }
 
 func parseStellarData(w wrld.World) []string {
@@ -74,16 +82,6 @@ type bodyDetails struct {
 	orbitSpeed       int
 }
 
-func (bd *bodyDetails) String() string {
-	str := ""
-	str += bd.nomena
-	str += "	" + bd.name
-	str += "	" + bd.uwp
-	str += "	" + bd.bodyType
-	str += "	" + bd.tags
-	return str
-}
-
 func newBody(str string, dp *dice.Dicepool) bodyDetails {
 	bd := bodyDetails{}
 	data := strings.Split(str, "	")
@@ -115,7 +113,9 @@ func newBody(str string, dp *dice.Dicepool) bodyDetails {
 		bd.bodyType = data[5]
 		//fmt.Println(data)
 	} else {
-		bd.bodyType = data[1]
+		bd.bodyType = data[5]
+		sDiam, _ := strconv.ParseFloat(data[10], 64)                                          //диаметр звезды
+		bd.jumpPointToOrbit = Astrogation.StarJumpShadowAU(sDiam * Astrogation.AU2Megameters) //тень звезды в AU
 	}
 
 	return bd
@@ -177,7 +177,7 @@ func from(world wrld.World) SystemDetails {
 	}
 	for s := 1; s <= len(starMap); s++ {
 		//hz := strconv.Itoa(getHZ(starData[s-1]))
-		detailLine := "	 	" + starData[s-1] + "	-1	 	 	 	**	starSize"
+		detailLine := "	 	" + starData[s-1] + "	-1	 	 	 	**	" + TrvCore.NumToGreek(s-1)
 		tabl = append(tabl, detailLine)
 		for j, _ := range starMap[s] {
 			nSat := 0
@@ -196,9 +196,11 @@ func from(world wrld.World) SystemDetails {
 			if starMap[s][j] == constant.WTpHospitable || starMap[s][j] == "Mainworld" {
 				nSat = d.dicepool.RollNext("1d6").DM(-4).Sum()
 			}
+
 			if nSat < 0 {
 				nSat = 0
 			}
+
 			detailLine := d.makeDetailLine(s, j, starMap[s][j], "", world, getHZ(starData[s-1]))
 			if strings.Contains(detailLine, "Mainworld") {
 				detailLine = strings.TrimSuffix(detailLine, "Mainworld	")
@@ -237,7 +239,7 @@ func from(world wrld.World) SystemDetails {
 	plOrbit := ""
 	starNum := 0
 	for k, v := range tabl {
-		fmt.Println(k, "||", v)
+		//fmt.Println(k, "||", v)
 		lnData := strings.Split(v, "	")
 		lnData = append(lnData, "")
 		lnData = append(lnData, "")
@@ -247,13 +249,10 @@ func from(world wrld.World) SystemDetails {
 		switch lnData[2] {
 		case "Alpha":
 			starNum = 0
-			fmt.Println("SET ALPHA")
 		case "Beta":
 			starNum = 1
-			fmt.Println("SET BETA")
 		case "Gamma":
 			starNum = 2
-			fmt.Println("SET GAMMA")
 		}
 		starHZ := getHZ(starData[starNum])
 		planetHZ, _ := strconv.Atoi(lnData[3])
@@ -262,10 +261,11 @@ func from(world wrld.World) SystemDetails {
 		starJZ := strconv.FormatFloat(StarDiameter(starData[starNum])*solDiamMm/Astrogation.AU2Megameters, 'f', 2, 64)
 		lnData[9] = strconv.Itoa(hz)
 		lnData[1] = ""
-		if lnData[0] == "Star" {
-			lnData[1] = "Star"
+		// if lnData[0] == "Star" {
+		// 	lnData[1] = "Star"
+		// 	fmt.Println("Star***********")
 
-		}
+		// }
 		if lnData[5] == world.Name() {
 			lnData[1] = world.Name() + " "
 			for _, val := range profile.CalculateTradeCodesT5(lnData[6], nil, true, 0) {
@@ -328,25 +328,21 @@ func from(world wrld.World) SystemDetails {
 		if lnData[4] == "" {
 			plOrbit = locateOrbit(d, lnData[3])
 			lnData[7] = plOrbit
-		} else {
-			//lnData[0] = ""
-
-			//lnData[3] = ""
-			//lnData[7] = ""
 		}
 		lnData[7] = plOrbit
 		if lnData[6] == " " {
-			lnData[5] = lnData[2]
-			lnData[2] = TrvCore.NumToGreek(starNum)
-			fmt.Println(starNum, lnData[2], "---------------")
+			lnData[9] = lnData[2]
+			lnData[2] = lnData[8]
 			lnData[0] = world.Hex()
-			//lnData[2] = "Star"
-			//lnData[1] = "Star"
+			//lnData[1] = ""
 			lnData[3] = ""
 			lnData[4] = ""
+			lnData[5] = lnData[9]
 			lnData[7] = ""
 			lnData[8] = ""
 			lnData[9] = ""
+			lnData[10] = ""
+
 		}
 		lnData[10] = starJZ
 		tabl[k] = concatSlice(lnData)
@@ -354,7 +350,7 @@ func from(world wrld.World) SystemDetails {
 
 	for _, val := range tabl {
 		key := drawKey(val)
-		fmt.Println(key, "||", val)
+		//fmt.Println(key, "||", val)
 		d.bodyDetail[key] = newBody(val, d.dicepool)
 	}
 

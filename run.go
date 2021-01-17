@@ -3,15 +3,16 @@ package main
 import (
 	"fmt"
 
-	"github.com/Galdoba/TR_Dynasty/starsystem"
-	"github.com/Galdoba/TR_Dynasty/wrld"
+	"github.com/Galdoba/utils"
+
+	puller "github.com/Galdoba/TR_Dynasty/otu/otuPuller"
 )
 
 func main() {
-	w := wrld.PickWorld()
-	fmt.Println(w)
-
-	starsystem.Test()
+	puller.PullOtuData()
+	lines := utils.LinesFromFile("data.txt")
+	fmt.Println(lines)
+	//starsystem.Test()
 
 	//w := wrld.PickWorld()
 	//fmt.Println(w.SecondSurvey())

@@ -1,5 +1,11 @@
 package starsystem
 
+import (
+	"strconv"
+
+	"github.com/Galdoba/TR_Dynasty/Astrogation"
+)
+
 /*
 
 world.StarsystemDetails() []string
@@ -23,3 +29,34 @@ starsystem.Details()
 // 	d.bodyDetail = make(map[string]string)
 // 	return d
 // }
+
+func (bd *bodyDetails) ShortInfo() string {
+	str := ""
+	str += bd.nomena
+	if len(bd.nomena) < 8 {
+		str += "    "
+	}
+	str += "	" + bd.name
+	if bd.name == "" {
+		str += "         "
+	}
+	str += "	" + bd.uwp
+	str += "	" + bd.bodyType
+	str += "	" + bd.tags
+	return str
+}
+
+func (bd *bodyDetails) FullInfo() string {
+	str := bd.ShortInfo()
+	str += "\nASTROGATION DATA:\n"
+	str += "Orbital Distance	: " + strconv.FormatFloat(bd.orbitDistance, 'f', 2, 64) + " au\n"
+	str += "Jump point To Orbit	: " + strconv.FormatFloat(bd.jumpPointToOrbit*1000, 'f', 0, 64) + " km\n"
+	for i := 1; i <= 7; i++ {
+		str += "	Thrust " + strconv.Itoa(i) + ": " + Astrogation.TravelTimeStr(bd.jumpPointToOrbit, float64(i)) + "\n"
+	}
+
+	return str
+}
+//---- -------------------- --------- -------------------------- ------ ------- ------ ----- -- - --- -- ---- --------------
+//---- -------------------- --------- ---------------------------------------- ------ ------- ------ ----- -- - --- -- ---- --------------
+//Sector	SS	Hex	Name	UWP	Bases	Remarks	Zone	PBG	Allegiance	Stars	{Ix}	(Ex)	[Cx]	Nobility	W	RU
