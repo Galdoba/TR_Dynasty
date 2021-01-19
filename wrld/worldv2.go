@@ -195,7 +195,7 @@ func (w *World) Stellar() string {
 }
 
 //FromOTUdata -
-func FromOTUdata(otuData otu.Info) (World, error) {
+func FromOTUdata(otuData otu.SecondSurveyReportT5SS) (World, error) {
 	w := World{}
 	w.data = make(map[string]string)
 
@@ -213,13 +213,14 @@ func FromOTUdata(otuData otu.Info) (World, error) {
 	w.data[worldHEX] = otuData.Hex()
 	w.data[worldNAME] = otuData.Name()
 	w.data[worldUWP] = otuData.UWP()
-	w.data[worldBases] = slToStr(otuData.Bases())
+	//w.data[worldBases] = slToStr(otuData.BasesStr())
+	w.data[worldBases] = otuData.BasesStr()
 	w.data[worldTradeClassifications] = slToStr(otuData.Remarks())
 	w.checkLtHtTradeCodes()
 	w.data[worldTravelZone] = otuData.Zone()
 	w.data[worldPBG] = otuData.PBG()
 	w.data[worldAllegiance] = otuData.Allegiance()
-	w.data[worldStellar] = otuData.Stars()
+	w.data[worldStellar] = otuData.Stellar()
 	w.data[worldImportanceEx] = otuData.Iextention()
 	w.data[worldEconomicEx] = otuData.Eextention()
 	w.data[worldCulturalEx] = otuData.Cextention()

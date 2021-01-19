@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/dice"
-	"github.com/Galdoba/TR_Dynasty/otu"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/constant"
@@ -2543,24 +2542,24 @@ func FromOTUdata(otuData string) (World, error) {
 		return w, errors.New("OTU data unparseble: (Len != 17)")
 	}
 
-	w = NewWorld(otu.Info{otuData}.Name())
-	w.data["Sector"] = otu.Info{otuData}.Sector()
-	w.data["SS"] = otu.Info{otuData}.SubSector()
-	w.data["Hex"] = otu.Info{otuData}.Hex()
-	w.SetUWP(otu.Info{otuData}.UWP())
-	w.bases = otu.Info{otuData}.Bases()
-	w.tradeCodes = otu.Info{otuData}.Remarks()
-	w.checkLtHtTradeCodes()
-	w.data["Z"] = otu.Info{otuData}.Zone()
-	w.data["PBG"] = otu.Info{otuData}.PBG()
-	w.data["Allegiance"] = otu.Info{otuData}.Allegiance()
-	w.data["Stellar"] = otu.Info{otuData}.Stellar()
-	w.data[importanceEx] = otu.Info{otuData}.Iextention()
-	w.data[economicEx] = otu.Info{otuData}.Eextention()
-	w.data[culturalEx] = otu.Info{otuData}.Cextention()
-	w.data["Nobility"] = otu.Info{otuData}.Nobility()
-	w.data["W"] = otu.Info{otuData}.Worlds()
-	w.data["RU"] = otu.Info{otuData}.RU()
+	// w = NewWorld(otu.Info{otuData}.Name())
+	// w.data["Sector"] = otu.Info{otuData}.Sector()
+	// w.data["SS"] = otu.Info{otuData}.SubSector()
+	// w.data["Hex"] = otu.Info{otuData}.Hex()
+	// w.SetUWP(otu.Info{otuData}.UWP())
+	// w.bases = otu.Info{otuData}.Bases()
+	// w.tradeCodes = otu.Info{otuData}.Remarks()
+	// w.checkLtHtTradeCodes()
+	// w.data["Z"] = otu.Info{otuData}.Zone()
+	// w.data["PBG"] = otu.Info{otuData}.PBG()
+	// w.data["Allegiance"] = otu.Info{otuData}.Allegiance()
+	// w.data["Stellar"] = otu.Info{otuData}.Stellar()
+	// w.data[importanceEx] = otu.Info{otuData}.Iextention()
+	// w.data[economicEx] = otu.Info{otuData}.Eextention()
+	// w.data[culturalEx] = otu.Info{otuData}.Cextention()
+	// w.data["Nobility"] = otu.Info{otuData}.Nobility()
+	// w.data["W"] = otu.Info{otuData}.Worlds()
+	// w.data["RU"] = otu.Info{otuData}.RU()
 
 	return w, nil
 }

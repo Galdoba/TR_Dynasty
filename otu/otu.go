@@ -5,17 +5,11 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/Galdoba/devtools/cli/user"
+
+	"github.com/Galdoba/utils"
 )
-
-type Info struct {
-	Info string
-}
-
-var sectorData []string
-
-func init() {
-	sectorData = TrojanReachData()
-}
 
 type InfoRetriver interface {
 	Sector() string
@@ -35,96 +29,6 @@ type InfoRetriver interface {
 	Nobility() string
 	Worlds() string
 	RU() string
-}
-
-func (oi Info) Sector() string {
-	data := strings.Split(oi.Info, "	")
-	return data[0]
-}
-
-func (oi Info) SubSector() string {
-	data := strings.Split(oi.Info, "	")
-	return data[1]
-}
-
-func (oi Info) Hex() string {
-	data := strings.Split(oi.Info, "	")
-	return data[2]
-}
-
-func (oi Info) Name() string {
-	data := strings.Split(oi.Info, "	")
-	return data[3]
-}
-func (oi Info) UWP() string {
-	data := strings.Split(oi.Info, "	")
-	return data[4]
-}
-func (oi Info) Bases() []string {
-	data := strings.Split(oi.Info, "	")
-	bases := parseBasesT5(data[5])
-	return bases
-}
-
-func parseBasesT5(data string) []string {
-	bases := strings.Split(data, "")
-	return bases
-}
-
-func (oi Info) Remarks() []string {
-	data := strings.Split(oi.Info, "	")
-	rem := strings.Split(data[6], " ")
-	return rem
-}
-func (oi Info) Zone() string {
-	data := strings.Split(oi.Info, "	")
-	return data[7]
-}
-func (oi Info) PBG() string {
-	data := strings.Split(oi.Info, "	")
-	return data[8]
-}
-
-func (oi Info) ggPresent() bool {
-	pbg := oi.PBG()
-	data := strings.Split(pbg, "")
-	if data[2] != "0" {
-		return true
-	}
-	return false
-}
-
-func (oi Info) Allegiance() string {
-	data := strings.Split(oi.Info, "	")
-	return data[9]
-}
-func (oi Info) Stellar() string {
-	data := strings.Split(oi.Info, "	")
-	return data[10]
-}
-func (oi Info) Iextention() string {
-	data := strings.Split(oi.Info, "	")
-	return data[11]
-}
-func (oi Info) Eextention() string {
-	data := strings.Split(oi.Info, "	")
-	return data[12]
-}
-func (oi Info) Cextention() string {
-	data := strings.Split(oi.Info, "	")
-	return data[13]
-}
-func (oi Info) Nobility() string {
-	data := strings.Split(oi.Info, "	")
-	return data[14]
-}
-func (oi Info) Worlds() string {
-	data := strings.Split(oi.Info, "	")
-	return data[15]
-}
-func (oi Info) RU() string {
-	data := strings.Split(oi.Info, "	")
-	return data[16]
 }
 
 func MapDataByHex(data []string) map[string]string {
@@ -233,71 +137,93 @@ func hex5ToHex4(hex5 string) string {
 	return res
 }
 
-func GetDataOn(input string) (Info, error) {
-	if val, ok := MapDataByHex(sectorData)[input]; ok {
-		return Info{val}, nil
-	}
-
-	nameInput := formatName(input)
-	if val, ok := MapDataByName(sectorData)[nameInput]; ok {
-		return Info{val}, nil
-	}
-	uwpInput := strings.ToUpper(input)
-	if val, ok := MapDataByUWP(sectorData)[uwpInput]; ok {
-		return Info{val}, nil
-	}
-	if val, ok := MapDataByHex(sectorData)[hex5ToHex4(input)]; ok {
-		return Info{val}, nil
-	}
-	return Info{}, errors.New("No Data on '" + input + "'")
-}
-
-func formatName(name string) string {
-	rn := []rune(name)
-	fName := ""
-	for i := range rn {
-		if i == 0 || string(rn[i-1]) == " " || string(rn[i-1]) == "-" {
-			fName = fName + strings.ToUpper(string(rn[i]))
-			continue
-		}
-		fName = fName + string(rn[i])
-	}
-	return fName
-}
-
-func JumpCoordinatesVetted(coordPool []string, ggPresent bool, notRedZone bool) []string {
-	var coords []string
-	for i, coord := range coordPool {
-		planetaryData, err := GetDataOn(coord)
-		if err != nil {
-			continue
-		}
-		if ggPresent { //исключаем найденые системы БЕЗ газовых гигантов
-			if !planetaryData.ggPresent() {
-				continue
-			}
-		}
-		if notRedZone { //исключаем найденые системы с кодом Красный
-			if planetaryData.Zone() == "A" {
-				continue
-			}
-		}
-		//fmt.Println(planetaryData, err, i)
-		coords = append(coords, coordPool[i])
-	}
-	return coords
-}
-
 //GetData -
-func GetData(key string) string {
-	l := "No Data Found"
+func GetDataUser() SecondSurveyReportT5SS {
+	fmt.Print("Enter Search Key: ")
+	key := "No Key"
+	err := errors.New("")
+	for err != nil {
+		fmt.Print(err.Error())
+		key, err = user.InputStr()
+	}
+	responce, err := searchByName(key)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	return responce
+}
+
+func GetDataOn(key string) (SecondSurveyReportT5SS, error) {
+	err := errors.New("")
+	responce, err := searchByName(key)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	return responce, err
+}
+
+func searchByName(key string) (SecondSurveyReportT5SS, error) {
+	err := errors.New("No Data Found")
+	keyUP := strings.ToUpper(key)
+	firstSearch := []SecondSurveyReportT5SS{}
+	secondSearch := []SecondSurveyReportT5SS{}
 	for _, line := range RawData() {
-		if strings.Contains(line, key) {
+		lineUP := strings.ToUpper(line)
+		if strings.Contains(lineUP, keyUP) {
 			ssr := SecondSurveyReportT5SS{line}
-			fmt.Print("test:'", ssr.String(), "'\n")
+			if strings.ToUpper(ssr.Name()) == keyUP {
+				firstSearch = append(firstSearch, ssr)
+			}
+			if strings.Contains(strings.ToUpper(ssr.Name()), keyUP) && len(key) > 3 {
+				secondSearch = append(secondSearch, ssr)
+			}
+			err = nil
 		}
 	}
-	return l
+	if len(firstSearch) == 1 {
+		return firstSearch[0], nil
+	}
+	if len(secondSearch) == 1 {
+		return secondSearch[0], nil
+	}
+	if len(firstSearch) > 5 {
+		err = errors.New("Search Key returns " + strconv.Itoa(len(firstSearch)) + " results")
+	}
+	searchRes := []string{}
+	if len(firstSearch) > 0 {
+		for _, val := range firstSearch {
+			searchRes = append(searchRes, val.String())
+		}
+		i, _ := utils.TakeOptions("Select Entry:", searchRes...)
+		fmt.Println("\033[A                          \r")
+		return firstSearch[i-1], nil
+	}
+	if len(secondSearch) > 0 {
+		for _, val := range secondSearch {
+			searchRes = append(searchRes, val.String())
+		}
+		i, _ := utils.TakeOptions("Select Entry:", searchRes...)
+		fmt.Println("\033[A                          \r")
+		return secondSearch[i-1], nil
+	}
+	return SecondSurveyReportT5SS{}, err
+}
+
+func handleSearchError(err error) {
+	if err == nil {
+		return
+	}
+	switch err.Error() {
+	default:
+		msg := "Warning! " + err.Error()
+		if ok, _ := user.Confirm(msg + "\ncontinue?"); ok {
+			return
+		} else {
+			panic(err)
+		}
+
+	}
+	return
 }
 
 //SecondSurveyReportT5SS - содержит строку с данными с https://travellermap.com
@@ -429,7 +355,12 @@ func (ssr *SecondSurveyReportT5SS) RUint() int {
 }
 
 func (ssr *SecondSurveyReportT5SS) String() string {
+	if len(ssr.data) == 0 {
+		return "--NO DATA--"
+	}
 	str := ""
+	str += ssr.Sector() + "  "
+	str += ssr.SubSector() + "  "
 	str += ssr.Hex() + "  "
 	str += ssr.Name() + "  "
 	str += ssr.UWP() + "  "
@@ -446,7 +377,8 @@ func (ssr *SecondSurveyReportT5SS) String() string {
 	str += ssr.PBG() + "  "
 	str += ssr.Worlds() + "  "
 	str += ssr.Allegiance() + "  "
-	str += ssr.Stellar()
+	str += ssr.Stellar() + "  "
+	str += ssr.RU()
 	return str
 }
 
