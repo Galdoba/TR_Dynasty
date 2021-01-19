@@ -28,7 +28,7 @@ type InfoRetriver interface {
 	Zone() string
 	PBG() string
 	Allegiance() string
-	Stars() []string
+	Stellar() []string
 	Iextention() string
 	Eextention() string
 	Cextention() string
@@ -98,7 +98,7 @@ func (oi Info) Allegiance() string {
 	data := strings.Split(oi.Info, "	")
 	return data[9]
 }
-func (oi Info) Stars() string {
+func (oi Info) Stellar() string {
 	data := strings.Split(oi.Info, "	")
 	return data[10]
 }
@@ -291,20 +291,12 @@ func JumpCoordinatesVetted(coordPool []string, ggPresent bool, notRedZone bool) 
 //GetData -
 func GetData(key string) string {
 	l := "No Data Found"
-	for i, line := range RawData() {
+	for _, line := range RawData() {
 		if strings.Contains(line, key) {
-			fmt.Println(key, i, line)
 			ssr := SecondSurveyReportT5SS{line}
-			//fmt.Print("test:'", ssr.Sector(), "'\n")
-			//fmt.Print("test:'", ssr.SubSector(), "'\n")
-			//fmt.Print("test:'", ssr.Hex(), "'\n")
-			fmt.Print("test:'", ssr.Name(), "'\n")
-			fmt.Print("test:'", ssr.UWP(), "'\n")
-			fmt.Print("test:'", ssr.Bases(), "'\n")
-			fmt.Print("test:'", ssr.Remarks(), "'\n")
+			fmt.Print("test:'", ssr.String(), "'\n")
 		}
 	}
-
 	return l
 }
 
@@ -312,6 +304,7 @@ func GetData(key string) string {
 //данные хранятся одной строкой и разделены пробелами.
 //Карта данных сейчас:
 //6_2_4_28_9_5 44 4 3 10 29 7 7 6 8 2 5  - Line 66191 - max len(line):179
+//TODO: сделать конструктор маски для вывода нескольких репортов
 type SecondSurveyReportT5SS struct {
 	data string
 }
@@ -346,27 +339,115 @@ func (ssr *SecondSurveyReportT5SS) UWP() string {
 //Bases - возвращает базы находящиеся в системе.
 func (ssr *SecondSurveyReportT5SS) Bases() []string {
 	basStr := string(ssr.data[54:59])
-	bases := []string{}
-
-	for _, v := range basStr {
-		if string(byte(v)) != " " {
-			bases = append(bases, string(byte(v)))
-		}
-	}
+	trStr := trimAllSpaces(basStr)
+	bases := strings.Split(trStr, "")
 	return bases
+}
+
+//BasesStr - возвращает базы находящиеся в системе.
+func (ssr *SecondSurveyReportT5SS) BasesStr() string {
+	basStr := string(ssr.data[54:59])
+	return trimAllSpaces(basStr)
 }
 
 //Remarks - возвращает ремарки в виде слайса.
 func (ssr *SecondSurveyReportT5SS) Remarks() []string {
 	basStr := string(ssr.data[60:104])
-	fmt.Print("Full Line '", basStr, "'\n")
-	bases := []string{}
-	for _, v := range basStr {
-		if string(byte(v)) != " " {
-			bases = append(bases, string(byte(v)))
-		}
+	trStr := trimAllSpaces(basStr)
+	remarks := strings.Split(trStr, " ")
+	return remarks
+}
+
+//Zone - возвращает Travel Zone главной планеты
+func (ssr *SecondSurveyReportT5SS) Zone() string {
+	return string(ssr.data[105:106])
+}
+
+//PBG - возвращает PBG главной планеты
+func (ssr *SecondSurveyReportT5SS) PBG() string {
+	return string(ssr.data[110:113])
+}
+
+//Allegiance - возвращает Принадлежность главной планеты
+func (ssr *SecondSurveyReportT5SS) Allegiance() string {
+	return trimAllSpaces(string(ssr.data[114:125]))
+}
+
+//Stellar - возвращает перечень звезд системы
+func (ssr *SecondSurveyReportT5SS) Stellar() string {
+	return trimAllSpaces(string(ssr.data[125:154]))
+}
+
+//Iextention - возвращает Importance Extention
+func (ssr *SecondSurveyReportT5SS) Iextention() string {
+	return trimAllSpaces(string(ssr.data[155:162]))
+}
+
+//IextentionVal - возвращает Параметр Importance в числовом значении
+func (ssr *SecondSurveyReportT5SS) IextentionVal() int {
+	iExStr := ssr.Iextention()
+	iExStr = strings.TrimPrefix(iExStr, "{ ")
+	iExStr = strings.TrimSuffix(iExStr, " }")
+	iEx, err := strconv.Atoi(iExStr)
+	resolveErr(err)
+	return iEx
+}
+
+//Eextention - возвращает Econoimic Extention
+func (ssr *SecondSurveyReportT5SS) Eextention() string {
+	return trimAllSpaces(string(ssr.data[163:170]))
+}
+
+//Cextention - возвращает Cultural Extention
+func (ssr *SecondSurveyReportT5SS) Cextention() string {
+	return trimAllSpaces(string(ssr.data[171:177]))
+}
+
+//Nobility - возвращает перечень титулов возможных на главном мире.
+func (ssr *SecondSurveyReportT5SS) Nobility() string {
+	return trimAllSpaces(string(ssr.data[178:186]))
+}
+
+//Worlds - возвращает количество миров помимо главного
+func (ssr *SecondSurveyReportT5SS) Worlds() string {
+	return trimAllSpaces(string(ssr.data[187:189]))
+}
+
+//RU - возвращает экономический показатель мира (годовой ВВП)
+//1 RU примерно равен 10MCr
+//TODO: обдумать возможность/необходимость расчетов бюджетов по модулю Pocket Empire
+func (ssr *SecondSurveyReportT5SS) RU() string {
+	return trimAllSpaces(string(ssr.data[190:195]))
+}
+
+//RUint - возвращает экономический показатель мира (годовой ВВП) в виде Int
+//1 RU примерно равен 10MCr
+func (ssr *SecondSurveyReportT5SS) RUint() int {
+	ru, err := strconv.Atoi(ssr.RU())
+	resolveErr(err)
+	return ru
+}
+
+func (ssr *SecondSurveyReportT5SS) String() string {
+	str := ""
+	str += ssr.Hex() + "  "
+	str += ssr.Name() + "  "
+	str += ssr.UWP() + "  "
+	for _, v := range ssr.Remarks() {
+		str += v + " "
 	}
-	return bases
+	str += " "
+	str += ssr.Iextention() + "  "
+	str += ssr.Eextention() + "  "
+	str += ssr.Cextention() + "  "
+	str += ssr.Nobility() + "  "
+	str += ssr.BasesStr() + "  "
+	str += ssr.Zone() + "  "
+	str += ssr.PBG() + "  "
+	str += ssr.Worlds() + "  "
+	str += ssr.Allegiance() + "  "
+	str += ssr.Stellar()
+	return str
 }
 
 func trimAllSpaces(s string) string {
@@ -378,18 +459,18 @@ func trimAllSpaces(s string) string {
 	return s
 }
 
+func resolveErr(err error) {
+	if err != nil {
+		switch err.Error() {
+		default:
+			panic(err)
+		}
+	}
+}
+
 /*
-//44 4 3 10 29 7 7 6 8 2 5  - Line 66191 - max len(line):179
+//2 5  - Line 66191 - max len(line):179
 type InfoRetriver interface {
-	Remarks() []string
-	Zone() string
-	PBG() string
-	Allegiance() string
-	Stars() []string
-	Iextention() string
-	Eextention() string
-	Cextention() string
-	Nobility() string
 	Worlds() string
 	RU() string
 }

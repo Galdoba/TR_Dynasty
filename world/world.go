@@ -2554,7 +2554,7 @@ func FromOTUdata(otuData string) (World, error) {
 	w.data["Z"] = otu.Info{otuData}.Zone()
 	w.data["PBG"] = otu.Info{otuData}.PBG()
 	w.data["Allegiance"] = otu.Info{otuData}.Allegiance()
-	w.data["Stellar"] = otu.Info{otuData}.Stars()
+	w.data["Stellar"] = otu.Info{otuData}.Stellar()
 	w.data[importanceEx] = otu.Info{otuData}.Iextention()
 	w.data[economicEx] = otu.Info{otuData}.Eextention()
 	w.data[culturalEx] = otu.Info{otuData}.Cextention()
