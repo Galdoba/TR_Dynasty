@@ -1,14 +1,10 @@
 package main
 
-import (
-	"fmt"
-	"strings"
-
-	"github.com/Galdoba/utils"
-)
+import "github.com/Galdoba/TR_Dynasty/otu"
 
 func main() {
-	
+	otu.GetData("Terra")
+	otu.GetData("----------------------------")
 	//starsystem.Test()
 
 	//w := wrld.PickWorld()

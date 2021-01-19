@@ -2,6 +2,7 @@ package otu
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -286,3 +287,110 @@ func JumpCoordinatesVetted(coordPool []string, ggPresent bool, notRedZone bool) 
 	}
 	return coords
 }
+
+//GetData -
+func GetData(key string) string {
+	l := "No Data Found"
+	for i, line := range RawData() {
+		if strings.Contains(line, key) {
+			fmt.Println(key, i, line)
+			ssr := SecondSurveyReportT5SS{line}
+			//fmt.Print("test:'", ssr.Sector(), "'\n")
+			//fmt.Print("test:'", ssr.SubSector(), "'\n")
+			//fmt.Print("test:'", ssr.Hex(), "'\n")
+			fmt.Print("test:'", ssr.Name(), "'\n")
+			fmt.Print("test:'", ssr.UWP(), "'\n")
+			fmt.Print("test:'", ssr.Bases(), "'\n")
+			fmt.Print("test:'", ssr.Remarks(), "'\n")
+		}
+	}
+
+	return l
+}
+
+//SecondSurveyReportT5SS - содержит строку с данными с https://travellermap.com
+//данные хранятся одной строкой и разделены пробелами.
+//Карта данных сейчас:
+//6_2_4_28_9_5 44 4 3 10 29 7 7 6 8 2 5  - Line 66191 - max len(line):179
+type SecondSurveyReportT5SS struct {
+	data string
+}
+
+//Sector - возвращает абревиатуру сектора
+func (ssr *SecondSurveyReportT5SS) Sector() string {
+	return string(ssr.data[:4])
+}
+
+//SubSector - возвращает абревиатуру субсектора
+func (ssr *SecondSurveyReportT5SS) SubSector() string {
+	return string(ssr.data[7:8])
+}
+
+//Hex - возвращает координаты хекса внутри сектора
+func (ssr *SecondSurveyReportT5SS) Hex() string {
+	return string(ssr.data[10:14])
+}
+
+//Name - возвращает имя главной планеты
+func (ssr *SecondSurveyReportT5SS) Name() string {
+	name := string(ssr.data[15:43])
+	name = trimAllSpaces(name)
+	return name
+}
+
+//UWP - возвращает UWP главной планеты
+func (ssr *SecondSurveyReportT5SS) UWP() string {
+	return string(ssr.data[44:53])
+}
+
+//Bases - возвращает базы находящиеся в системе.
+func (ssr *SecondSurveyReportT5SS) Bases() []string {
+	basStr := string(ssr.data[54:59])
+	bases := []string{}
+
+	for _, v := range basStr {
+		if string(byte(v)) != " " {
+			bases = append(bases, string(byte(v)))
+		}
+	}
+	return bases
+}
+
+//Remarks - возвращает ремарки в виде слайса.
+func (ssr *SecondSurveyReportT5SS) Remarks() []string {
+	basStr := string(ssr.data[60:104])
+	fmt.Print("Full Line '", basStr, "'\n")
+	bases := []string{}
+	for _, v := range basStr {
+		if string(byte(v)) != " " {
+			bases = append(bases, string(byte(v)))
+		}
+	}
+	return bases
+}
+
+func trimAllSpaces(s string) string {
+	l := len(s) + 1
+	for len(s) != l {
+		l = len(s)
+		s = strings.TrimSuffix(s, " ")
+	}
+	return s
+}
+
+/*
+//44 4 3 10 29 7 7 6 8 2 5  - Line 66191 - max len(line):179
+type InfoRetriver interface {
+	Remarks() []string
+	Zone() string
+	PBG() string
+	Allegiance() string
+	Stars() []string
+	Iextention() string
+	Eextention() string
+	Cextention() string
+	Nobility() string
+	Worlds() string
+	RU() string
+}
+*/
