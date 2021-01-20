@@ -1,11 +1,13 @@
 package main
 
-import "github.com/Galdoba/TR_Dynasty/starsystem"
+import (
+	"github.com/Galdoba/TR_Dynasty/starsystem"
+)
 
 func main() {
-	//	fmt.Println(otu.GetOtuData())
+	//fmt.Println(otu.GetOtuData())
 
-	starsystem.Test()
+	starsystem.Test2()
 
 	//w := wrld.PickWorld()
 	//fmt.Println(w.SecondSurvey())

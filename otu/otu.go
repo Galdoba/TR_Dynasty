@@ -165,48 +165,76 @@ func GetDataOn(key string) (SecondSurveyReportT5SS, error) {
 func searchByName(key string) (SecondSurveyReportT5SS, error) {
 	err := errors.New("No Data Found")
 	keyUP := strings.ToUpper(key)
-	firstSearch := []SecondSurveyReportT5SS{}
-	secondSearch := []SecondSurveyReportT5SS{}
+	search := make(map[int][]SecondSurveyReportT5SS)
 	for _, line := range RawData() {
 		lineUP := strings.ToUpper(line)
-		if strings.Contains(lineUP, keyUP) {
+		//keyParts := strings.Split(keyUP, " ")
+		if containsAny(lineUP, strings.Split(keyUP, " ")...) {
 			ssr := SecondSurveyReportT5SS{line}
 			if strings.ToUpper(ssr.Name()) == keyUP {
-				firstSearch = append(firstSearch, ssr)
+				search[1] = append(search[1], ssr)
+			}
+			if strings.ToUpper(ssr.UWP()) == keyUP {
+				search[4] = append(search[4], ssr)
 			}
 			if strings.Contains(strings.ToUpper(ssr.Name()), keyUP) && len(key) > 3 {
-				secondSearch = append(secondSearch, ssr)
+				search[2] = append(search[2], ssr)
 			}
+			if strings.Contains(keyUP, strings.ToUpper(ssr.Sector())) && strings.Contains(keyUP, strings.ToUpper(ssr.Hex())) {
+				search[3] = append(search[3], ssr)
+			}
+
 			err = nil
 		}
 	}
-	if len(firstSearch) == 1 {
-		return firstSearch[0], nil
+	if len(search[1]) == 1 {
+		return search[1][0], nil
 	}
-	if len(secondSearch) == 1 {
-		return secondSearch[0], nil
+	if len(search[4]) == 1 {
+		return search[4][0], nil
 	}
-	if len(firstSearch) > 5 {
-		err = errors.New("Search Key returns " + strconv.Itoa(len(firstSearch)) + " results")
+	if len(search[2]) == 1 {
+		return search[2][0], nil
 	}
-	searchRes := []string{}
-	if len(firstSearch) > 0 {
-		for _, val := range firstSearch {
-			searchRes = append(searchRes, val.String())
-		}
-		i, _ := utils.TakeOptions("Select Entry:", searchRes...)
-		fmt.Println("\033[A                          \r")
-		return firstSearch[i-1], nil
+	if len(search[3]) == 1 {
+		return search[3][0], nil
 	}
-	if len(secondSearch) > 0 {
-		for _, val := range secondSearch {
-			searchRes = append(searchRes, val.String())
-		}
-		i, _ := utils.TakeOptions("Select Entry:", searchRes...)
-		fmt.Println("\033[A                          \r")
-		return secondSearch[i-1], nil
+	if len(search[1]) > 5 {
+		err = errors.New("Search Key returns " + strconv.Itoa(len(search[1])) + " results")
 	}
+	if len(search[1]) > 0 {
+		return selectFromFound(search[1])
+	}
+	if len(search[4]) > 0 {
+		return selectFromFound(search[4])
+	}
+	if len(search[2]) > 0 {
+		return selectFromFound(search[2])
+	}
+	if len(search[3]) > 0 {
+		return selectFromFound(search[3])
+	}
+	err = errors.New("No Data Found")
 	return SecondSurveyReportT5SS{}, err
+}
+
+func selectFromFound(found []SecondSurveyReportT5SS) (SecondSurveyReportT5SS, error) {
+	searchRes := []string{}
+	for _, val := range found {
+		searchRes = append(searchRes, val.String())
+	}
+	i, _ := utils.TakeOptions("Select Entry:", searchRes...)
+	fmt.Println("\033[A                          \r")
+	return found[i-1], nil
+}
+
+func containsAny(str string, subStr ...string) bool {
+	for _, v := range subStr {
+		if strings.Contains(str, v) {
+			return true
+		}
+	}
+	return false
 }
 
 func handleSearchError(err error) {
@@ -233,6 +261,11 @@ func handleSearchError(err error) {
 //TODO: сделать конструктор маски для вывода нескольких репортов
 type SecondSurveyReportT5SS struct {
 	data string
+}
+
+//Data - возвращает не изменненную строку из общей базы
+func (ssr *SecondSurveyReportT5SS) Data() string {
+	return ssr.data
 }
 
 //Sector - возвращает абревиатуру сектора

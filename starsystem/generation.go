@@ -7,6 +7,7 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/Astrogation"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
+	"github.com/Galdoba/TR_Dynasty/TrvCore/ehex"
 	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
 
@@ -19,10 +20,22 @@ import (
 	"github.com/Galdoba/TR_Dynasty/wrld"
 )
 
+func From(world wrld.World) SystemDetails {
+	fmt.Print(world.SecondSurvey(), "\n")
+	d := SystemDetails{}
+	d.bodyDetail = make(map[string]bodyDetails)
+	d.dicepool = dice.New().SetSeed(world.Name() + world.Name())
+	starData := parseStellarData(world)
+	stBodySlots := make(map[string]string)
+	strKys, numKeys, ehexKeys := allKeys2()
+
+	return d
+}
+
 func Test() {
 	world := wrld.PickWorld()
 	fmt.Println(world)
-	d := from(world)
+	d := From(world)
 	for _, val := range cyclePlanetbodyNames() {
 		if bd, ok := d.bodyDetail[val]; ok {
 			fmt.Println(bd.ShortInfo())
@@ -56,6 +69,23 @@ func parseStellarData(w wrld.World) []string {
 	}
 	return stars
 }
+
+func Test2() {
+	allKeys2()
+
+}
+
+/*
+1. распределить доступные орбиты по звездам
+2. поместить MW
+3. поместить GG
+4. поместить Belts
+5. поместить Other Worlds
+6. поместить сателиты
+7. пройти по всем телам и раскидать характеристики.
+
+
+*/
 
 type SystemDetails struct {
 	bodyDetail map[string]bodyDetails
@@ -413,7 +443,7 @@ func (d *SystemDetails) makeDetailLine(s, i int, pType string, st string, mainwo
 
 func allKeys() []string {
 	keys := []string{}
-	for i := 0; i < 17; i++ {
+	for i := 0; i <= 20; i++ {
 		for j := -1; j < 10; j++ {
 			k := strconv.Itoa(i) + "	"
 			if j > -1 {
@@ -423,6 +453,38 @@ func allKeys() []string {
 		}
 	}
 	return keys
+}
+
+func allKeys2() (keys []string, numKeys []string, ehexKeys []string) {
+	//keys := []string{}
+	//numKeys := []string{}
+	//ehexKeys := []string{}
+	i := 0
+	for starNum := 0; starNum < 5; starNum++ {
+		star := TrvCore.NumToGreek(starNum)
+		keys = append(keys, star)
+		numKeys = append(numKeys, strconv.Itoa(starNum))
+		ehexKeys = append(ehexKeys, ehex.New(starNum).String())
+		fmt.Print(i, " S := '", keys[i], "' N := '", numKeys[i], "' E := '", ehexKeys[i], "'\n")
+		i++
+		for orbit := 0; orbit <= 20; orbit++ {
+			orbitStr := strconv.Itoa(orbit)
+			keys = append(keys, star+" "+orbitStr)
+			numKeys = append(numKeys, strconv.Itoa(starNum)+" "+strconv.Itoa(orbit))
+			ehexKeys = append(ehexKeys, ehex.New(starNum).String()+ehex.New(orbit).String())
+			fmt.Print(i, " S := '", keys[i], "' N := '", numKeys[i], "' E := '", ehexKeys[i], "'\n")
+			i++
+			for satOrbit := 0; satOrbit < 26; satOrbit++ {
+				satOrbitStr := TrvCore.NumToAnglic(satOrbit)
+				keys = append(keys, star+" "+orbitStr+" "+satOrbitStr)
+				numKeys = append(numKeys, strconv.Itoa(starNum)+" "+strconv.Itoa(orbit)+" "+strconv.Itoa(satOrbit))
+				ehexKeys = append(ehexKeys, ehex.New(starNum).String()+ehex.New(orbit).String()+ehex.New(satOrbit).String())
+				fmt.Print(i, " S := '", keys[i], "' N := '", numKeys[i], "' E := '", ehexKeys[i], "'\n")
+				i++
+			}
+		}
+	}
+	return keys, numKeys, ehexKeys
 }
 
 func (d *SystemDetails) rollGG() string {
@@ -544,6 +606,74 @@ func getHZ(star string) int {
 	hzMap["MIb"] = 11
 	hzMap["MII"] = 10
 	hzMap["MIII"] = 9
+	hzMap["MIV"] = -1
+	hzMap["MV"] = 0
+	hzMap["MVI"] = 0
+	hzMap["MD"] = 0
+	if val, ok := hzMap[spectral+size]; !ok {
+		fmt.Println(val, star, spectral+size)
+		panic("star class unrecognized")
+	}
+	return hzMap[spectral+size]
+
+}
+
+func getStarClosestOrbit(star string) int {
+	spectral := getStarSpectral(star)
+	size := getStarSize(star)
+	hzMap := make(map[string]int)
+	hzMap["OIa"] = 8
+	hzMap["OIb"] = 7
+	hzMap["OII"] = 6
+	hzMap["OIII"] = 5
+	hzMap["OIV"] = 4
+	hzMap["OV"] = 5
+	hzMap["OVI"] = -1
+	hzMap["OD"] = 0
+	hzMap["BIa"] = 7
+	hzMap["BIb"] = 6
+	hzMap["BII"] = 5
+	hzMap["BIII"] = 4
+	hzMap["BIV"] = 3
+	hzMap["BV"] = 4
+	hzMap["BVI"] = -1
+	hzMap["BD"] = 0
+	hzMap["AIa"] = 7
+	hzMap["AIb"] = 5
+	hzMap["AII"] = 3
+	hzMap["AIII"] = 1
+	hzMap["AIV"] = 1
+	hzMap["AV"] = 0
+	hzMap["AVI"] = -1
+	hzMap["AD"] = 0
+	hzMap["FIa"] = 6
+	hzMap["FIb"] = 4
+	hzMap["FII"] = 2
+	hzMap["FIII"] = 0
+	hzMap["FIV"] = 0
+	hzMap["FV"] = 0
+	hzMap["FVI"] = 0
+	hzMap["FD"] = 0
+	hzMap["GIa"] = 7
+	hzMap["GIb"] = 5
+	hzMap["GII"] = 2
+	hzMap["GIII"] = 0
+	hzMap["GIV"] = 0
+	hzMap["GV"] = 0
+	hzMap["GVI"] = 0
+	hzMap["GD"] = 0
+	hzMap["KIa"] = 7
+	hzMap["KIb"] = 6
+	hzMap["KII"] = 3
+	hzMap["KIII"] = 0
+	hzMap["KIV"] = 0
+	hzMap["KV"] = 0
+	hzMap["KVI"] = 0
+	hzMap["KD"] = 0
+	hzMap["MIa"] = 8
+	hzMap["MIb"] = 7
+	hzMap["MII"] = 6
+	hzMap["MIII"] = 4
 	hzMap["MIV"] = -1
 	hzMap["MV"] = 0
 	hzMap["MVI"] = 0

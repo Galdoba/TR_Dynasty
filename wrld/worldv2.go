@@ -295,12 +295,13 @@ func (w *World) checkLtHtTradeCodes() {
 func PickWorld() World {
 	dataFound := false
 	for !dataFound {
-		fmt.Print("Enter world's Name, Hex or UWP: ")
+		fmt.Print("Enter world's Name, UWP or '[Sector] + [Hex]': ")
 		input, err := user.InputStr()
 		if err != nil {
 
 		}
 		data, err := otu.GetDataOn(input)
+		fmt.Println("Data", data)
 		if err != nil {
 			fmt.Print("WARNING: " + err.Error() + "\n")
 			continue
