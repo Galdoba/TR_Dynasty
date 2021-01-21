@@ -101,6 +101,15 @@ func (w *World) TradeClassifications() string {
 	return "--NO DATA--"
 }
 
+//TradeClassificationsSl - return TradeClassifications data
+func (w *World) TradeClassificationsSl() []string {
+	if val, ok := w.data[worldTradeClassifications]; ok {
+		tc := strings.Split(val, " ")
+		return tc
+	}
+	return []string{"--NO DATA--"}
+}
+
 //ImportanceEx - return Importance data
 func (w *World) ImportanceEx() string {
 	if val, ok := w.data[worldImportanceEx]; ok {
@@ -266,7 +275,7 @@ func (w World) SecondSurvey() []string {
 
 func (w *World) checkLtHtTradeCodes() {
 	uwp := profile.NewUWP(w.UWP())
-	if uwp.TL().Value() <= 5 {
+	if uwp.TL().Value() <= 5 && uwp.TL().Value() != 0 {
 		w.data[worldTradeClassifications] += " Lt "
 	}
 	if uwp.TL().Value() >= 12 {

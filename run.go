@@ -7,7 +7,7 @@ import (
 func main() {
 	//fmt.Println(otu.GetOtuData())
 
-	starsystem.Test2()
+	starsystem.Test()
 
 	//w := wrld.PickWorld()
 	//fmt.Println(w.SecondSurvey())
