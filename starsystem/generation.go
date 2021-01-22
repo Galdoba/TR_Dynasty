@@ -25,19 +25,31 @@ func From(world wrld.World) SystemDetails {
 	d.bodyDetail = make(map[string]bodyDetails)
 	d.dicepool = dice.New().SetSeed(world.Name() + world.Name())
 	starData := parseStellarData(world)
-
 	stBodySlots := setupOrbitalBodySlots(starData)
 	stBodySlots = d.placeMW(world, stBodySlots)
 	stBodySlots = d.placeGG(world, stBodySlots)
-
+	stBodySlots = d.placeBelts(world, stBodySlots)
+	stBodySlots = d.placeOtherWorlds(world, stBodySlots)
+	//stBodySlots = d.placeSatelites(world, stBodySlots)
+	stBodySlots = d.assignWorldTypes(world, stBodySlots)
+	fmt.Println("DEBUG: OUTPUT INFO")
 	fmt.Println(len(stBodySlots), "valid slots in total")
-	for key, val := range stBodySlots {
-		if val != "--VALID--" {
-			fmt.Println(key, val)
+	for _, val := range allKeys2() {
+		if val.starCode() > len(starData)-1 {
+			continue
+		}
+		if stBodySlots[val] == "Star" {
+			fmt.Print("\n")
+		}
+		if stBodySlots[val] != "--VALID--" {
+			fmt.Print(val, "	- ", stBodySlots[val], "\n")
+
+		} else {
+			delete(stBodySlots, val)
 		}
 
 	}
-
+	fmt.Println(len(stBodySlots), "valid slots in total")
 	//fmt.Println(starData, stBodySlots)
 	return d
 }
@@ -46,8 +58,6 @@ func (d *SystemDetails) placeMW(world wrld.World, stBodySlots map[numCode]string
 	tc := world.TradeClassificationsSl()
 	starData := parseStellarData(world)
 	hz := getHZ(starData[0])
-	fmt.Println("Remarks:", tc)
-	fmt.Print("Star ", starData[0], " has hz = ", hz, "\n")
 	mwOrbit := hz
 	if sliceContains(tc, "Fr") {
 		mwOrbit = hz + d.dicepool.RollNext("1d6").DM(1).Sum()
@@ -73,12 +83,24 @@ func (d *SystemDetails) placeMW(world wrld.World, stBodySlots map[numCode]string
 		}
 		//fmt.Print("Suggest satelite orbit ", TrvCore.NumToAnglic(satOrb), "\n")
 		stBodySlots[numCode{[3]int{0, mwOrbit, satOrb}}] = "MainWorld"
+		if world.GasGigants() == 0 {
+			stBodySlots[numCode{[3]int{0, mwOrbit, -1}}] = "Big World"
+		}
 		return stBodySlots
 	}
 
 	//fmt.Print("Suggest: ", mwOrbit, "\n")
 	stBodySlots[numCode{[3]int{0, mwOrbit, -1}}] = "MainWorld"
 	return stBodySlots
+}
+
+func mwOrbit(stBodySlots map[numCode]string) (int, int) {
+	for k, v := range stBodySlots {
+		if v == "MainWorld" {
+			return k.planetCode(), k.sateliteCode()
+		}
+	}
+	return -999, -999
 }
 
 func (d *SystemDetails) placeGG(world wrld.World, stBodySlots map[numCode]string) map[numCode]string {
@@ -106,18 +128,21 @@ func (d *SystemDetails) placeGG(world wrld.World, stBodySlots map[numCode]string
 	}
 	starKeys = starKeys[0:len(ggTypes)]
 	starHZ = starHZ[0:len(ggTypes)]
-	fmt.Print("GGtypes := ", ggTypes, "\n")
-	fmt.Print("GGPlacementOrder := ", starKeys, "\n")
-	fmt.Print("Star HZ := ", starHZ, "\n")
 	for ggIndex, ggType := range ggTypes {
-		suggest := starHZ[ggIndex] + d.rollGGOrbit(ggType)
+		suggest := starHZ[ggIndex] + d.rollOrbitPlacement(ggType)
+		if ggIndex == 0 {
+			mwOr, mwsatOrb := mwOrbit(stBodySlots)
+			if mwsatOrb != -1 {
+				suggest = mwOr
+			}
+		}
+
 		//valid := false
 		for {
 			if val, ok := stBodySlots[numCode{[3]int{starKeys[ggIndex], suggest, -1}}]; ok {
 				if val != "--VALID--" {
 					//}
 					//if stBodySlots[numCode{[3]int{starKeys[ggIndex], suggest, -1}}] != "--VALID--" {
-					fmt.Println("increace Suggest")
 					suggest++
 					continue
 				}
@@ -130,12 +155,107 @@ func (d *SystemDetails) placeGG(world wrld.World, stBodySlots map[numCode]string
 	return stBodySlots
 }
 
+func (d *SystemDetails) placeBelts(world wrld.World, stBodySlots map[numCode]string) map[numCode]string {
+	totalBelts := world.Belts()
+	starData := parseStellarData(world)
+	starKeys := []int{}
+	starHZ := []int{}
+	for i := 0; i < totalBelts; i++ {
+		for l := 0; l < len(starData); l++ {
+			starKeys = append(starKeys, l)
+			starHZ = append(starHZ, getHZ(starData[l]))
+		}
+	}
+	starKeys = starKeys[0:totalBelts]
+	starHZ = starHZ[0:totalBelts]
+	for _, star := range starKeys {
+		suggest := starHZ[star] + d.rollOrbitPlacement("Belt")
+		//valid := false
+		for {
+			if val, ok := stBodySlots[numCode{[3]int{starKeys[star], suggest, -1}}]; ok {
+				if val != "--VALID--" {
+					//}
+					//if stBodySlots[numCode{[3]int{starKeys[ggIndex], suggest, -1}}] != "--VALID--" {
+					suggest++
+					continue
+				}
+			}
+			stBodySlots[numCode{[3]int{starKeys[star], suggest, -1}}] = "Belt"
+			break
+		}
+	}
+
+	return stBodySlots
+}
+
+func (d *SystemDetails) placeOtherWorlds(world wrld.World, stBodySlots map[numCode]string) map[numCode]string {
+	worldsTotal, err := strconv.Atoi(world.NumOfWorlds())
+	if err != nil {
+		panic(err)
+	}
+	otherWorlds := worldsTotal - world.GasGigants() - world.Belts() - 1
+	starData := parseStellarData(world)
+	starKeys := []int{}
+	starHZ := []int{}
+	for i := 0; i < otherWorlds; i++ {
+		for l := 0; l < len(starData); l++ {
+			starKeys = append(starKeys, l)
+			starHZ = append(starHZ, getHZ(starData[l]))
+		}
+	}
+	starKeys = starKeys[0:otherWorlds]
+	starHZ = starHZ[0:otherWorlds]
+	for index, star := range starKeys {
+		suggest := starHZ[star] + d.rollOrbitPlacement("World1")
+		if index == otherWorlds-1 {
+			suggest = starHZ[star] + d.rollOrbitPlacement("World2")
+		}
+
+		//valid := false
+		for {
+			if val, ok := stBodySlots[numCode{[3]int{starKeys[star], suggest, -1}}]; ok {
+				if suggest < 0 {
+					suggest++
+					continue
+				}
+				if val != "--VALID--" {
+					//}
+					//if stBodySlots[numCode{[3]int{starKeys[ggIndex], suggest, -1}}] != "--VALID--" {
+					suggest++
+					continue
+				}
+			}
+			stBodySlots[numCode{[3]int{starKeys[star], suggest, -1}}] = "Planet"
+			break
+		}
+	}
+
+	return stBodySlots
+}
+
+func (d *SystemDetails) assignWorldTypes(world wrld.World, stBodySlots map[numCode]string) map[numCode]string {
+	starData := parseStellarData(world)
+	for k, v := range stBodySlots {
+		if k.sateliteCode() != -1 {
+			continue
+		}
+		if v != "Planet" {
+			continue
+		}
+		hz := getHZ(starData[k.starCode()])
+		stBodySlots[k] = d.outerType()
+		if k.planetCode() <= hz {
+			stBodySlots[k] = d.innerType()
+		}
+	}
+	return stBodySlots
+}
+
 func setupOrbitalBodySlots(starData []string) map[numCode]string {
 	numCodes := allKeys2()
 	stBodySlots := make(map[numCode]string)
 	for _, val := range numCodes {
 		stBodySlots[val] = "--INVALID--"
-
 	}
 	for i, _ := range starData {
 		for k, _ := range stBodySlots {
@@ -154,7 +274,9 @@ func setupOrbitalBodySlots(starData []string) map[numCode]string {
 		if pc < getStarClosestOrbit(starData[sc]) && pc != -1 {
 			delete(stBodySlots, k)
 		}
-
+		if pc == -1 && k.sateliteCode() == -1 && k.starCode() < len(starData) {
+			stBodySlots[k] = "Star"
+		}
 	}
 	return stBodySlots
 }
@@ -691,6 +813,10 @@ func starPositions() []string {
 func getHZ(star string) int {
 	spectral := getStarSpectral(star)
 	size := getStarSize(star)
+	if star == "BD" {
+		spectral = "B"
+		size = "D"
+	}
 	hzMap := make(map[string]int)
 	hzMap["OIa"] = 15
 	hzMap["OIb"] = 15
@@ -759,6 +885,10 @@ func getHZ(star string) int {
 func getStarClosestOrbit(star string) int {
 	spectral := getStarSpectral(star)
 	size := getStarSize(star)
+	if star == "BD" {
+		spectral = "B"
+		size = "D"
+	}
 	hzMap := make(map[string]int)
 	hzMap["OIa"] = 8
 	hzMap["OIb"] = 7
@@ -1006,16 +1136,24 @@ func (d *SystemDetails) rollFarSatelite() int {
 	return d.dicepool.RollNext("2d6").DM(13).Sum()
 }
 
-func (d *SystemDetails) rollGGOrbit(ggType string) int {
+func (d *SystemDetails) rollOrbitPlacement(ggType string) int {
 	switch ggType {
 	default:
-		panic("Unknown GGType")
+		panic("Unknown Body Type")
 	case "LGG":
 		return d.dicepool.RollNext("2d6").DM(-5).Sum()
 	case "SGG":
 		return d.dicepool.RollNext("2d6").DM(-4).Sum()
 	case "IG":
 		return d.dicepool.RollNext("2d6").DM(-2).Sum()
+	case "Belt":
+		return d.dicepool.RollNext("2d6").DM(-3).Sum()
+	case "World1":
+		arr := []int{11, 10, 8, 6, 4, 2, 0, 1, 3, 5, 7, 9}
+		return arr[d.dicepool.RollNext("2d6").DM(-2).Sum()]
+	case "World2":
+		arr := []int{18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7}
+		return arr[d.dicepool.RollNext("2d6").DM(-2).Sum()]
 	}
 }
 
