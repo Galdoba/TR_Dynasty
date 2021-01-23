@@ -7,6 +7,7 @@ import (
 	"github.com/Galdoba/utils"
 )
 
+//StarDiameter - возвращает диаметр звезды полученного класса. 1,00 = диаметр солнца
 func StarDiameter(stellar string) float64 {
 	massesMap := make(map[string][]float64)
 	massesMap["b0"] = []float64{60, 50, 30, 25, 20, 18, -1, 0.26}
