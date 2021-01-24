@@ -118,7 +118,8 @@ func AUnitsToMegameters(au float64) float64 {
 }
 
 const (
-	AU2Megameters = 149597.9
+	AU2Megameters        = 149597.9
+	SolDiametrMegameters = 13927.7
 )
 
 //au = 149597900

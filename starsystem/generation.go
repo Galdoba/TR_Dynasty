@@ -31,32 +31,41 @@ func From(world wrld.World) SystemDetails {
 	stBodySlots = d.placeGG(world, stBodySlots)
 	stBodySlots = d.placeBelts(world, stBodySlots)
 	stBodySlots = d.placeOtherWorlds(world, stBodySlots)
-
 	stBodySlots = d.assignWorldTypes(world, stBodySlots)
 	stBodySlots = d.placeSatelites(world, stBodySlots)
+	for k, v := range stBodySlots {
+		if v == "--VALID--" {
+			delete(stBodySlots, k)
+		}
+	}
+	fmt.Println(stBodySlots)
+	for k, v := range stBodySlots {
+		bDetails := newBodyR(v, k, world)
+		fmt.Println(k, v, bDetails)
+	}
 	fmt.Println("DEBUG: OUTPUT INFO")
 	fmt.Println(len(stBodySlots), "valid slots in total")
-	for _, val := range allKeys2() {
-		if val.starCode() > len(starData)-1 {
-			continue
-		}
-		if stBodySlots[val] == "Star" {
-			fmt.Print("\n")
-		}
-		if stBodySlots[val] != "--VALID--" {
-			if val.planetCode() != -1 {
-				fmt.Print("	")
-			}
-			if val.sateliteCode() != -1 {
-				fmt.Print("	")
-			}
-			fmt.Print(val, "	- ", stBodySlots[val], "\n")
+	// for _, val := range allKeys2() {
+	// 	if val.starCode() > len(starData)-1 {
+	// 		continue
+	// 	}
+	// 	if stBodySlots[val] == "Star" {
+	// 		fmt.Print("\n")
+	// 	}
+	// 	if stBodySlots[val] != "--VALID--" {
+	// 		if val.planetCode() != -1 {
+	// 			fmt.Print("	")
+	// 		}
+	// 		if val.sateliteCode() != -1 {
+	// 			fmt.Print("	")
+	// 		}
+	// 		fmt.Print(val, "	- ", stBodySlots[val], "\n")
 
-		} else {
-			delete(stBodySlots, val)
-		}
+	// 	} else {
+	// 		delete(stBodySlots, val)
+	// 	}
 
-	}
+	// }
 	fmt.Println(len(stBodySlots), "valid slots in total")
 	//fmt.Println(starData, stBodySlots)
 	return d
@@ -456,11 +465,48 @@ type bodyDetails struct {
 	orbitSpeed       int
 }
 
+func newBodyR(planetType string, position numCode, w wrld.World) bodyDetails {
+	bd := bodyDetails{}
+	dp := w.DicePool()
+	starData := parseStellarData(w)
+	strCode := position.starCode()
+	orbCode := position.planetCode()
+	satCode := position.sateliteCode()
+	switch planetType {
+	default:
+		bd.nomena = TrvCore.NumToGreek(strCode) + " " + strconv.Itoa(orbCode)
+		if satCode != -1 {
+			bd.nomena += " " + TrvCore.NumToAnglic(satCode)
+		}
+		if planetType == "Belt" {
+			bd.nomena += " Asteroid Belt (TODO:)" //TODO: привентить механику определения залежей астеройдов)
+			planetType = constant.WTpPlanetoid
+		}
+		bd.uwp = profile.RandomUWP(dp, planetType, w.UWP())
+		sz := profile.NewUWP(bd.uwp).Size().Value() * 1000
+		dKm := sz + (((dp.FluxNext()*100)+dp.FluxNext()*10+dp.FluxNext())*1600)/1000 //диаметр планеты в километрах
+		bd.diameter = utils.RoundFloat64(float64(dKm), 3)
+	case "Star":
+		bd.nomena = w.Sector() + " " + w.Hex() + " " + TrvCore.NumToGreek(strCode) + " " + starData[strCode]
+	}
+
+	sDiam := utils.RoundFloat64(StarDiameter(starData[strCode])*Astrogation.SolDiametrMegameters/Astrogation.AU2Megameters, 2) //диаметр звезды
+	sShadow := Astrogation.StarJumpShadowAU(sDiam)                                                                             //тень звезды в AU
+	bd.jumpPointToOrbit = Astrogation.JumpPointToOrbit(int(bd.diameter))
+	if sShadow > bd.orbitDistance { //если орбита покрывает планету то точка выхода считается от солнца и вычитает орбиту планеты от тени звезды
+		addTravell := sShadow - bd.orbitDistance
+		trueJP := addTravell * Astrogation.AU2Megameters
+		trueJP = utils.RoundFloat64(trueJP, 3)
+		bd.jumpPointToOrbit = trueJP
+	}
+	return bd
+}
+
 func newBody(str string, dp *dice.Dicepool) bodyDetails {
 	bd := bodyDetails{}
 	data := strings.Split(str, "	")
-	bd.nomena = data[0] + " " + data[2] + " " + data[3] + " " + data[4]
-	bd.name = data[1]
+	//bd.nomena = data[0] + " " + data[2] + " " + data[3] + " " + data[4]
+	//bd.name = data[1]
 	if len(data[6]) >= 3 {
 		bd.uwp = data[6]
 		sz := profile.NewUWP(bd.uwp).Size().Value() * 1000

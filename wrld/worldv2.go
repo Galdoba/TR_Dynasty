@@ -13,6 +13,7 @@ import (
 
 const (
 	worldHEX                  = "Hex"
+	worldSECTOR               = "Sector"
 	worldNAME                 = "Name"
 	worldUWP                  = "UWP"
 	worldTradeClassifications = "TC"
@@ -40,9 +41,22 @@ type World struct {
 	dicepool dice.Dicepool
 }
 
+//DicePool - референс на использование дайспула в других конструктах
+func (w *World) DicePool() *dice.Dicepool {
+	return &w.dicepool
+}
+
 //Hex - return Hex data
 func (w *World) Hex() string {
 	if val, ok := w.data[worldHEX]; ok {
+		return val
+	}
+	return "--NO DATA--"
+}
+
+//Sector - return Sector data
+func (w *World) Sector() string {
+	if val, ok := w.data[worldSECTOR]; ok {
 		return val
 	}
 	return "--NO DATA--"
