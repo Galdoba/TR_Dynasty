@@ -7,7 +7,6 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/Astrogation"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
-	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
 
 	"github.com/Galdoba/TR_Dynasty/profile"
@@ -23,7 +22,7 @@ import (
 func From(world wrld.World) SystemDetails {
 	fmt.Print(world.SecondSurvey(), "\n")
 	d := SystemDetails{}
-	d.bodyDetail = make(map[string]bodyDetails)
+	d.bodyDetail = make(map[numCode]bodyDetails)
 	d.dicepool = dice.New().SetSeed(world.Name() + world.Name())
 	starData := parseStellarData(world)
 	stBodySlots := setupOrbitalBodySlots(starData)
@@ -39,36 +38,28 @@ func From(world wrld.World) SystemDetails {
 		}
 	}
 	fmt.Println(stBodySlots)
-	for k, v := range stBodySlots {
-		bDetails := newBodyR(v, k, world)
-		fmt.Println(k, v, bDetails)
+	for _, position := range allKeys2() {
+		if v, ok := stBodySlots[position]; ok {
+			bDetails := newBodyR(v, position, world)
+			if position.sateliteCode() != -1 {
+				bDetails.syncPlanetDistance(d)
+			}
+			fmt.Println(position, v)
+			bDetails.DEBUGINFO()
+			d.bodyDetail[position] = bDetails
+		}
 	}
+
 	fmt.Println("DEBUG: OUTPUT INFO")
-	fmt.Println(len(stBodySlots), "valid slots in total")
-	// for _, val := range allKeys2() {
-	// 	if val.starCode() > len(starData)-1 {
-	// 		continue
-	// 	}
-	// 	if stBodySlots[val] == "Star" {
-	// 		fmt.Print("\n")
-	// 	}
-	// 	if stBodySlots[val] != "--VALID--" {
-	// 		if val.planetCode() != -1 {
-	// 			fmt.Print("	")
-	// 		}
-	// 		if val.sateliteCode() != -1 {
-	// 			fmt.Print("	")
-	// 		}
-	// 		fmt.Print(val, "	- ", stBodySlots[val], "\n")
 
-	// 	} else {
-	// 		delete(stBodySlots, val)
-	// 	}
-
-	// }
 	fmt.Println(len(stBodySlots), "valid slots in total")
+
 	//fmt.Println(starData, stBodySlots)
 	return d
+}
+
+func (bd *bodyDetails) syncPlanetDistance(sd SystemDetails) {
+	bd.orbitDistance = sd.bodyDetail[numCode{[3]int{bd.position.starCode(), bd.position.planetCode(), -1}}].orbitDistance
 }
 
 func (d *SystemDetails) placeMW(world wrld.World, stBodySlots map[numCode]string) map[numCode]string {
@@ -393,17 +384,17 @@ func Test() {
 	world := wrld.PickWorld()
 	fmt.Println(world)
 	d := From(world)
-	for _, val := range cyclePlanetbodyNames() {
+	for _, val := range allKeys2() {
 		if bd, ok := d.bodyDetail[val]; ok {
 			fmt.Println(bd.ShortInfo())
 		}
 	}
 	//fmt.Println("Enter planetary code for details:")
-	key, _ := user.InputStr()
-	if bd, ok := d.bodyDetail[key]; ok {
-		fmt.Println(bd.FullInfo())
-		fmt.Println(d.bodyDetail[key])
-	}
+	// key, _ := user.InputStr()
+	// if bd, ok := d.bodyDetail[key]; ok {
+	// 	fmt.Println(bd.FullInfo())
+	// 	fmt.Println(d.bodyDetail[key])
+	// }
 	fmt.Println("END PROGRAMM")
 }
 
@@ -441,7 +432,7 @@ func parseStellarData(w wrld.World) []string {
 
 //SystemDetails - карта деталей планетарных тел
 type SystemDetails struct {
-	bodyDetail map[string]bodyDetails
+	bodyDetail map[numCode]bodyDetails
 	dicepool   *dice.Dicepool
 	//PositionFromStar__PositionFromPlanet__Name__UWP__Actual Orbit
 	/*
@@ -454,20 +445,81 @@ type SystemDetails struct {
 }
 
 type bodyDetails struct {
-	nomena           string
-	name             string
-	uwp              string
-	tags             string
-	bodyType         string
-	diameter         float64
-	orbitDistance    float64
-	jumpPointToOrbit float64
-	orbitSpeed       int
+	nomena          string
+	name            string
+	uwp             string
+	tags            string
+	bodyType        string
+	diameter        float64
+	orbitDistance   float64 //радиус орбиты от звезды в AU
+	jumpPointToBody float64 //расстояние до точки прыжка с учетом (пока нет) тени звезды
+	orbitSpeed      int
+	position        numCode //
+}
+
+func (bd *bodyDetails) DEBUGINFO() {
+	fmt.Print("-------------------\n")
+	fmt.Print("bd.nomena = '", bd.nomena, "' string\n")
+	fmt.Print("bd.name = '", bd.name, "' string\n")
+	fmt.Print("bd.uwp = '", bd.uwp, "' string\n")
+	fmt.Print("bd.tags = '", bd.tags, "' string\n")
+	fmt.Print("bd.bodyType = '", bd.bodyType, "' string\n")
+	fmt.Print("bd.diameter = '", bd.diameter, "' float64/MegaMeters\n")
+	fmt.Print("bd.orbitDistance = ", bd.orbitDistance, "' float64/au\n")
+	fmt.Print("bd.jumpPointToBody = ", bd.jumpPointToBody, "' float64/MegaMeters\n")
+	fmt.Print("bd.orbitSpeed = ", bd.orbitSpeed, "' int\n")
+	fmt.Print("bd.position = ", bd.position, "' numCode\n")
 }
 
 func newBodyR(planetType string, position numCode, w wrld.World) bodyDetails {
 	bd := bodyDetails{}
+	bd.position = position
 	dp := w.DicePool()
+	starData := parseStellarData(w)
+	strCode := position.starCode()
+	if planetType == "Belt" {
+		planetType = constant.WTpPlanetoid
+	}
+	sDiam := utils.RoundFloat64(StarDiameter(starData[strCode]), 2) //диаметр звезды
+	sShadow := Astrogation.StarJumpShadowAU(sDiam)                  //тень звезды в AU
+	fmt.Println("Star Shadow:", sShadow, "AU")
+	bd.calculateNomena(planetType, position, w)
+	bd.bodyType = planetType
+	switch planetType {
+	default:
+		bd.uwp = profile.RandomUWP(dp, planetType, w.UWP()) //TODO: Разбить функцию для создания профайла планеты и спутника (чтобы спутник не был больше чем планета)
+		if planetType == "MainWorld" {
+			bd.uwp = w.UWP()
+			bd.name = w.Name()
+
+		}
+		bd.calculatePlanetDiameter(dp)
+		bd.jumpPointToBody = Astrogation.JumpPointFromObject(bd.diameter)
+		bd.calculateOrbitDistanceAU(position, dp)
+		if sShadow-bd.orbitDistance > 0 {
+			closestJumpPoint := utils.RoundFloat64(sShadow-bd.orbitDistance, 2)
+			bd.jumpPointToBody = utils.RoundFloat64(Astrogation.AU2Megameters*(closestJumpPoint), 3)
+		}
+		hz := getHZ(starData[position.starCode()])
+		remarks := profile.CalculateTradeCodesT5(bd.uwp, w.TradeClassificationsSl(), false, hz)
+		bd.tags = strings.Join(remarks, " ")
+	case "Star":
+		bd.nomena = w.Sector() + " " + w.Hex() + " " + TrvCore.NumToGreek(strCode) + " " + starData[strCode]
+		bd.diameter = utils.RoundFloat64(StarDiameter(starData[strCode])*Astrogation.SolDiametrMegameters, 2)
+	}
+
+	return bd
+}
+
+func (bd *bodyDetails) calculatePlanetDiameter(dp *dice.Dicepool) {
+	sz := profile.NewUWP(bd.uwp).Size().Value() * 1000
+	dMl := float64(sz + ((dp.FluxNext() * 100) + dp.FluxNext()*10 + dp.FluxNext())) //диаметр планеты в милях
+	dKm := dMl * 1.609                                                              //диаметр планеты в километрах
+	dMm := dKm / 1000                                                               //диаметр планеты в мегаметрах
+	bd.diameter = utils.RoundFloat64(dMm, 3)
+}
+
+func (bd *bodyDetails) calculateNomena(planetType string, position numCode, w wrld.World) {
 	starData := parseStellarData(w)
 	strCode := position.starCode()
 	orbCode := position.planetCode()
@@ -482,369 +534,19 @@ func newBodyR(planetType string, position numCode, w wrld.World) bodyDetails {
 			bd.nomena += " Asteroid Belt (TODO:)" //TODO: привентить механику определения залежей астеройдов)
 			planetType = constant.WTpPlanetoid
 		}
-		bd.uwp = profile.RandomUWP(dp, planetType, w.UWP())
-		sz := profile.NewUWP(bd.uwp).Size().Value() * 1000
-		dKm := sz + (((dp.FluxNext()*100)+dp.FluxNext()*10+dp.FluxNext())*1600)/1000 //диаметр планеты в километрах
-		bd.diameter = utils.RoundFloat64(float64(dKm), 3)
 	case "Star":
 		bd.nomena = w.Sector() + " " + w.Hex() + " " + TrvCore.NumToGreek(strCode) + " " + starData[strCode]
 	}
-
-	sDiam := utils.RoundFloat64(StarDiameter(starData[strCode])*Astrogation.SolDiametrMegameters/Astrogation.AU2Megameters, 2) //диаметр звезды
-	sShadow := Astrogation.StarJumpShadowAU(sDiam)                                                                             //тень звезды в AU
-	bd.jumpPointToOrbit = Astrogation.JumpPointToOrbit(int(bd.diameter))
-	if sShadow > bd.orbitDistance { //если орбита покрывает планету то точка выхода считается от солнца и вычитает орбиту планеты от тени звезды
-		addTravell := sShadow - bd.orbitDistance
-		trueJP := addTravell * Astrogation.AU2Megameters
-		trueJP = utils.RoundFloat64(trueJP, 3)
-		bd.jumpPointToOrbit = trueJP
-	}
-	return bd
 }
 
-func newBody(str string, dp *dice.Dicepool) bodyDetails {
-	bd := bodyDetails{}
-	data := strings.Split(str, "	")
-	//bd.nomena = data[0] + " " + data[2] + " " + data[3] + " " + data[4]
-	//bd.name = data[1]
-	if len(data[6]) >= 3 {
-		bd.uwp = data[6]
-		sz := profile.NewUWP(bd.uwp).Size().Value() * 1000
-		if sz == 0 {
-			sz = 400
-		}
-		dKm := sz + (((dp.FluxNext()*100)+dp.FluxNext()*10+dp.FluxNext())*1600)/1000 //диаметр планеты в километрах
-		dMm := utils.RoundFloat64(float64(dKm)/1000, 3)                              //диаметр планеты в мегаметрах
-		jp := dMm * 100                                                              //точка JP без учета тени звезды
-		sDiam, _ := strconv.ParseFloat(data[10], 64)                                 //диаметр звезды
-		sShadow := Astrogation.StarJumpShadowAU(sDiam)                               //тень звезды в AU
-		dFl := utils.RoundFloat64(float64(dKm), 3)                                   //
-		fl, _ := strconv.ParseFloat(data[7], 64)                                     //
-		bd.orbitDistance = fl                                                        // орбита в AU
-		bd.diameter = dFl                                                            //
-		trueJP := jp                                                                 //
-		if sShadow > bd.orbitDistance {                                              //если орбита покрывает планету то точка выхода считается от солнца и вычитает орбиту планеты от тени звезды
-			addTravell := sShadow - bd.orbitDistance
-			trueJP = addTravell * Astrogation.AU2Megameters
-		}
-		trueJP = utils.RoundFloat64(trueJP, 3)
-		bd.jumpPointToOrbit = trueJP
-		bd.tags = data[8]
-		bd.bodyType = data[5]
-		//fmt.Println(data)
-	} else {
-		bd.bodyType = data[5]
-		sDiam, _ := strconv.ParseFloat(data[10], 64)                                          //диаметр звезды
-		bd.jumpPointToOrbit = Astrogation.StarJumpShadowAU(sDiam * Astrogation.AU2Megameters) //тень звезды в AU
-	}
-
-	return bd
+func (bd *bodyDetails) calculateOrbitDistanceAU(position numCode, dp *dice.Dicepool) {
+	orbCode := position.planetCode()
+	orbDis := locateOrbitInt(dp, orbCode)
+	bd.orbitDistance = orbDis
 }
 
-func from(world wrld.World) SystemDetails {
-	fmt.Print("", world.SecondSurvey(), "\n")
-	d := SystemDetails{}
-	tabl := []string{}
-	d.bodyDetail = make(map[string]bodyDetails)
-	d.dicepool = dice.New().SetSeed(world.Name() + world.Name())
-	starData := parseStellarData(world)
-	starMap := make(map[int][]string)
-	for i := 0; i < 17; i++ {
-		starMap[1] = append(starMap[1], "EMPTY")
-	}
-	if len(starData) > 1 {
-		for i := 0; i < d.dicepool.RollNext("2d6").DM(-1).Sum(); i++ {
-			starMap[2] = append(starMap[2], "EMPTY")
-		}
-	}
-	if len(starData) > 2 {
-		for i := 0; i < d.dicepool.RollNext("2d6").DM(-1).Sum(); i++ {
-			starMap[3] = append(starMap[3], "EMPTY")
-		}
-	}
-	stObj := []string{"Mainworld"}
-	for i := 0; i < getGG(world); i++ {
-		stObj = append(stObj, constant.WTpGG)
-	}
-	for i := 0; i < getBelts(world); i++ {
-		stObj = append(stObj, constant.WTpPlanetoid)
-	}
-	pl, _ := strconv.Atoi(world.NumOfWorlds())
-	for i := 0; i < pl-getBelts(world)-getGG(world)-1; i++ {
-		stObj = append(stObj, "Planet")
-	}
-	for _, val := range stObj {
-		if val == "Mainworld" {
-			starMap[1][getHZ(starData[0])] = val
-			continue
-		}
-		added := false
-		runs := -1
-		for !added {
-			runs++
-			r := d.dicepool.RollNext("1d" + strconv.Itoa(len(starMap))).Sum()
-			//ln := d.dicepool.RollNext("1d" + strconv.Itoa(len(starMap[r])-1)).Sum()
-			orb := getHZ(starData[r-1]) + d.dicepool.FluxNext() + runs
-			if orb > len(starMap[r])-1 || orb < 0 {
-				runs--
-				continue
-			}
-			if starMap[r][orb] == "EMPTY" {
-				starMap[r][orb] = val
-				added = true
-			}
-		}
-	}
-	for s := 1; s <= len(starMap); s++ {
-		//hz := strconv.Itoa(getHZ(starData[s-1]))
-		detailLine := "	 	" + starData[s-1] + "	-1	 	 	 	**	" + TrvCore.NumToGreek(s-1)
-		tabl = append(tabl, detailLine)
-		for j := range starMap[s] {
-			nSat := 0
-			if j <= getHZ(starData[s-1]) && starMap[s][j] == "Planet" {
-				starMap[s][j] = d.innerType()
-				nSat = d.dicepool.RollNext("1d6").DM(-5).Sum()
-			}
-			if j > getHZ(starData[s-1]) && starMap[s][j] == "Planet" {
-				starMap[s][j] = d.outerType()
-				nSat = d.dicepool.RollNext("1d6").DM(-3).Sum()
-			}
-			if starMap[s][j] == constant.WTpGG {
-				//starMap[s][i] = d.rollGG()
-				nSat = d.dicepool.RollNext("1d6").DM(-1).Sum()
-			}
-			if starMap[s][j] == constant.WTpHospitable || starMap[s][j] == "Mainworld" {
-				nSat = d.dicepool.RollNext("1d6").DM(-4).Sum()
-			}
-
-			if nSat < 0 {
-				nSat = 0
-			}
-
-			detailLine := d.makeDetailLine(s, j, starMap[s][j], "", world, getHZ(starData[s-1]))
-			if strings.Contains(detailLine, "Mainworld") {
-				detailLine = strings.TrimSuffix(detailLine, "Mainworld	")
-				detailLine += world.Name() + "	" + world.UWP()
-
-			}
-
-			if detailLine != "" {
-				detailLine = world.Hex() + "	" + world.Name() + "	" + detailLine + "	"
-				if nSat > 0 {
-					detailLine += strconv.Itoa(nSat)
-				}
-				detailLine += "	"
-				tabl = append(tabl, detailLine)
-			}
-
-			for sat := 0; sat < nSat; sat++ {
-				satType := d.outerSateliteType()
-				if j <= getHZ(starData[s-1]) {
-					satType = d.innerSateliteType()
-				}
-				detailLine := d.makeDetailLine(s, j, satType, strconv.Itoa(sat), world, getHZ(starData[s-1]))
-				if strings.Contains(detailLine, "Mainworld") {
-					detailLine = strings.TrimSuffix(detailLine, "Mainworld	")
-					detailLine += world.Name() + "	" + world.UWP() + "	"
-
-				}
-
-				if detailLine != "" {
-					detailLine = world.Hex() + "	" + world.Name() + "	" + detailLine + "	" + "	"
-					tabl = append(tabl, detailLine)
-				}
-			}
-		}
-	}
-	plOrbit := ""
-	starNum := 0
-	for k, v := range tabl {
-		//fmt.Println(k, "||", v)
-		lnData := strings.Split(v, "	")
-		lnData = append(lnData, "")
-		lnData = append(lnData, "")
-
-		hz := 0
-
-		switch lnData[2] {
-		case "Alpha":
-			starNum = 0
-		case "Beta":
-			starNum = 1
-		case "Gamma":
-			starNum = 2
-		}
-		starHZ := getHZ(starData[starNum])
-		planetHZ, _ := strconv.Atoi(lnData[3])
-		hz = planetHZ - starHZ
-		solDiamMm := 13927.7
-		starJZ := strconv.FormatFloat(StarDiameter(starData[starNum])*solDiamMm/Astrogation.AU2Megameters, 'f', 2, 64)
-		lnData[9] = strconv.Itoa(hz)
-		lnData[1] = ""
-		// if lnData[0] == "Star" {
-		// 	lnData[1] = "Star"
-		// 	fmt.Println("Star***********")
-
-		// }
-		if lnData[5] == world.Name() {
-			lnData[1] = world.Name() + " "
-			for _, val := range profile.CalculateTradeCodesT5(lnData[6], nil, true, 0) {
-				lnData[8] += val + " "
-			}
-			lnData[5] = "Mainworld"
-		} else {
-			if lnData[6] != " " {
-
-				uwp := profile.NewUWP(lnData[6])
-
-				for _, val := range profile.CalculateTradeCodesT5(lnData[6], nil, false, hz) {
-					lnData[8] += val + " "
-				}
-				if uwp.Pops().Value() > 0 {
-					lnData[1] += "(!)"
-				}
-				if uwp.Starport().String() == "A" {
-					if uwp.Pops().Value() >= 7 {
-						lnData[1] += "H"
-					}
-					lnData[1] += "D"
-				}
-				if uwp.Starport().String() == "B" {
-					if uwp.Pops().Value() >= 8 {
-						lnData[1] += "H"
-					}
-					lnData[1] += "D"
-				}
-				if uwp.Starport().String() == "C" {
-					if uwp.Pops().Value() >= 9 {
-						lnData[1] += "H"
-					}
-					lnData[1] += "D"
-				}
-				if uwp.Starport().String() == "D" {
-					lnData[1] += "D"
-				}
-				if uwp.Starport().String() == "H" || uwp.Starport().String() == "E" {
-					lnData[1] += "B"
-				}
-
-				if uwp.TL().Value() > 9 {
-					lnData[1] += "*"
-				}
-				if uwp.TL().Value() > 0 {
-					lnData[1] += "*"
-				}
-				if uwp.TL().Value() > 12 {
-					lnData[1] += "*"
-				}
-
-			}
-		}
-
-		if lnData[5] == constant.WTpPlanetoid {
-			lnData[5] = "Asteroid Belt"
-		}
-
-		if lnData[4] == "" {
-			plOrbit = locateOrbit(d, lnData[3])
-			lnData[7] = plOrbit
-		}
-		lnData[7] = plOrbit
-		if lnData[6] == " " {
-			lnData[9] = lnData[2]
-			lnData[2] = lnData[8]
-			lnData[0] = world.Hex()
-			//lnData[1] = ""
-			lnData[3] = ""
-			lnData[4] = ""
-			lnData[5] = lnData[9]
-			lnData[7] = ""
-			lnData[8] = ""
-			lnData[9] = ""
-			lnData[10] = ""
-
-		}
-		lnData[10] = starJZ
-		tabl[k] = concatSlice(lnData)
-	}
-
-	for _, val := range tabl {
-		key := drawKey(val)
-		//fmt.Println(key, "||", val)
-		d.bodyDetail[key] = newBody(val, d.dicepool)
-	}
-
-	//fmt.Println(d.bodyDetail)
-
-	//fmt.Println(d.bodyDetail[k])
-	return d
-}
-
-func drawKey(val string) string {
-	data := strings.Split(val, "	")
-	key := data[2]
-	if data[3] != "" {
-		key += " " + data[3]
-	}
-	if data[4] != "" {
-		key += " " + data[4]
-	}
-	return key
-}
-
-func concatSlice(sl []string) string {
-	str := ""
-	for i := range sl {
-		str += sl[i] + "	"
-	}
-	str = strings.TrimSuffix(str, "	")
-	return str
-}
-
-func (d *SystemDetails) makeDetailLine(s, i int, pType string, st string, mainworld wrld.World, hz int) string {
-	if pType == "EMPTY" {
-		return ""
-	}
-	line := ""
-	switch s {
-	case 1:
-		line += "Alpha"
-	case 2:
-		line += "Beta"
-	case 3:
-		line += "Gamma"
-	}
-	if st != "" {
-		n, _ := strconv.Atoi(st)
-		st = string([]byte(strings.ToLower(TrvCore.NumToAnglic(n)))[0])
-	}
-	line += "	" + strconv.Itoa(i) + "	"
-	line += st + "	" + pType + "	"
-
-	if pType != "Mainworld" {
-		//mwUWP := profile.NewUWP(mainworld.UWP())
-
-		//mwTags := profile.CalculateTradeCodesT5(mainworld.UWP(), []string{}, true, hz)
-		line += profile.RandomUWP(d.dicepool, pType, mainworld.UWP())
-
-	}
-	return line
-}
-
-func allKeys() []string {
-	keys := []string{}
-	for i := 0; i <= 20; i++ {
-		for j := -1; j < 10; j++ {
-			k := strconv.Itoa(i) + "	"
-			if j > -1 {
-				k += strconv.Itoa(j)
-			}
-			keys = append(keys, k)
-		}
-	}
-	return keys
-}
-
+//numCode - составляется из трех чисел (номер звезды, номер орбиты вокруг звезды и номер орбиты вокруг спутника)
+//планета будет иметь вид [Х Х -1], звезда = [Х -1 -1]
 type numCode struct {
 	code [3]int
 }
@@ -862,89 +564,20 @@ func (nc *numCode) sateliteCode() int {
 }
 
 func allKeys2() (numKeys []numCode) {
-	//keys := []string{}
-	//numKeys := []string{}
-	//ehexKeys := []string{}
 	i := 0
 	for starNum := 0; starNum < 5; starNum++ {
 		numKeys = append(numKeys, numCode{[3]int{starNum, -1, -1}})
-		//fmt.Print(i, " N := '", numKeys[i], "'\n")
 		i++
 		for orbit := 0; orbit <= 20; orbit++ {
 			numKeys = append(numKeys, numCode{[3]int{starNum, orbit, -1}})
-			//	fmt.Print(i, " N := '", numKeys[i], "'\n")
 			i++
 			for satOrbit := 0; satOrbit < 26; satOrbit++ {
 				numKeys = append(numKeys, numCode{[3]int{starNum, orbit, satOrbit}})
-				//		fmt.Print(i, " N := '", numKeys[i], "'\n")
 				i++
 			}
 		}
 	}
 	return numKeys
-}
-
-func (d *SystemDetails) rollGG() string {
-	switch d.dicepool.FluxNext() {
-	case -5, -4:
-		ggType := "Small Gas Gigant"
-		if d.dicepool.RollNext("1d2").Sum() == 2 {
-			ggType = "Ice Gigant"
-		}
-		return ggType
-	default:
-		return "Large Gas Gigant"
-	}
-}
-
-func (d *SystemDetails) rollSatelliteName() string {
-	r := d.dicepool.FluxNext()
-	switch d.dicepool.RollNext("2d6").Sum() {
-	case 8, 9, 10, 11, 12:
-		r += 7
-	default:
-		r += 20
-	}
-	return TrvCore.NumToAnglic(r)
-}
-
-func (d *SystemDetails) rollBeltposition() int {
-	r := d.dicepool.RollNext("2d6").DM(-2).Sum()
-	beltPos := []int{-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	return beltPos[r]
-}
-
-func (d *SystemDetails) rollPlanetposition() int {
-	r := d.dicepool.RollNext("2d6").DM(-2).Sum()
-	beltPos := []int{10, 8, 6, 4, 2, 0, 1, 3, 5, 7, 9}
-	return beltPos[r]
-}
-
-func getGG(world wrld.World) int {
-	pbg := world.PBG()
-	gg, err := strconv.Atoi(string([]byte(pbg)[2]))
-	if err != nil {
-		panic(err)
-	}
-	return gg
-}
-
-func getBelts(world wrld.World) int {
-	pbg := world.PBG()
-	gg, err := strconv.Atoi(string([]byte(pbg)[1]))
-	if err != nil {
-		panic(err)
-	}
-	return gg
-}
-
-func starPositions() []string {
-	return []string{
-		"Primary Star",
-		"Close Star",
-		"Near Star",
-		"Far Star",
-	}
 }
 
 func getHZ(star string) int {
@@ -1116,15 +749,16 @@ func getStarSize(starCode string) string {
 	}
 	return stSp
 }
-func getStarDecimal(starCode string) string {
-	stDec := ""
-	for i := 0; i < 10; i++ {
-		if strings.Contains(starCode, strconv.Itoa(i)) {
-			return strconv.Itoa(i)
-		}
-	}
-	return stDec
-}
+
+// func getStarDecimal(starCode string) string {
+// 	stDec := ""
+// 	for i := 0; i < 10; i++ {
+// 		if strings.Contains(starCode, strconv.Itoa(i)) {
+// 			return strconv.Itoa(i)
+// 		}
+// 	}
+// 	return stDec
+// }
 func getStarSpectral(starCode string) string {
 	stSp := ""
 	if strings.Contains(starCode, "O") {
@@ -1198,16 +832,12 @@ func (d *SystemDetails) outerSateliteType() string {
 	}[d.dicepool.RollNext("1d6").DM(-1).Sum()]
 }
 
-func locateOrbit(d SystemDetails, bOrbit string) string {
-	dOrbit, err := strconv.Atoi(bOrbit)
-	if err != nil {
-		panic(err)
-	}
-	flux := d.dicepool.FluxNext()
+func locateOrbitInt(dp *dice.Dicepool, dOrbit int) float64 {
+	flux := dp.FluxNext()
 	dO := []float64{}
 	switch dOrbit {
 	default:
-		return "Star"
+		return -999.9
 	case 0:
 		dO = []float64{0.15, 0.16, 0.17, 0.18, 0.19, 0.20, 0.22, 0.24, 0.26, 0.28, 0.30}
 	case 1:
@@ -1246,23 +876,23 @@ func locateOrbit(d SystemDetails, bOrbit string) string {
 		dO = []float64{7373, 7864, 8355, 8847, 9338, 9830, 10797, 11764, 12731, 13698, 14665}
 	}
 
-	return strconv.FormatFloat(dO[flux+5], 'f', 2, 64)
+	return dO[flux+5]
 }
 
-func cyclePlanetbodyNames() []string {
-	var names []string
-	for _, star := range []string{"Alpha", "Beta", "Gamma"} {
-		names = append(names, star)
-		for p := 0; p < 20; p++ {
-			planet := strconv.Itoa(p)
-			names = append(names, star+" "+planet)
-			for _, sat := range []string{"a", "b", "c", "d", "e"} {
-				names = append(names, star+" "+planet+" "+sat)
-			}
-		}
-	}
-	return names
-}
+// func cyclePlanetbodyNames() []string {
+// 	var names []string
+// 	for _, star := range []string{"Alpha", "Beta", "Gamma"} {
+// 		names = append(names, star)
+// 		for p := 0; p < 20; p++ {
+// 			planet := strconv.Itoa(p)
+// 			names = append(names, star+" "+planet)
+// 			for _, sat := range []string{"a", "b", "c", "d", "e"} {
+// 				names = append(names, star+" "+planet+" "+sat)
+// 			}
+// 		}
+// 	}
+// 	return names
+// }
 
 //Missing Details:
 func (d *SystemDetails) rollCloseSatelite() int {

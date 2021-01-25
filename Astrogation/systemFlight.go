@@ -36,9 +36,16 @@ func NewAstrogator() *astrogatorObj {
 	return astr
 }
 
-//JumpPointToOrbit - возвращает расстояние (Мметры) между точкой прыжка (100D) и стандартной орбитой (10D)
+//JumpPointToOrbit - возвращает расстояние между точкой прыжка (100D) и стандартной орбитой (10D)
+//расстояние измеряется в МегаМетрах (1 Мм = 1000 Км)
 func JumpPointToOrbit(planetaryDiametrKM int) float64 {
 	return float64(planetaryDiametrKM/1000) * 90
+}
+
+//JumpPointFromObject - возвращает расстояние от точки прыжка до обьекта (100 Диаметров)
+//расстояние измеряется в МегаМетрах (1 Мм = 1000 Км)
+func JumpPointFromObject(diameter float64) float64 {
+	return utils.RoundFloat64(diameter*100.0, 3)
 }
 
 func JumpPointDistance(world *world.World) (megaMeters float64) {
