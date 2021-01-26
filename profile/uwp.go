@@ -11,6 +11,53 @@ import (
 	"github.com/Galdoba/utils"
 )
 
+func UWPGasGigant(dp *dice.Dicepool, ggType string) string {
+	size := ""
+	switch ggType {
+	default:
+		size = "0"
+	case "LGG":
+		for size == "" {
+			r := dp.RollNext("2d6").DM(1).Sum()
+			switch r {
+			case 4:
+				size = "P"
+			case 5:
+				size = "Q"
+			case 6:
+				size = "R"
+			case 7:
+				size = "S"
+			case 8:
+				size = "T"
+			case 9:
+				size = "U"
+			case 10:
+				size = "V"
+			case 11:
+				size = "W"
+			case 12:
+				size = "X"
+			case 13:
+				size = "Y"
+			}
+		}
+	case "SGG", "IG":
+		for size == "" {
+			r := dp.RollNext("2d6").DM(-1).Sum()
+			switch r {
+			case 1:
+				size = "L"
+			case 2:
+				size = "M"
+			case 3:
+				size = "N"
+			}
+		}
+	}
+	return "Y" + size + "XXXXX-X"
+}
+
 func RandomUWP(dicepool *dice.Dicepool, planetType ...string) string {
 	var result string
 	var pType string
@@ -700,7 +747,7 @@ func CalculateTradeCodesT5(uwp string, mwTags []string, mw bool, hz int) []strin
 			}
 			//Climate
 		case constant.TradeCodeFrozen:
-			if matchTradeClassificationRequirements(uwp, "23456789 -- 123456789A -- -- -- --") && hz >= 1 {
+			if matchTradeClassificationRequirements(uwp, "23456789 -- 123456789A -- -- -- --") && hz > 1 {
 				res = append(res, constant.TradeCodeFrozen)
 			}
 		case constant.TradeCodeHot:

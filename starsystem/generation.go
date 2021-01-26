@@ -44,7 +44,7 @@ func From(world wrld.World) SystemDetails {
 			if position.sateliteCode() != -1 {
 				bDetails.syncPlanetDistance(d)
 			}
-			fmt.Println(position, v)
+			//fmt.Println(position, v)
 			bDetails.DEBUGINFO()
 			d.bodyDetail[position] = bDetails
 		}
@@ -204,22 +204,18 @@ func (d *SystemDetails) placeOtherWorlds(world wrld.World, stBodySlots map[numCo
 	otherWorlds := worldsTotal - world.GasGigants() - world.Belts() - 1
 	starData := parseStellarData(world)
 	starKeys := []int{}
-	starHZ := []int{}
 	for i := 0; i < otherWorlds; i++ {
 		for l := 0; l < len(starData); l++ {
 			starKeys = append(starKeys, l)
-			starHZ = append(starHZ, getHZ(starData[l]))
 		}
 	}
 	starKeys = starKeys[0:otherWorlds]
-	starHZ = starHZ[0:otherWorlds]
 	for index, star := range starKeys {
-		suggest := starHZ[star] + d.rollOrbitPlacement("World1")
+		suggest := d.rollOrbitPlacement("World1") // starHZ[star] +
 		if index == otherWorlds-1 {
-			suggest = starHZ[star] + d.rollOrbitPlacement("World2")
+			suggest = d.rollOrbitPlacement("World2") //starHZ[star] +
 		}
 
-		//valid := false
 		for {
 			if val, ok := stBodySlots[numCode{[3]int{starKeys[star], suggest, -1}}]; ok {
 				if suggest < 0 {
@@ -227,8 +223,6 @@ func (d *SystemDetails) placeOtherWorlds(world wrld.World, stBodySlots map[numCo
 					continue
 				}
 				if val != "--VALID--" {
-					//}
-					//if stBodySlots[numCode{[3]int{starKeys[ggIndex], suggest, -1}}] != "--VALID--" {
 					suggest++
 					continue
 				}
@@ -467,7 +461,7 @@ func (bd *bodyDetails) DEBUGINFO() {
 	fmt.Print("bd.diameter = '", bd.diameter, "' float64/MegaMeters\n")
 	fmt.Print("bd.orbitDistance = ", bd.orbitDistance, "' float64/au\n")
 	fmt.Print("bd.jumpPointToBody = ", bd.jumpPointToBody, "' float64/MegaMeters\n")
-	fmt.Print("bd.orbitSpeed = ", bd.orbitSpeed, "' int\n")
+	//fmt.Print("bd.orbitSpeed = ", bd.orbitSpeed, "' int\n")
 	fmt.Print("bd.position = ", bd.position, "' numCode\n")
 }
 
@@ -482,7 +476,7 @@ func newBodyR(planetType string, position numCode, w wrld.World) bodyDetails {
 	}
 	sDiam := utils.RoundFloat64(StarDiameter(starData[strCode]), 2) //диаметр звезды
 	sShadow := Astrogation.StarJumpShadowAU(sDiam)                  //тень звезды в AU
-	fmt.Println("Star Shadow:", sShadow, "AU")
+	//fmt.Println("Star Shadow:", sShadow, "AU")
 	bd.calculateNomena(planetType, position, w)
 	bd.bodyType = planetType
 	switch planetType {
@@ -491,7 +485,9 @@ func newBodyR(planetType string, position numCode, w wrld.World) bodyDetails {
 		if planetType == "MainWorld" {
 			bd.uwp = w.UWP()
 			bd.name = w.Name()
-
+		}
+		if planetType == "LGG" || planetType == "SGG" || planetType == "IG" {
+			bd.uwp = profile.UWPGasGigant(dp, planetType)
 		}
 		bd.calculatePlanetDiameter(dp)
 		bd.jumpPointToBody = Astrogation.JumpPointFromObject(bd.diameter)
@@ -501,21 +497,73 @@ func newBodyR(planetType string, position numCode, w wrld.World) bodyDetails {
 			bd.jumpPointToBody = utils.RoundFloat64(Astrogation.AU2Megameters*(closestJumpPoint), 3)
 		}
 		hz := getHZ(starData[position.starCode()])
-		remarks := profile.CalculateTradeCodesT5(bd.uwp, w.TradeClassificationsSl(), false, hz)
+		remarks := profile.CalculateTradeCodesT5(bd.uwp, w.TradeClassificationsSl(), false, position.planetCode()-hz)
 		bd.tags = strings.Join(remarks, " ")
 	case "Star":
 		bd.nomena = w.Sector() + " " + w.Hex() + " " + TrvCore.NumToGreek(strCode) + " " + starData[strCode]
 		bd.diameter = utils.RoundFloat64(StarDiameter(starData[strCode])*Astrogation.SolDiametrMegameters, 2)
+
 	}
+	bd.cleanDataSpecialType()
 
 	return bd
 }
 
+func (bd *bodyDetails) cleanDataSpecialType() {
+	switch bd.bodyType {
+	case "Rings":
+		bd.bodyType = "Ring System"
+		bd.uwp = ""
+		bd.tags = ""
+	case "LGG":
+		bd.bodyType = "Large Gas Gigant"
+		bd.uwp = ""
+		bd.tags = ""
+	case "SGG":
+		bd.bodyType = "Small Gas Gigant"
+		bd.uwp = ""
+		bd.tags = ""
+	case "IG":
+		bd.bodyType = "Ice Gigant"
+		bd.uwp = ""
+		bd.tags = ""
+	}
+}
+
 func (bd *bodyDetails) calculatePlanetDiameter(dp *dice.Dicepool) {
-	sz := profile.NewUWP(bd.uwp).Size().Value() * 1000
-	dMl := float64(sz + ((dp.FluxNext() * 100) + dp.FluxNext()*10 + dp.FluxNext())) //диаметр планеты в милях
-	dKm := dMl * 1.609                                                              //диаметр планеты в километрах
-	dMm := dKm / 1000                                                               //диаметр планеты в мегаметрах
+	sz := profile.NewUWP(bd.uwp).Size().Value() // * 1000
+	switch sz {
+	case 21:
+		sz = 30
+	case 22:
+		sz = 40
+	case 23:
+		sz = 50
+	case 24:
+		sz = 60
+	case 25:
+		sz = 70
+	case 26:
+		sz = 80
+	case 27:
+		sz = 90
+	case 28:
+		sz = 125
+	case 29:
+		sz = 180
+	case 30:
+		sz = 220
+	case 31:
+		sz = 250
+	case 32:
+		sz = 290
+	}
+	dMl := float64((sz * 1000) + ((dp.FluxNext() * 100) + (dp.FluxNext() * 10) + (dp.FluxNext()))) //диаметр планеты в милях
+	if dMl < 0 {
+		dMl = dMl * -1
+	}
+	dKm := dMl * 1.609 //диаметр планеты в километрах
+	dMm := dKm / 1000  //диаметр планеты в мегаметрах
 	bd.diameter = utils.RoundFloat64(dMm, 3)
 }
 
@@ -917,7 +965,10 @@ func (d *SystemDetails) rollOrbitPlacement(ggType string) int {
 		return d.dicepool.RollNext("2d6").DM(-3).Sum()
 	case "World1":
 		arr := []int{11, 10, 8, 6, 4, 2, 0, 1, 3, 5, 7, 9}
-		return arr[d.dicepool.RollNext("2d6").DM(-2).Sum()]
+
+		suggest := arr[d.dicepool.RollNext("2d6").DM(-2).Sum()]
+		fmt.Println("Suggest Roll:", suggest)
+		return suggest
 	case "World2":
 		arr := []int{18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7}
 		return arr[d.dicepool.RollNext("2d6").DM(-2).Sum()]
