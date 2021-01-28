@@ -37,7 +37,7 @@ func From(world wrld.World) SystemDetails {
 			delete(stBodySlots, k)
 		}
 	}
-	fmt.Println(stBodySlots)
+	//fmt.Println(stBodySlots)
 	for _, position := range allKeys2() {
 		if v, ok := stBodySlots[position]; ok {
 			bDetails := newBodyR(v, position, world)
@@ -45,7 +45,7 @@ func From(world wrld.World) SystemDetails {
 				bDetails.syncPlanetDistance(d)
 			}
 			//fmt.Println(position, v)
-			bDetails.DEBUGINFO()
+			//bDetails.DEBUGINFO()
 			d.bodyDetail[position] = bDetails
 		}
 	}
@@ -222,6 +222,11 @@ func (d *SystemDetails) placeOtherWorlds(world wrld.World, stBodySlots map[numCo
 					suggest++
 					continue
 				}
+				if suggest < getStarClosestOrbit(starData[starKeys[star]]) {
+					suggest++
+					continue
+				}
+
 				if val != "--VALID--" {
 					suggest++
 					continue
@@ -323,7 +328,6 @@ func (d *SystemDetails) placeSatelites(world wrld.World, stBodySlots map[numCode
 				stBodySlots[suggestOrbit] = d.innerSateliteType()
 			}
 		}
-
 	}
 	return stBodySlots
 }
@@ -357,11 +361,7 @@ func setupOrbitalBodySlots(starData []string) map[numCode]string {
 			delete(stBodySlots, k)
 			continue
 		}
-		sc := k.starCode()
 		pc := k.planetCode()
-		if pc < getStarClosestOrbit(starData[sc]) && pc != -1 {
-			delete(stBodySlots, k)
-		}
 		if pc == -1 && k.sateliteCode() == -1 && k.starCode() < len(starData) {
 			stBodySlots[k] = "Star"
 		}
@@ -504,6 +504,7 @@ func newBodyR(planetType string, position numCode, w wrld.World) bodyDetails {
 		bd.diameter = utils.RoundFloat64(StarDiameter(starData[strCode])*Astrogation.SolDiametrMegameters, 2)
 
 	}
+
 	bd.cleanDataSpecialType()
 
 	return bd
@@ -967,7 +968,7 @@ func (d *SystemDetails) rollOrbitPlacement(ggType string) int {
 		arr := []int{11, 10, 8, 6, 4, 2, 0, 1, 3, 5, 7, 9}
 
 		suggest := arr[d.dicepool.RollNext("2d6").DM(-2).Sum()]
-		fmt.Println("Suggest Roll:", suggest)
+		//fmt.Println("Suggest Roll:", suggest)
 		return suggest
 	case "World2":
 		arr := []int{18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7}
