@@ -125,7 +125,7 @@ func Test() {
 }
 
 func (d *Dynasty) DecrlareAction(curentDay int) {
-	dp := dice.New(int64(curentDay))
+	dp := dice.New().SetSeed(int64(curentDay))
 	r := dp.RollFromList([]string{"Action 1", "Action 2", "Action 3", "Action 4"})
 	fmt.Println("on day ", DateManager.FormatToDate(curentDay))
 	fmt.Println(r + " declared by " + d.name)
@@ -177,7 +177,7 @@ func NewDynasty(name string) Dynasty {
 	}
 	d.name = name
 
-	d.dicepool = *dice.New(seed)
+	d.dicepool = *dice.New().SetSeed(seed)
 	//d.characteristics = make(map[string]int)
 	//d.traits = make(map[string]int)
 	//d.aptitudes = make(map[string]int)

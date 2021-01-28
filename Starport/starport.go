@@ -100,7 +100,7 @@ func From(wrld wrld.World) (Starport, error) {
 	sp.tl = wrld.GetСharacteristic(PrTL).Value()
 	//sp.tl = TrvCore.EhexToDigit(uwp.DataType(dtTechLevel))
 	pops := wrld.GetСharacteristic(PrPops)
-	sp.dice = dice.New(utils.SeedFromString(uwpStr))
+	sp.dice = dice.New().SetSeed(utils.SeedFromString(uwpStr))
 	//pops := wrld.GetСharacteristic(PrPops).Value()
 	imp := importanceInt(wrld)
 	saiDice := utils.Max(1, pops.Value()+imp-3)

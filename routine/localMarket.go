@@ -29,7 +29,7 @@ func newLocalSupplier(supType int) {
 	case 3:
 		merchType = constant.MerchantTypeIlligal
 	}
-	d := dice.New(utils.SeedFromString(sourceWorld.Name() + formatDate(day, year)))
+	d := dice.New().SetSeed(utils.SeedFromString(sourceWorld.Name() + formatDate(day, year)))
 	if localMarket == nil {
 		//tdie := dice.Roll("3d6").DM(-1 * sTryes).Sum()
 		//sTryes++ .SetTraderDice(tdie)
@@ -204,7 +204,7 @@ func taxingAgent() string {
 	if localSupplier.MerchantType() == constant.MerchantTypeIlligal {
 		return "CM"
 	}
-	prf, err := profile.NewUWP(sourceWorld.UWP())
-	reportErr(err)
-	return prf.Govr()
+	prf := profile.NewUWP(sourceWorld.UWP())
+
+	return prf.Govr().String()
 }

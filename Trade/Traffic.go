@@ -142,7 +142,7 @@ func RunTraffic() {
 	swUWP := strings.ToUpper(userInputStr("Введите UWP текущего мира: "))
 	sourceWorld := world.NewWorld("Source World")
 	sourceWorld = *sourceWorld.SetUWP(swUWP)
-	dp = dice.New(utils.SeedFromString(seedStr + swUWP))
+	dp = dice.New().SetSeed(utils.SeedFromString(seedStr + swUWP))
 	sp := sourceWorld.StarPort()
 	pops := sourceWorld.PlanetaryData("Pops")
 	tl := sourceWorld.PlanetaryData("Tech")

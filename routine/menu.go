@@ -266,8 +266,8 @@ func marketMenu() {
 	case 1:
 		clrScrn()
 		options := []string{"Common-goods Supplier", "Trade Supplier", "Morally Neutral Supplier", "Black Market Supplier"}
-		prf, _ := profile.NewUWP(sourceWorld.UWP())
-		tl := TrvCore.EhexToDigit(prf.TL())
+		prf := profile.NewUWP(sourceWorld.UWP())
+		tl := TrvCore.EhexToDigit(prf.TL().String())
 		if tl >= 8 {
 			options = append(options, "Finding an online supplier")
 		}
@@ -301,7 +301,7 @@ func marketMenu() {
 			eff = input
 
 		}
-		switch prf.Starport() {
+		switch prf.Starport().String() {
 		case "A":
 			eff += 6
 		case "B":
@@ -326,8 +326,8 @@ func marketMenu() {
 		}
 
 		r := dice.Roll("2d6").Sum()
-		if r-eff > TrvCore.EhexToDigit(prf.Laws()) {
-			fmt.Println(r, eff, TrvCore.EhexToDigit(prf.Laws()))
+		if r-eff > prf.Laws().Value() {
+			fmt.Println(r, eff, prf.Laws().Value())
 			menu("TODO: NEGATIVE EVENT Report To Referee", "Next")
 		}
 
@@ -378,10 +378,10 @@ func depart() {
 	lsPayment := countHeads() * 250
 	total += lsPayment
 	fmt.Println(lsPayment, "Cr was charged for Life Support Supplies")
-	prf, err := profile.NewUWP(sourceWorld.UWP())
-	reportErr(err)
-	popDM := TrvCore.EhexToDigit(prf.Pops())
-	lawsDM := TrvCore.EhexToDigit(prf.Laws())
+	prf := profile.NewUWP(sourceWorld.UWP())
+	//reportErr(err2)
+	popDM := prf.Pops().Value()
+	lawsDM := prf.Laws().Value()
 
 	calculateETA()
 

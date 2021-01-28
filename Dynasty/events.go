@@ -82,19 +82,19 @@ func parceChanges(changes ...string) []rewardPunishment {
 		}
 		for _, field := range listALL() {
 			if strings.Contains(descr, "AnyCharacteristic") {
-				trait := dice.New(time.Now().UnixNano()).RollFromList(listCharacteristics())
+				trait := dice.New().SetSeed(time.Now().UnixNano()).RollFromList(listCharacteristics())
 				rp.fieldName = trait
 				rpa = append(rpa, rp)
 				break
 			}
 			if strings.Contains(descr, "AnyTrait") {
-				trait := dice.New(time.Now().UnixNano()).RollFromList(listTraits())
+				trait := dice.New().SetSeed(time.Now().UnixNano()).RollFromList(listTraits())
 				rp.fieldName = trait
 				rpa = append(rpa, rp)
 				break
 			}
 			if strings.Contains(descr, "AnyAptitude") {
-				trait := dice.New(time.Now().UnixNano()).RollFromList(listAptitudes())
+				trait := dice.New().SetSeed(time.Now().UnixNano()).RollFromList(listAptitudes())
 				rp.fieldName = trait
 				rpa = append(rpa, rp)
 				break

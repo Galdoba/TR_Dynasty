@@ -311,9 +311,9 @@ func (wp *weapon) cleanData() {
 func NewGunMaker(seed ...int64) gunMaker {
 	gMaker := gunMaker{}
 	if len(seed) == 0 {
-		gMaker.dp = dice.New(time.Now().UnixNano())
+		gMaker.dp = dice.New().SetSeed(time.Now().UnixNano())
 	} else {
-		gMaker.dp = dice.New(seed[0])
+		gMaker.dp = dice.New().SetSeed(seed[0])
 	}
 	return gMaker
 }

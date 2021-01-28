@@ -1,5 +1,6 @@
 package trademgt2
 
+/*
 import (
 	"fmt"
 	"os"

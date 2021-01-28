@@ -74,7 +74,7 @@ func (t *mgt2Task) Resolve(dicepool ...*dice.Dicepool) (int, int) {
 	if len(dicepool) > 0 {
 		dp = *dicepool[0]
 	} else {
-		dp = *dice.New(time.Now().UnixNano())
+		dp = *dice.New().SetSeed(time.Now().UnixNano())
 	}
 	mod := 0
 	for _, val := range t.modifiers {

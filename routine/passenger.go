@@ -14,8 +14,6 @@ import (
 	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
-
-	"github.com/Galdoba/TR_Dynasty/TrvCore"
 )
 
 var localPassengers []passenger
@@ -87,8 +85,8 @@ func PassengerRoutine() {
 //MNOP
 func passengerTrafficValue(sourceWorld, targetWorld wrld.World) int {
 	//dm := TrvCore.EhexToDigit(sourceWorld.PlanetaryData(constant.PrPops))
-	uwp, _ := profile.NewUWP(sourceWorld.UWP())
-	dm := TrvCore.EhexToDigit(uwp.Pops())
+	uwp := profile.NewUWP(sourceWorld.UWP())
+	dm := uwp.Pops().Value()
 	for _, val := range sourceWorld.TradeCodes() {
 		switch val {
 		default:

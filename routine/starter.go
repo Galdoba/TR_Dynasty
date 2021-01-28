@@ -18,7 +18,6 @@ import (
 	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/otu"
-	"github.com/Galdoba/TR_Dynasty/world"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/utils"
 
@@ -97,7 +96,9 @@ func StartRoutine() {
 	printSlow("Gathering data...\n")
 	userInputDate()
 	clrScrn()
-	dp = dice.New(utils.SeedFromString(formatDate(day, year)))
+	seedStr := formatDate(day, year)
+	seed := utils.SeedFromString(seedStr)
+	dp = dice.New().SetSeed(seed)
 	printSlow("Select your current world: \n")
 	sourceWorld = pickWorld()
 	clrScrn()
@@ -334,14 +335,14 @@ func pickWorld() wrld.World {
 	return wrld.World{}
 }
 
-func loadWorld(key string) (world.World, error) {
+func loadWorld(key string) (wrld.World, error) {
 	otuData, err := otu.GetDataOn(key)
 	if err != nil {
-		return world.World{}, err
+		return wrld.World{}, err
 	}
-	w, err := world.FromOTUdata(otuData.Info)
+	w, err := wrld.FromOTUdata(otuData)
 	if err != nil {
-		return world.World{}, err
+		return wrld.World{}, err
 	}
 	return w, nil
 }

@@ -1,5 +1,6 @@
 package trademgt2
 
+/*
 import (
 	"fmt"
 
@@ -10,13 +11,7 @@ var umcAvailable int
 var umcPrice int
 
 func MailProcedure() {
-	/*
-		2. Determine if Mail is Present.
-		3. Determine time table.
-		4. Negotiate hauling fees.
-		5. Travel to destination world.
-		6. Collect fees.
-	*/
+
 
 	mailDM := mailDMfromFTV()
 	mailDM += 7
@@ -86,3 +81,4 @@ func informAboutMail() {
 	fmt.Println("There are", umcAvailable, "UMCs available for transport.")
 	//fmt.Println("Transport fee is", umcPrice, "for each container.")
 }
+*/

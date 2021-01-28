@@ -1,6 +1,6 @@
 package trademgt2
 
-import (
+/*import (
 	"fmt"
 	"strconv"
 
@@ -367,3 +367,4 @@ func informAboutPassengers() {
 	tb.AddRow([]string{lowPassenger, targetWorld.Name(), strconv.Itoa(lp), strconv.Itoa(newPassenger(lowPassenger).passFee()) + " Cr"})
 	tb.PTPrint()
 }
+*/
