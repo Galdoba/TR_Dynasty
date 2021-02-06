@@ -2,6 +2,7 @@ package starsystem
 
 import (
 	"strconv"
+	"strings"
 )
 
 /*
@@ -34,13 +35,22 @@ func (bd *bodyDetails) ShortInfo() string {
 	if len(bd.nomena) < 8 {
 		str += "    "
 	}
-	str += "	" + bd.name
+	nLen := len(strings.Split(bd.nomena, " "))
+	switch nLen {
+	default:
+		str += "	  "
+	case 2:
+		str += "	" + strconv.FormatFloat(bd.orbitDistance, 'f', 2, 64) + " au"
+	case 3:
+		str += "	" + strconv.FormatFloat(bd.orbitDistanceSat, 'f', 2, 64) + " Mm"
+	}
+	str += "	" + bd.bodyType
+	str += "	" + bd.uwp
+	str += "	" + bd.tags
 	if bd.name == "" {
 		str += "         "
 	}
-	str += "	" + bd.uwp
-	str += "	" + bd.bodyType
-	str += "	" + bd.tags
+	str += "	" + bd.name
 	return str
 }
 

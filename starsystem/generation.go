@@ -7,6 +7,7 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/Astrogation"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
+	"github.com/Galdoba/TR_Dynasty/tab"
 	"github.com/Galdoba/utils"
 
 	"github.com/Galdoba/TR_Dynasty/profile"
@@ -60,6 +61,11 @@ func From(world wrld.World) SystemDetails {
 
 func (bd *bodyDetails) syncPlanetDistance(sd SystemDetails) {
 	bd.orbitDistance = sd.bodyDetail[numCode{[3]int{bd.position.starCode(), bd.position.planetCode(), -1}}].orbitDistance
+	if bd.position.sateliteCode() == -1 {
+		return
+	}
+	plDiam := sd.bodyDetail[numCode{[3]int{bd.position.starCode(), bd.position.planetCode(), -1}}].diameter
+	bd.orbitDistanceSat = calculateSateliteOrbitDistance(plDiam, bd.position.sateliteCode())
 }
 
 func (d *SystemDetails) placeMW(world wrld.World, stBodySlots map[numCode]string) map[numCode]string {
@@ -197,7 +203,11 @@ func (d *SystemDetails) placeBelts(world wrld.World, stBodySlots map[numCode]str
 }
 
 func (d *SystemDetails) placeOtherWorlds(world wrld.World, stBodySlots map[numCode]string) map[numCode]string {
-	worldsTotal, err := strconv.Atoi(world.NumOfWorlds())
+	numWo := world.NumOfWorlds()
+	if numWo == "--NO DATA--" || numWo == "" {
+		numWo = world.DicePool().RollNext("2d6").DM(world.Belts() + world.GasGigants() + 1).SumStr()
+	}
+	worldsTotal, err := strconv.Atoi(numWo)
 	if err != nil {
 		panic(err)
 	}
@@ -378,13 +388,9 @@ func Test() {
 	world := wrld.PickWorld()
 	fmt.Println(world)
 	d := From(world)
-	for _, val := range allKeys2() {
-		if bd, ok := d.bodyDetail[val]; ok {
-			fmt.Println(bd.ShortInfo())
-		}
-	}
-	//fmt.Println("Enter planetary code for details:")
-	// key, _ := user.InputStr()
+	d.PrintTable()
+	fmt.Println("Enter planetary code for details:")
+	//key, _ := user.InputStr()
 	// if bd, ok := d.bodyDetail[key]; ok {
 	// 	fmt.Println(bd.FullInfo())
 	// 	fmt.Println(d.bodyDetail[key])
@@ -392,8 +398,21 @@ func Test() {
 	fmt.Println("END PROGRAMM")
 }
 
+func (d *SystemDetails) PrintTable() {
+	tbl := tab.NewTST([]string{})
+	for _, val := range allKeys2() {
+		if bd, ok := d.bodyDetail[val]; ok {
+			tbl.AddLine(bd.ShortInfo())
+		}
+	}
+	tbl.PrintTable()
+}
+
 func parseStellarData(w wrld.World) []string {
 	spectralData := strings.Split(w.Stellar(), " ")
+	if w.Stellar() == "" {
+		panic("\n\n---------------------------------------------------------\nTODO: решить что делать если не хватет официальных данных\n---------------------------------------------------------\n")
+	}
 	stars := []string{}
 	for i, val := range spectralData {
 		switch val {
@@ -439,16 +458,17 @@ type SystemDetails struct {
 }
 
 type bodyDetails struct {
-	nomena          string
-	name            string
-	uwp             string
-	tags            string
-	bodyType        string
-	diameter        float64
-	orbitDistance   float64 //радиус орбиты от звезды в AU
-	jumpPointToBody float64 //расстояние до точки прыжка с учетом (пока нет) тени звезды
-	orbitSpeed      int
-	position        numCode //
+	nomena           string
+	name             string
+	uwp              string
+	tags             string
+	bodyType         string
+	diameter         float64
+	orbitDistance    float64 //радиус орбиты от звезды в AU
+	orbitDistanceSat float64 //радиус орбиты от планеты в ММ
+	jumpPointToBody  float64 //расстояние до точки прыжка с учетом (пока нет) тени звезды
+	orbitSpeed       int
+	position         numCode //
 }
 
 func (bd *bodyDetails) DEBUGINFO() {
@@ -492,6 +512,7 @@ func newBodyR(planetType string, position numCode, w wrld.World) bodyDetails {
 		bd.calculatePlanetDiameter(dp)
 		bd.jumpPointToBody = Astrogation.JumpPointFromObject(bd.diameter)
 		bd.calculateOrbitDistanceAU(position, dp)
+
 		if sShadow-bd.orbitDistance > 0 {
 			closestJumpPoint := utils.RoundFloat64(sShadow-bd.orbitDistance, 2)
 			bd.jumpPointToBody = utils.RoundFloat64(Astrogation.AU2Megameters*(closestJumpPoint), 3)
@@ -592,6 +613,12 @@ func (bd *bodyDetails) calculateOrbitDistanceAU(position numCode, dp *dice.Dicep
 	orbCode := position.planetCode()
 	orbDis := locateOrbitInt(dp, orbCode)
 	bd.orbitDistance = orbDis
+}
+
+func calculateSateliteOrbitDistance(planetDiam float64, sateliteOrbit int) float64 {
+	satDistance := planetDiam * float64(sateliteOrbit)
+	satDistance = utils.RoundFloat64(satDistance, 3)
+	return satDistance
 }
 
 //numCode - составляется из трех чисел (номер звезды, номер орбиты вокруг звезды и номер орбиты вокруг спутника)

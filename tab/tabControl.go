@@ -1,135 +1,46 @@
 package tab
 
 import (
-	"bufio"
-	"errors"
-	"os"
+	"fmt"
 	"strings"
-
-	"github.com/Galdoba/devtools/cli/prettytable"
 )
 
-type Table struct {
-	path     string
-	lines    []string
-	columns  []string
-	colWidth []int
+type TabSeparatedTable struct {
+	lines []string
 }
 
-func FromSlice(sl []string) (Table, error) {
-	t := Table{}
-	colNum := 0
-	for i := range sl {
-		t.lines = append(t.lines, sl[i])
-		if colNum == 0 {
-			cols := strings.Split(sl[i], "	")
-			colNum = len(cols)
-		} else {
-			//fmt.Println("Debug:", sl[i])
-			if colNum != len(strings.Split(sl[i], "	")) {
-				return Table{}, errors.New("Table NOT formatted properly: " + sl[i])
+func NewTST(lines []string) TabSeparatedTable {
+	return TabSeparatedTable{lines}
+}
+
+func (tst *TabSeparatedTable) PrintTable() {
+	//rows := len(tst.lines)
+	width := []int{}
+	head := strings.Split(tst.lines[0], "	")
+	for _, val := range head {
+		width = append(width, len(val))
+	}
+	for _, neck := range tst.lines {
+		line := strings.Split(neck, "	")
+		for c, val := range line {
+			if width[c] < len(val) {
+				width[c] = len(val)
 			}
+
 		}
 	}
-	t.updateColWidth()
-	return t, nil
-}
-
-func NewTable(path string) (Table, error) {
-	t := Table{}
-	file, err := os.Open(path)
-	if err != nil {
-		return t, err
-	}
-	defer file.Close()
-	colNum := 0
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		t.lines = append(t.lines, scanner.Text())
-		if colNum == 0 {
-			cols := strings.Split(scanner.Text(), "	")
-			colNum = len(cols)
-		} else {
-			if colNum != len(strings.Split(scanner.Text(), "	")) {
-				return Table{}, errors.New("Table NOT formatted properly: " + scanner.Text())
+	for _, line := range tst.lines {
+		body := strings.Split(line, "	")
+		for r, val := range body {
+			for len(val) < width[r] {
+				val += " "
 			}
+			fmt.Print("| " + val + " ")
 		}
-	}
-	if err := scanner.Err(); err != nil {
-		return t, err
-	}
-	t.updateColWidth()
-	return t, nil
-}
-
-//CellValue - возвращает значение в ячейки
-func (t Table) CellValue(r, c int) string {
-	line := t.lines[r]
-	if r >= len(t.lines) {
-		return "{Error}"
-	}
-	cols := strings.Split(line, "	")
-	if c >= len(cols) {
-		return "{Error}"
-	}
-	return cols[c]
-}
-
-//Line - возвращает строку
-func (t Table) Line(num int) string {
-	return t.lines[num]
-}
-
-//Line - возвращает строку
-func (t Table) Lines() []string {
-	return t.lines
-}
-
-//ColWidths - Возвращает слайс длинн колонок таблицы
-func (t Table) ColWidths() []int {
-	return t.colWidth
-}
-
-func (t *Table) updateColWidth() {
-	line0 := t.lines[0]
-	col := strings.Split(line0, "	")
-	for _, val := range col {
-		t.colWidth = append(t.colWidth, len(val))
-	}
-	for _, val := range t.lines {
-		col := strings.Split(val, "	")
-		for c := range col {
-			if t.colWidth[c] < len(col[c]) {
-				t.colWidth[c] = len(col[c])
-			}
-		}
+		fmt.Print("|\n")
 	}
 }
 
-func (t Table) PTPrint() {
-	var ptSl [][]string
-	for i := range t.lines {
-		sl := strings.Split(t.lines[i], "	")
-		ptSl = append(ptSl, sl)
-	}
-	pt := prettytable.From(ptSl)
-	pt.PTPrint()
-}
-
-func (t Table) LineMapByHex() map[string][]string {
-	hexMap := make(map[string][]string)
-	for _, line := range t.lines {
-		data := strings.Split(line, "	")
-		hexMap[data[2]] = data
-	}
-	return hexMap
-}
-
-func (t Table) LineMapByName() map[string][]string {
-	hexMap := make(map[string][]string)
-	for _, line := range t.lines {
-		data := strings.Split(line, "	")
-		hexMap[data[3]] = data
-	}
-	return hexMap
+func (tst *TabSeparatedTable) AddLine(line string) {
+	tst.lines = append(tst.lines, line)
 }

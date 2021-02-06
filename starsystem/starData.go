@@ -4,6 +4,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Galdoba/TR_Dynasty/TrvCore"
+	"github.com/Galdoba/convert"
 	"github.com/Galdoba/utils"
 )
 
@@ -118,6 +120,36 @@ func aproximate(offset, grad int, lowVal, highVal float64) float64 {
 	r := lowVal + (step * float64(offset))
 	r = utils.RoundFloat64(r, 3)
 	return r
+}
+
+func table2aHomeStar(refereeDM ...int) string {
+	dm := 0
+	if len(refereeDM) > 1 {
+		dm = refereeDM[0]
+	}
+	dm = utils.BoundInt(dm, -1, 1)
+	flux1 := TrvCore.Flux() + dm
+	flux2 := TrvCore.Flux()
+	class := []string{"O", "B", "A", "A", "F", "F", "G", "K", "K", "M", "M", "M", "M"}
+	dec := utils.RollDice("d10", -1)
+	hsMap := make(map[int][]string)
+	hsMap[-6] = []string{"Ia", "Ia", "Ib", "II", "III", "III", "III", "V", "V", "V", "IV", "D", "D"}
+	hsMap[-5] = []string{"Ia", "Ia", "Ib", "II", "III", "III", "III", "III", "V", "V", "IV", "D", "D"}
+	hsMap[-4] = []string{"Ia", "Ia", "Ib", "II", "III", "IV", "V", "V", "V", "V", "V", "D", "D"}
+	hsMap[-3] = []string{"Ia", "Ia", "Ib", "II", "III", "IV", "V", "V", "V", "V", "V", "D", "D"}
+	hsMap[-2] = []string{"II", "II", "III", "IV", "V", "V", "V", "V", "V", "V", "VI", "D", "D"}
+	hsMap[-1] = []string{"II", "II", "III", "IV", "V", "V", "V", "V", "V", "V", "VI", "D", "D"}
+	hsMap[+0] = []string{"II", "II", "III", "IV", "V", "V", "V", "V", "V", "V", "VI", "D", "D"}
+	hsMap[+1] = []string{"II", "II", "III", "IV", "V", "V", "V", "V", "V", "V", "VI", "D", "D"}
+	hsMap[+2] = []string{"II", "II", "III", "IV", "V", "V", "V", "V", "V", "V", "VI", "D", "D"}
+	hsMap[+3] = []string{"II", "II", "II", "II", "III", "V", "V", "V", "V", "V", "VI", "D", "D"}
+	hsMap[+4] = []string{"II", "II", "II", "II", "III", "V", "V", "V", "V", "V", "VI", "D", "D"}
+	hsMap[+5] = []string{"II", "II", "II", "II", "III", "V", "V", "V", "V", "V", "VI", "D", "D"}
+	hsMap[+6] = []string{"II", "II", "II", "II", "III", "V", "V", "V", "V", "V", "VI", "D", "D"}
+
+	//fmt.Println(class[flux1+6], convert.ItoS(dec), hsMap[flux1][flux2+6])
+	homeStar := class[flux1+6] + convert.ItoS(dec) + " " + hsMap[flux1][flux2+6]
+	return homeStar
 }
 
 /*
