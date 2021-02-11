@@ -1,17 +1,20 @@
-package profile
+package uwp
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/constant"
+	"github.com/Galdoba/TR_Dynasty/pkg/core/astronomical"
 	"github.com/Galdoba/TR_Dynasty/pkg/core/ehex"
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 	"github.com/Galdoba/utils"
 )
 
-func UWPGasGigant(dp *dice.Dicepool, ggType string) string {
+//NewGasGigant -
+func NewGasGigant(dp *dice.Dicepool, ggType string) string {
 	size := ""
 	switch ggType {
 	default:
@@ -58,11 +61,118 @@ func UWPGasGigant(dp *dice.Dicepool, ggType string) string {
 	return "Y" + size + "XXXXX-X"
 }
 
-func GenerateOtherWorldUWP(mwUWP string, stardata string, orbit int) string {
-
-	return "Foo Bar"
+//GenerateOtherWorldUWP -
+func GenerateOtherWorldUWP(dices *dice.Dicepool, mwUWP string, planetType string, star string, orbit int) string { //planetType string - используем ли?
+	//SIZE
+	sizeDM := sizeDM(star, orbit)
+	size := rollSize(dices, planetType, sizeDM)
+	//ATMO
+	atmoDM := atmoDM(size, orbit, star)
+	atmo := rollAtmo(dices, planetType, atmoDM, size)
+	if astronomical.HabitableZoneScore(orbit, star) > 2 {
+		if dices.RollNext("2d6").Sum() == 12 {
+			atmo = 10
+		}
+	}
+	//HYDR
+	hydrDM := hydrDM(orbit, star, atmo)
+	hydr := rollHydr(dices, size, atmo, orbit, star, hydrDM)
+	uwp := "?" + ehex.New(size).String() + ehex.New(atmo).String() + ehex.New(hydr).String() + "????-?"
+	fmt.Println(size, atmo)
+	return uwp
 }
 
+func sizeDM(star string, orbit int) int {
+	sizeDM := 0
+	switch orbit {
+	case 0:
+		sizeDM += -5
+	case 1:
+		sizeDM += -4
+	case 2:
+		sizeDM += -2
+	}
+	if strings.Contains(star, "M") {
+		sizeDM += -2
+	}
+	return sizeDM
+}
+
+func rollSize(dp *dice.Dicepool, planetType string, sizeDM int) int {
+	sz := 0
+	switch planetType {
+	default:
+		sz = dp.RollNext("2d6").DM(sizeDM - 2).Sum()
+	case constant.WTpBigWorld:
+		sz = dp.RollNext("2d6").DM(sizeDM + 7).Sum()
+	case constant.WTpPlanetoid:
+		sz = 0
+	case constant.WTpRadWorld, constant.WTpStormWorld:
+		sz = dp.RollNext("2d6").DM(sizeDM).Sum()
+	case constant.WTpInferno:
+		sz = dp.RollNext("1d6").DM(sizeDM + 6).Sum()
+	case constant.WTpWorldlet:
+		sz = dp.RollNext("1d6").DM(sizeDM - 3).Sum()
+	}
+	if sz < 0 {
+		sz = 0
+	}
+	return sz
+}
+
+func atmoDM(size int, orbit int, star string) int {
+	atmoDM := 0
+	switch astronomical.Zone(orbit, star) {
+	case astronomical.ZoneInner:
+		atmoDM += -2
+	case astronomical.ZoneOuter:
+		atmoDM += -4
+	}
+	return atmoDM
+}
+
+func rollAtmo(dp *dice.Dicepool, planetType string, atmoDM int, size int) int {
+	atmo := 0
+	switch planetType {
+	default:
+		atmo = dp.RollNext("2d6").DM(size - 7 + atmoDM).Sum()
+	case constant.WTpPlanetoid:
+		atmo = 0
+	}
+	if atmo < 0 {
+		atmo = 0
+	}
+	return atmo
+}
+
+func hydrDM(orbit int, star string, atmo int) int {
+	hydrDM := 0
+	switch astronomical.Zone(orbit, star) {
+	case astronomical.ZoneOuter:
+		hydrDM += -2
+	}
+	if atmo < 2 {
+		hydrDM += -4
+	}
+	if atmo > 9 {
+		hydrDM += -4
+	}
+	return hydrDM
+}
+
+func rollHydr(dp *dice.Dicepool, size int, atmo int, orbit int, star string, hydrDM int) int {
+	hydr := dp.RollNext("2d6").DM(size - 7 + hydrDM).Sum()
+	if size < 2 {
+		hydr = 0
+	}
+	if astronomical.Zone(orbit, star) == astronomical.ZoneInner {
+		hydr = 0
+	}
+	hydr = utils.BoundInt(hydr, 0, 10)
+	return hydr
+}
+
+//RandomUWP -
 func RandomUWP(dicepool *dice.Dicepool, planetType ...string) string {
 	var result string
 	var pType string
@@ -330,29 +440,29 @@ func RandomUWP(dicepool *dice.Dicepool, planetType ...string) string {
 		case "X":
 			dm -= 4
 		case "F":
-			dm += 1
+			dm++
 		}
 		switch size {
 		case 0, 1:
 			dm += 2
 		case 2, 3, 4:
-			dm += 1
+			dm++
 		}
 		switch atmo {
 		case 0, 1, 2, 3:
-			dm += 1
+			dm++
 		case 10, 11, 12, 13, 14, 15:
-			dm += 1
+			dm++
 		}
 		switch hydr {
 		case 9:
-			dm += 1
+			dm++
 		case 10:
 			dm += 2
 		}
 		switch pops {
 		case 1, 2, 3, 4, 5:
-			dm += 1
+			dm++
 		case 9:
 			dm += 2
 		default:
@@ -362,11 +472,11 @@ func RandomUWP(dicepool *dice.Dicepool, planetType ...string) string {
 		}
 		switch govr {
 		case 0, 5:
-			dm += 1
+			dm++
 		case 13:
 			dm -= 2
 		case 14, 15:
-			dm -= 1
+			dm--
 		}
 		tl = rollStat(dicepool, 1, 0, dm)
 	case constant.WTpRadWorld, constant.WTpInferno, constant.WTpGG:
@@ -405,6 +515,7 @@ func RandomUWP(dicepool *dice.Dicepool, planetType ...string) string {
 	return result
 }
 
+//RandomUWPShort -
 func RandomUWPShort(dicepool *dice.Dicepool, planetType ...string) string {
 	var result string
 	var pType string
@@ -553,6 +664,7 @@ func orderByType(profileType string) (order []string) {
 // 	return p
 // }
 
+//CalculateTradeCodes -
 func CalculateTradeCodes(uwp string) []string {
 	tradeCodes := constant.TravelCodesMgT2()
 	var res []string
@@ -637,6 +749,7 @@ func CalculateTradeCodes(uwp string) []string {
 	return res
 }
 
+//CalculateTradeCodesT5 -
 func CalculateTradeCodesT5(uwp string, mwTags []string, mw bool, hz int) []string {
 	tradeCodes := constant.TravelCodesT5()
 	var res []string
@@ -916,6 +1029,7 @@ func (u *newUWPr) String() string {
 	return u.Starport().String() + u.Size().String() + u.Atmo().String() + u.Hydr().String() + u.Pops().String() + u.Govr().String() + u.Laws().String() + "-" + u.TL().String()
 }
 
+//NewUWP -
 func NewUWP(str string) *newUWPr {
 	u := newUWPr{}
 	u.data = make(map[string]ehex.DataRetriver)

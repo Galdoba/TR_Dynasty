@@ -8,8 +8,9 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/Astrogation"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
+	"github.com/Galdoba/TR_Dynasty/pkg/core/astronomical"
 	"github.com/Galdoba/TR_Dynasty/pkg/core/ehex"
-	profile "github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
+	"github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
 	"github.com/Galdoba/TR_Dynasty/tab"
 	"github.com/Galdoba/utils"
 
@@ -72,7 +73,7 @@ func (bd *bodyDetails) syncPlanetDistance(sd SystemDetails) {
 func (d *SystemDetails) placeMW(world wrld.World, stBodySlots map[numCode]string) map[numCode]string {
 	tc := world.TradeClassificationsSl()
 	starData := parseStellarData(world)
-	hz := getHZ(starData[0])
+	hz := astronomical.HabitableOrbit(starData[0])
 	mwOrbit := hz
 	if sliceContains(tc, "Fr") {
 		mwOrbit = hz + d.dicepool.RollNext("1d6").DM(1).Sum()
@@ -128,7 +129,7 @@ func (d *SystemDetails) placeGG(world wrld.World, stBodySlots map[numCode]string
 	for i := 0; i < totalGG; i++ {
 		for l := 0; l < len(starData); l++ {
 			starKeys = append(starKeys, l)
-			starHZ = append(starHZ, getHZ(starData[l]))
+			starHZ = append(starHZ, astronomical.HabitableOrbit(starData[l]))
 		}
 		ggTypes = append(ggTypes, "Undefined GG")
 		r := d.dicepool.RollNext("2d6").Sum()
@@ -178,7 +179,7 @@ func (d *SystemDetails) placeBelts(world wrld.World, stBodySlots map[numCode]str
 	for i := 0; i < totalBelts; i++ {
 		for l := 0; l < len(starData); l++ {
 			starKeys = append(starKeys, l)
-			starHZ = append(starHZ, getHZ(starData[l]))
+			starHZ = append(starHZ, astronomical.HabitableOrbit(starData[l]))
 		}
 	}
 	starKeys = starKeys[0:totalBelts]
@@ -233,7 +234,7 @@ func (d *SystemDetails) placeOtherWorlds(world wrld.World, stBodySlots map[numCo
 					suggest++
 					continue
 				}
-				if suggest < getStarClosestOrbit(starData[starKeys[star]]) {
+				if suggest < astronomical.ClosestPossibleOrbit(starData[starKeys[star]]) {
 					suggest++
 					continue
 				}
@@ -275,7 +276,7 @@ func (d *SystemDetails) assignWorldTypes(world wrld.World, stBodySlots map[numCo
 		if stBodySlots[k] != "Planet" {
 			continue
 		}
-		hz := getHZ(starData[k.starCode()])
+		hz := astronomical.HabitableOrbit(starData[k.starCode()])
 		stBodySlots[k] = d.outerType()
 		if k.planetCode() <= hz {
 			stBodySlots[k] = d.innerType()
@@ -308,7 +309,7 @@ func (d *SystemDetails) placeSatelites(world wrld.World, stBodySlots map[numCode
 			//fmt.Println("Stop Empty/Star:", stBodySlots[k])
 			continue
 		}
-		hz := getHZ(starData[k.starCode()])
+		hz := astronomical.HabitableOrbit(starData[k.starCode()])
 		rings := 0
 		numSat := -1
 		numSat, rings = d.addRingAndSat(-4)
@@ -533,15 +534,15 @@ func newBodyR(planetType string, position numCode, w wrld.World) bodyDetails {
 	bd.bodyType = planetType
 	switch planetType {
 	default:
-		bd.uwp = profile.RandomUWP(dp, planetType, w.UWP()) //TODO: Разбить функцию для создания профайла планеты и спутника (чтобы спутник не был больше чем планета)
-		alternative := profile.GenerateOtherWorldUWP(w.UWP(), starData[bd.position.starCode()], bd.position.planetCode())
-		fmt.Println(bd.position, "Generic:", bd.uwp, "Alternative:", alternative)
+		bd.uwp = uwp.RandomUWP(dp, planetType, w.UWP()) //TODO: Разбить функцию для создания профайла планеты и спутника (чтобы спутник не был больше чем планета)
+		alternative := uwp.GenerateOtherWorldUWP(dice.New().SetSeed(bd.nomena), w.UWP(), planetType, starData[bd.position.starCode()], bd.position.planetCode())
+		fmt.Println(bd.position, "	T5:", bd.uwp, "	Alternative:", alternative)
 		if planetType == "MainWorld" {
 			bd.uwp = w.UWP()
 			bd.name = w.Name()
 		}
 		if planetType == "LGG" || planetType == "SGG" || planetType == "IG" {
-			bd.uwp = profile.UWPGasGigant(dp, planetType)
+			bd.uwp = uwp.NewGasGigant(dp, planetType)
 		}
 		bd.calculatePlanetDiameter(dp)
 		bd.jumpPointToBody = Astrogation.JumpPointFromObject(bd.diameter)
@@ -551,8 +552,8 @@ func newBodyR(planetType string, position numCode, w wrld.World) bodyDetails {
 			closestJumpPoint := utils.RoundFloat64(sShadow-bd.orbitDistance, 2)
 			bd.jumpPointToBody = utils.RoundFloat64(Astrogation.AU2Megameters*(closestJumpPoint), 3)
 		}
-		hz := getHZ(starData[position.starCode()])
-		remarks := profile.CalculateTradeCodesT5(bd.uwp, w.TradeClassificationsSl(), false, position.planetCode()-hz)
+		hz := astronomical.HabitableOrbit(starData[position.starCode()])
+		remarks := uwp.CalculateTradeCodesT5(bd.uwp, w.TradeClassificationsSl(), false, position.planetCode()-hz)
 		bd.tags = strings.Join(remarks, " ")
 	case "Star":
 		bd.nomena = w.Sector() + " " + w.Hex() + " " + TrvCore.NumToGreek(strCode) + " " + starData[strCode]
@@ -587,7 +588,7 @@ func (bd *bodyDetails) cleanDataSpecialType() {
 }
 
 func (bd *bodyDetails) calculatePlanetDiameter(dp *dice.Dicepool) {
-	sz := profile.NewUWP(bd.uwp).Size().Value() // * 1000
+	sz := uwp.NewUWP(bd.uwp).Size().Value() // * 1000
 	switch sz {
 	case 21:
 		sz = 30
@@ -690,175 +691,175 @@ func allKeys2() (numKeys []numCode) {
 	return numKeys
 }
 
-func getHZ(star string) int {
-	spectral := getStarSpectral(star)
-	size := getStarSize(star)
-	if star == "BD" {
-		spectral = "B"
-		size = "D"
-	}
-	hzMap := make(map[string]int)
-	hzMap["OIa"] = 15
-	hzMap["OIb"] = 15
-	hzMap["OII"] = 14
-	hzMap["OIII"] = 13
-	hzMap["OIV"] = 12
-	hzMap["OV"] = 11
-	hzMap["OVI"] = -1
-	hzMap["OD"] = 1
-	hzMap["BIa"] = 13
-	hzMap["BIb"] = 13
-	hzMap["BII"] = 12
-	hzMap["BIII"] = 11
-	hzMap["BIV"] = 10
-	hzMap["BV"] = 9
-	hzMap["BVI"] = -1
-	hzMap["BD"] = 0
-	hzMap["AIa"] = 12
-	hzMap["AIb"] = 11
-	hzMap["AII"] = 9
-	hzMap["AIII"] = 7
-	hzMap["AIV"] = 7
-	hzMap["AV"] = 7
-	hzMap["AVI"] = -1
-	hzMap["AD"] = 0
-	hzMap["FIa"] = 11
-	hzMap["FIb"] = 10
-	hzMap["FII"] = 9
-	hzMap["FIII"] = 6
-	hzMap["FIV"] = 6
-	hzMap["FV"] = 4
-	hzMap["FVI"] = 3
-	hzMap["FD"] = 0
-	hzMap["GIa"] = 12
-	hzMap["GIb"] = 10
-	hzMap["GII"] = 9
-	hzMap["GIII"] = 7
-	hzMap["GIV"] = 5
-	hzMap["GV"] = 3
-	hzMap["GVI"] = 2
-	hzMap["GD"] = 0
-	hzMap["KIa"] = 12
-	hzMap["KIb"] = 10
-	hzMap["KII"] = 9
-	hzMap["KIII"] = 8
-	hzMap["KIV"] = 5
-	hzMap["KV"] = 2
-	hzMap["KVI"] = 1
-	hzMap["KD"] = 0
-	hzMap["MIa"] = 12
-	hzMap["MIb"] = 11
-	hzMap["MII"] = 10
-	hzMap["MIII"] = 9
-	hzMap["MIV"] = -1
-	hzMap["MV"] = 0
-	hzMap["MVI"] = 0
-	hzMap["MD"] = 0
-	if val, ok := hzMap[spectral+size]; !ok {
-		fmt.Println(val, star, spectral+size)
-		panic("star class unrecognized")
-	}
-	return hzMap[spectral+size]
+// func getHZ(star string) int {
+// 	spectral := getStarSpectral(star)
+// 	size := getStarSize(star)
+// 	if star == "BD" {
+// 		spectral = "B"
+// 		size = "D"
+// 	}
+// 	hzMap := make(map[string]int)
+// 	hzMap["OIa"] = 15
+// 	hzMap["OIb"] = 15
+// 	hzMap["OII"] = 14
+// 	hzMap["OIII"] = 13
+// 	hzMap["OIV"] = 12
+// 	hzMap["OV"] = 11
+// 	hzMap["OVI"] = -1
+// 	hzMap["OD"] = 1
+// 	hzMap["BIa"] = 13
+// 	hzMap["BIb"] = 13
+// 	hzMap["BII"] = 12
+// 	hzMap["BIII"] = 11
+// 	hzMap["BIV"] = 10
+// 	hzMap["BV"] = 9
+// 	hzMap["BVI"] = -1
+// 	hzMap["BD"] = 0
+// 	hzMap["AIa"] = 12
+// 	hzMap["AIb"] = 11
+// 	hzMap["AII"] = 9
+// 	hzMap["AIII"] = 7
+// 	hzMap["AIV"] = 7
+// 	hzMap["AV"] = 7
+// 	hzMap["AVI"] = -1
+// 	hzMap["AD"] = 0
+// 	hzMap["FIa"] = 11
+// 	hzMap["FIb"] = 10
+// 	hzMap["FII"] = 9
+// 	hzMap["FIII"] = 6
+// 	hzMap["FIV"] = 6
+// 	hzMap["FV"] = 4
+// 	hzMap["FVI"] = 3
+// 	hzMap["FD"] = 0
+// 	hzMap["GIa"] = 12
+// 	hzMap["GIb"] = 10
+// 	hzMap["GII"] = 9
+// 	hzMap["GIII"] = 7
+// 	hzMap["GIV"] = 5
+// 	hzMap["GV"] = 3
+// 	hzMap["GVI"] = 2
+// 	hzMap["GD"] = 0
+// 	hzMap["KIa"] = 12
+// 	hzMap["KIb"] = 10
+// 	hzMap["KII"] = 9
+// 	hzMap["KIII"] = 8
+// 	hzMap["KIV"] = 5
+// 	hzMap["KV"] = 2
+// 	hzMap["KVI"] = 1
+// 	hzMap["KD"] = 0
+// 	hzMap["MIa"] = 12
+// 	hzMap["MIb"] = 11
+// 	hzMap["MII"] = 10
+// 	hzMap["MIII"] = 9
+// 	hzMap["MIV"] = -1
+// 	hzMap["MV"] = 0
+// 	hzMap["MVI"] = 0
+// 	hzMap["MD"] = 0
+// 	if val, ok := hzMap[spectral+size]; !ok {
+// 		fmt.Println(val, star, spectral+size)
+// 		panic("star class unrecognized")
+// 	}
+// 	return hzMap[spectral+size]
 
-}
+// }
 
-func getStarClosestOrbit(star string) int {
-	spectral := getStarSpectral(star)
-	size := getStarSize(star)
-	if star == "BD" {
-		spectral = "B"
-		size = "D"
-	}
-	hzMap := make(map[string]int)
-	hzMap["OIa"] = 8
-	hzMap["OIb"] = 7
-	hzMap["OII"] = 6
-	hzMap["OIII"] = 5
-	hzMap["OIV"] = 4
-	hzMap["OV"] = 5
-	hzMap["OVI"] = -1
-	hzMap["OD"] = 0
-	hzMap["BIa"] = 7
-	hzMap["BIb"] = 6
-	hzMap["BII"] = 5
-	hzMap["BIII"] = 4
-	hzMap["BIV"] = 3
-	hzMap["BV"] = 4
-	hzMap["BVI"] = -1
-	hzMap["BD"] = 0
-	hzMap["AIa"] = 7
-	hzMap["AIb"] = 5
-	hzMap["AII"] = 3
-	hzMap["AIII"] = 1
-	hzMap["AIV"] = 1
-	hzMap["AV"] = 0
-	hzMap["AVI"] = -1
-	hzMap["AD"] = 0
-	hzMap["FIa"] = 6
-	hzMap["FIb"] = 4
-	hzMap["FII"] = 2
-	hzMap["FIII"] = 0
-	hzMap["FIV"] = 0
-	hzMap["FV"] = 0
-	hzMap["FVI"] = 0
-	hzMap["FD"] = 0
-	hzMap["GIa"] = 7
-	hzMap["GIb"] = 5
-	hzMap["GII"] = 2
-	hzMap["GIII"] = 0
-	hzMap["GIV"] = 0
-	hzMap["GV"] = 0
-	hzMap["GVI"] = 0
-	hzMap["GD"] = 0
-	hzMap["KIa"] = 7
-	hzMap["KIb"] = 6
-	hzMap["KII"] = 3
-	hzMap["KIII"] = 0
-	hzMap["KIV"] = 0
-	hzMap["KV"] = 0
-	hzMap["KVI"] = 0
-	hzMap["KD"] = 0
-	hzMap["MIa"] = 8
-	hzMap["MIb"] = 7
-	hzMap["MII"] = 6
-	hzMap["MIII"] = 4
-	hzMap["MIV"] = -1
-	hzMap["MV"] = 0
-	hzMap["MVI"] = 0
-	hzMap["MD"] = 0
-	if val, ok := hzMap[spectral+size]; !ok {
-		fmt.Println(val, star, spectral+size)
-		panic("star class unrecognized")
-	}
-	return hzMap[spectral+size]
+// func getStarClosestOrbit(star string) int {
+// 	spectral := getStarSpectral(star)
+// 	size := getStarSize(star)
+// 	if star == "BD" {
+// 		spectral = "B"
+// 		size = "D"
+// 	}
+// 	hzMap := make(map[string]int)
+// 	hzMap["OIa"] = 8
+// 	hzMap["OIb"] = 7
+// 	hzMap["OII"] = 6
+// 	hzMap["OIII"] = 5
+// 	hzMap["OIV"] = 4
+// 	hzMap["OV"] = 5
+// 	hzMap["OVI"] = -1
+// 	hzMap["OD"] = 0
+// 	hzMap["BIa"] = 7
+// 	hzMap["BIb"] = 6
+// 	hzMap["BII"] = 5
+// 	hzMap["BIII"] = 4
+// 	hzMap["BIV"] = 3
+// 	hzMap["BV"] = 4
+// 	hzMap["BVI"] = -1
+// 	hzMap["BD"] = 0
+// 	hzMap["AIa"] = 7
+// 	hzMap["AIb"] = 5
+// 	hzMap["AII"] = 3
+// 	hzMap["AIII"] = 1
+// 	hzMap["AIV"] = 1
+// 	hzMap["AV"] = 0
+// 	hzMap["AVI"] = -1
+// 	hzMap["AD"] = 0
+// 	hzMap["FIa"] = 6
+// 	hzMap["FIb"] = 4
+// 	hzMap["FII"] = 2
+// 	hzMap["FIII"] = 0
+// 	hzMap["FIV"] = 0
+// 	hzMap["FV"] = 0
+// 	hzMap["FVI"] = 0
+// 	hzMap["FD"] = 0
+// 	hzMap["GIa"] = 7
+// 	hzMap["GIb"] = 5
+// 	hzMap["GII"] = 2
+// 	hzMap["GIII"] = 0
+// 	hzMap["GIV"] = 0
+// 	hzMap["GV"] = 0
+// 	hzMap["GVI"] = 0
+// 	hzMap["GD"] = 0
+// 	hzMap["KIa"] = 7
+// 	hzMap["KIb"] = 6
+// 	hzMap["KII"] = 3
+// 	hzMap["KIII"] = 0
+// 	hzMap["KIV"] = 0
+// 	hzMap["KV"] = 0
+// 	hzMap["KVI"] = 0
+// 	hzMap["KD"] = 0
+// 	hzMap["MIa"] = 8
+// 	hzMap["MIb"] = 7
+// 	hzMap["MII"] = 6
+// 	hzMap["MIII"] = 4
+// 	hzMap["MIV"] = -1
+// 	hzMap["MV"] = 0
+// 	hzMap["MVI"] = 0
+// 	hzMap["MD"] = 0
+// 	if val, ok := hzMap[spectral+size]; !ok {
+// 		fmt.Println(val, star, spectral+size)
+// 		panic("star class unrecognized")
+// 	}
+// 	return hzMap[spectral+size]
 
-}
+// }
 
-func getStarSize(starCode string) string {
-	stSp := "Ia"
-	if strings.Contains(starCode, "Ib") {
-		stSp = "Ib"
-	}
-	if strings.Contains(starCode, "II") {
-		stSp = "II"
-	}
-	if strings.Contains(starCode, "III") {
-		stSp = "III"
-	}
-	if strings.Contains(starCode, "V") {
-		stSp = "V"
-	}
-	if strings.Contains(starCode, "IV") {
-		stSp = "IV"
-	}
-	if strings.Contains(starCode, "VI") {
-		stSp = "VI"
-	}
-	if strings.Contains(starCode, "D") {
-		stSp = "D"
-	}
-	return stSp
-}
+// func getStarSize(starCode string) string {
+// 	stSp := "Ia"
+// 	if strings.Contains(starCode, "Ib") {
+// 		stSp = "Ib"
+// 	}
+// 	if strings.Contains(starCode, "II") {
+// 		stSp = "II"
+// 	}
+// 	if strings.Contains(starCode, "III") {
+// 		stSp = "III"
+// 	}
+// 	if strings.Contains(starCode, "V") {
+// 		stSp = "V"
+// 	}
+// 	if strings.Contains(starCode, "IV") {
+// 		stSp = "IV"
+// 	}
+// 	if strings.Contains(starCode, "VI") {
+// 		stSp = "VI"
+// 	}
+// 	if strings.Contains(starCode, "D") {
+// 		stSp = "D"
+// 	}
+// 	return stSp
+// }
 
 // func getStarDecimal(starCode string) string {
 // 	stDec := ""
@@ -869,34 +870,34 @@ func getStarSize(starCode string) string {
 // 	}
 // 	return stDec
 // }
-func getStarSpectral(starCode string) string {
-	stSp := ""
-	if strings.Contains(starCode, "O") {
-		stSp = "O"
-	}
-	if strings.Contains(starCode, "B") {
-		stSp = "B"
-	}
-	if strings.Contains(starCode, "A") {
-		stSp = "A"
-	}
-	if strings.Contains(starCode, "F") {
-		stSp = "F"
-	}
-	if strings.Contains(starCode, "G") {
-		stSp = "G"
-	}
-	if strings.Contains(starCode, "K") {
-		stSp = "K"
-	}
-	if strings.Contains(starCode, "M") {
-		stSp = "M"
-	}
-	if strings.Contains(starCode, "BD") {
-		stSp = "BD"
-	}
-	return stSp
-}
+// func getStarSpectral(starCode string) string {
+// 	stSp := ""
+// 	if strings.Contains(starCode, "O") {
+// 		stSp = "O"
+// 	}
+// 	if strings.Contains(starCode, "B") {
+// 		stSp = "B"
+// 	}
+// 	if strings.Contains(starCode, "A") {
+// 		stSp = "A"
+// 	}
+// 	if strings.Contains(starCode, "F") {
+// 		stSp = "F"
+// 	}
+// 	if strings.Contains(starCode, "G") {
+// 		stSp = "G"
+// 	}
+// 	if strings.Contains(starCode, "K") {
+// 		stSp = "K"
+// 	}
+// 	if strings.Contains(starCode, "M") {
+// 		stSp = "M"
+// 	}
+// 	if strings.Contains(starCode, "BD") {
+// 		stSp = "BD"
+// 	}
+// 	return stSp
+// }
 
 func (d *SystemDetails) innerType() string {
 	return []string{
