@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/otu"
-	"github.com/Galdoba/TR_Dynasty/profile"
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
+	profile "github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
 	"github.com/Galdoba/devtools/cli/user"
 )
 

@@ -31,7 +31,16 @@ starsystem.Details()
 
 func (bd *bodyDetails) ShortInfo() string {
 	str := ""
+	str += code2string(bd.position) + "	"
+	if bd.position.planetCode() != -1 {
+		str += "    "
+	}
+	if bd.position.sateliteCode() != -1 {
+		str += "    "
+	}
+
 	str += bd.nomena
+
 	if len(bd.nomena) < 8 {
 		str += "    "
 	}

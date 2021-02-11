@@ -1,20 +1,21 @@
 package starsystem
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/Astrogation"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
+	"github.com/Galdoba/TR_Dynasty/pkg/core/ehex"
+	profile "github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
 	"github.com/Galdoba/TR_Dynasty/tab"
 	"github.com/Galdoba/utils"
 
-	"github.com/Galdoba/TR_Dynasty/profile"
-
 	"github.com/Galdoba/TR_Dynasty/constant"
 
-	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 
 	"github.com/Galdoba/TR_Dynasty/wrld"
 )
@@ -485,6 +486,37 @@ func (bd *bodyDetails) DEBUGINFO() {
 	fmt.Print("bd.position = ", bd.position, "' numCode\n")
 }
 
+func code2string(nc numCode) string {
+	s := ehex.New(nc.starCode()).String()
+	p := ""
+	if nc.planetCode() != -1 {
+		p = ehex.New(nc.planetCode()).String()
+	}
+	st := ""
+	if nc.sateliteCode() != -1 {
+		st = ehex.New(nc.sateliteCode()).String()
+	}
+	return s + p + st
+}
+
+func string2code(str string) (numCode, error) {
+	nc := numCode{}
+	data := strings.Split(str, "")
+	switch len(data) {
+	default:
+		nc.code = [3]int{-1, -1, -1}
+		return nc, errors.New("strings lenght mismatch")
+	case 3:
+		nc.code = [3]int{ehex.New(data[0]).Value(), ehex.New(data[1]).Value(), ehex.New(data[2]).Value()}
+	case 2:
+		nc.code = [3]int{ehex.New(data[0]).Value(), ehex.New(data[1]).Value(), -1}
+	case 1:
+		nc.code = [3]int{ehex.New(data[0]).Value(), -1, -1}
+	}
+
+	return nc, nil
+}
+
 func newBodyR(planetType string, position numCode, w wrld.World) bodyDetails {
 	bd := bodyDetails{}
 	bd.position = position
@@ -502,6 +534,8 @@ func newBodyR(planetType string, position numCode, w wrld.World) bodyDetails {
 	switch planetType {
 	default:
 		bd.uwp = profile.RandomUWP(dp, planetType, w.UWP()) //TODO: Разбить функцию для создания профайла планеты и спутника (чтобы спутник не был больше чем планета)
+		alternative := profile.GenerateOtherWorldUWP(w.UWP(), starData[bd.position.starCode()], bd.position.planetCode())
+		fmt.Println(bd.position, "Generic:", bd.uwp, "Alternative:", alternative)
 		if planetType == "MainWorld" {
 			bd.uwp = w.UWP()
 			bd.name = w.Name()

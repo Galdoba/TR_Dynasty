@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 )
 
 type task struct {
