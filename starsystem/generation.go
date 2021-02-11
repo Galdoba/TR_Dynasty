@@ -21,7 +21,7 @@ import (
 	"github.com/Galdoba/TR_Dynasty/wrld"
 )
 
-//From - генерирует дители всех планитарных тел в системе на основе данных из SecondSurveyT5
+//From - генерирует детали всех планетарных тел в системе на основе данных из SecondSurveyT5
 func From(world wrld.World) SystemDetails {
 	fmt.Print(world.SecondSurvey(), "\n")
 	d := SystemDetails{}

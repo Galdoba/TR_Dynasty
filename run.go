@@ -1,12 +1,16 @@
 package main
 
 import (
+	"fmt"
+
+	"github.com/Galdoba/TR_Dynasty/pkg/core/astronomical"
 	"github.com/Galdoba/TR_Dynasty/starsystem"
 )
 
 func main() {
 	//fmt.Println(otu.GetOtuData())
-
+	fmt.Println(astronomical.StellarDataMap["G2V"])
+	//os.Exit(1)
 	starsystem.Test()
 
 	//w := wrld.PickWorld()
