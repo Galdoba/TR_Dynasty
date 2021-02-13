@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/Galdoba/TR_Dynasty/DateManager"
-	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 	"github.com/Galdoba/utils"
 )
 

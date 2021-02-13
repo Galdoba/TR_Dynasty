@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 	"github.com/Galdoba/utils"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"

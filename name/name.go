@@ -3,7 +3,7 @@ package name
 import (
 	"strconv"
 
-	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 )
 
 func firstName() string {

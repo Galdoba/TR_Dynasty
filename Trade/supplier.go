@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/Galdoba/TR_Dynasty/constant"
-	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/utils"
 )

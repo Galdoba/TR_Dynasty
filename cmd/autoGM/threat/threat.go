@@ -3,7 +3,7 @@ package threat
 import (
 	"strconv"
 
-	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 )
 
 type Risk struct {

@@ -7,10 +7,10 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/constant"
-	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/entity"
 	"github.com/Galdoba/TR_Dynasty/name"
 	"github.com/Galdoba/TR_Dynasty/otu"
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/utils"
 )

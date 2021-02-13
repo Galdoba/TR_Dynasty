@@ -86,7 +86,7 @@ func FormatToDay(timestamp string) (int, error) {
 		return 0, errors.New("Wrong data format '" + timestamp + "' - " + dy[1])
 	}
 	if data[1] == "BFE" {
-		day = day // - 365
+		//	day = day // - 365
 		year = (year * -1) - 1
 	}
 	return day + (year * 365), nil

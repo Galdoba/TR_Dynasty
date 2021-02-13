@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/Galdoba/TR_Dynasty/constant"
-	"github.com/Galdoba/TR_Dynasty/dice"
 	"github.com/Galdoba/TR_Dynasty/name"
-	"github.com/Galdoba/TR_Dynasty/profile"
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
+	profile "github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
@@ -93,7 +93,7 @@ func passengerTrafficValue(sourceWorld, targetWorld wrld.World) int {
 		case constant.TradeCodeAgricultural:
 			dm += 0
 		case constant.TradeCodeAsteroid:
-			dm += 1
+			dm++
 		case constant.TradeCodeBarren:
 			dm += 5
 		case constant.TradeCodeDesert:
@@ -105,7 +105,7 @@ func passengerTrafficValue(sourceWorld, targetWorld wrld.World) int {
 		case constant.TradeCodeHighPopulation:
 			dm += 0
 		case constant.TradeCodeIceCapped:
-			dm += 1
+			dm++
 		case constant.TradeCodeIndustrial:
 			dm += 2
 		case constant.TradeCodeLowPopulation:
@@ -153,7 +153,7 @@ func passengerTrafficValue(sourceWorld, targetWorld wrld.World) int {
 		case constant.TradeCodeIceCapped:
 			dm += -1
 		case constant.TradeCodeIndustrial:
-			dm += 1
+			dm++
 		case constant.TradeCodeLowPopulation:
 			dm += -4
 		case constant.TradeCodeNonAgricultural:

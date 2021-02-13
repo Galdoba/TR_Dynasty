@@ -3,7 +3,7 @@ package mission
 import (
 	"fmt"
 
-	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 )
 
 /*

@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
-	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 )
 
 //Contract - описываемые свойства структуры с информацией о договоре с участием денег

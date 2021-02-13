@@ -5,12 +5,12 @@ import (
 
 	law "github.com/Galdoba/TR_Dynasty/Law"
 	"github.com/Galdoba/TR_Dynasty/constant"
-
-	"github.com/Galdoba/TR_Dynasty/dice"
-	"github.com/Galdoba/TR_Dynasty/profile"
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
+	profile "github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 )
 
+//EncounterMgT2Core -
 func EncounterMgT2Core() {
 	event := "no encounter"
 	i := 0

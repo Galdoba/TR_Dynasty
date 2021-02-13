@@ -3,11 +3,12 @@ package autoGM
 import (
 	"fmt"
 
-	"github.com/Galdoba/TR_Dynasty/autoGM/encounters"
-	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/cmd/autoGM/encounters"
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 )
 
+//AutoGM -
 func AutoGM() {
 	//mission.Test()
 	//RunACFlowchart(9)

@@ -9,10 +9,10 @@ import (
 
 	starport "github.com/Galdoba/TR_Dynasty/Starport"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
-	"github.com/Galdoba/TR_Dynasty/profile"
+	profile "github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
 
 	trade "github.com/Galdoba/TR_Dynasty/Trade"
-	"github.com/Galdoba/TR_Dynasty/dice"
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 )
 
 var lastAction string
