@@ -16,6 +16,15 @@ type StellarData struct {
 	Mass                 float64
 }
 
+func TestDecodeStar(starcode string) []string {
+	res := []string{}
+	res = append(res, starSpectral(starcode))
+	_, decS := starDecimal(starcode)
+	res = append(res, decS)
+	res = append(res, starSize(starcode))
+	return res
+}
+
 //NewStellarData - возвращает данные о звезде (тест)
 func NewStellarData(stellarCode string) StellarData {
 	sd := StellarData{}
@@ -128,7 +137,6 @@ func HabitableOrbit(star string) int {
 		panic("star class unrecognized")
 	}
 	return hzMap[spectral+size]
-
 }
 
 func starSpectral(starCode string) string {
@@ -185,6 +193,40 @@ func starSize(starCode string) string {
 		stSp = "D"
 	}
 	return stSp
+}
+
+func starDecimal(starCode string) (int, string) {
+	if strings.Contains(starCode, "0") {
+		return 0, "0"
+	}
+	if strings.Contains(starCode, "1") {
+		return 1, "1"
+	}
+	if strings.Contains(starCode, "2") {
+		return 2, "2"
+	}
+	if strings.Contains(starCode, "3") {
+		return 3, "3"
+	}
+	if strings.Contains(starCode, "4") {
+		return 4, "4"
+	}
+	if strings.Contains(starCode, "5") {
+		return 5, "5"
+	}
+	if strings.Contains(starCode, "6") {
+		return 6, "6"
+	}
+	if strings.Contains(starCode, "7") {
+		return 7, "7"
+	}
+	if strings.Contains(starCode, "8") {
+		return 8, "8"
+	}
+	if strings.Contains(starCode, "9") {
+		return 9, "9"
+	}
+	return -1, ""
 }
 
 //ClosestPossibleOrbit - возвращает орбиту максимально близкую к звезде их тех

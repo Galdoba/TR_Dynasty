@@ -10,6 +10,7 @@ import (
 func main() {
 	//fmt.Println(otu.GetOtuData())
 	fmt.Println(astronomical.StellarDataMap["G2V"])
+	fmt.Println(astronomical.TestDecodeStar("G2 V"))
 	//os.Exit(1)
 	starsystem.Test()
 
