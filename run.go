@@ -1,17 +1,13 @@
 package main
 
 import (
-	"fmt"
-	"os"
-
-	"github.com/Galdoba/TR_Dynasty/pkg/core/astronomical"
 	"github.com/Galdoba/TR_Dynasty/starsystem"
 )
 
 func main() {
 
-	fmt.Println(astronomical.NewStellarData("G2 V"))
-	os.Exit(3)
+	//fmt.Println(astronomical.NewStellarData("G2 V"))
+	//os.Exit(3)
 	starsystem.Test()
 
 	//w := wrld.PickWorld()

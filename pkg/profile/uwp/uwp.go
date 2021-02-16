@@ -1,7 +1,6 @@
 package uwp
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -77,8 +76,37 @@ func GenerateOtherWorldUWP(dices *dice.Dicepool, mwUWP string, planetType string
 	//HYDR
 	hydrDM := hydrDM(orbit, star, atmo)
 	hydr := rollHydr(dices, size, atmo, orbit, star, hydrDM)
-	uwp := "?" + ehex.New(size).String() + ehex.New(atmo).String() + ehex.New(hydr).String() + "????-?"
-	fmt.Println(size, atmo)
+	//POPS
+	popsDM := popsDM(star, orbit, atmo, size)
+	pops := rollPops(dices, popsDM)
+	mwPop := NewUWP(mwUWP).Pops().Value()
+	pops = utils.BoundInt(pops, 0, mwPop-1)
+	//GOVR
+	govrDM := govrDM(mwUWP)
+	govr := rollGovr(dices, pops, govrDM)
+	//LAWS
+	laws := rollLaws(dices, mwUWP)
+	if pops == 0 {
+		laws = 0
+	}
+	//STARPORT
+	stpt := rollStpt(dices, mwPop)
+	tl := rollTL(mwUWP)
+	if pops == 0 {
+		tl = 0
+	}
+	if tl < 7 {
+		switch atmo {
+		default:
+			tl = 0
+			pops = 0
+			govr = 0
+			laws = 0
+		case 5, 6, 8:
+		}
+	}
+
+	uwp := stpt + ehex.New(size).String() + ehex.New(atmo).String() + ehex.New(hydr).String() + ehex.New(pops).String() + ehex.New(govr).String() + ehex.New(laws).String() + "-" + ehex.New(tl).String()
 	return uwp
 }
 
@@ -142,6 +170,9 @@ func rollAtmo(dp *dice.Dicepool, planetType string, atmoDM int, size int) int {
 	if atmo < 0 {
 		atmo = 0
 	}
+	if size == 0 {
+		atmo = 0
+	}
 	return atmo
 }
 
@@ -170,6 +201,113 @@ func rollHydr(dp *dice.Dicepool, size int, atmo int, orbit int, star string, hyd
 	}
 	hydr = utils.BoundInt(hydr, 0, 10)
 	return hydr
+}
+
+func popsDM(star string, orbit int, atmo int, size int) int {
+	dm := 0
+	switch astronomical.Zone(orbit, star) {
+	case astronomical.ZoneInner:
+		dm += -5
+	case astronomical.ZoneOuter:
+		dm += -3
+	}
+	switch atmo {
+	default:
+		dm += -2
+	case 0, 5, 6, 8:
+	}
+	if size < 5 || size > 9 {
+		dm += -2
+	}
+	return dm
+}
+
+func govrDM(mwUWP string) int {
+	dm := 0
+	mwuwp := NewUWP(mwUWP)
+	mwGovr := mwuwp.Govr().Value()
+	switch mwGovr {
+	case 6:
+		dm += mwuwp.Pops().Value()
+	default:
+		if mwGovr > 6 {
+			dm++
+		}
+	}
+	return dm
+}
+
+func rollLaws(dp *dice.Dicepool, mwUWP string) int {
+	mwLaw := NewUWP(mwUWP).Laws().Value()
+	mwPop := NewUWP(mwUWP).Pops().Value()
+	law := dp.RollNext("1d6").DM(-3 + mwLaw).Sum()
+	if law < 0 {
+		law = 0
+	}
+	if mwPop == 0 {
+		law = 0
+	}
+	return law
+}
+
+func rollGovr(dp *dice.Dicepool, pops int, dm int) int {
+	govr := dp.RollNext("1d6").DM(dm).Sum()
+	if pops == 0 {
+		govr = 0
+	}
+	return govr
+}
+
+func rollPops(dp *dice.Dicepool, dm int) int {
+	pop := dp.RollNext("2d6").DM(-2 + dm).Sum()
+	if pop < 0 {
+		pop = 0
+	}
+	return pop
+}
+
+func rollStpt(dp *dice.Dicepool, mwPop int) string {
+	dm := 0
+	switch mwPop {
+	case 0:
+		dm += -3
+	case 1:
+		dm += -2
+	default:
+		if mwPop > 5 {
+			dm += 2
+		}
+	}
+	r := dp.RollNext("1d6").DM(dm).Sum()
+	r = utils.BoundInt(r, 1, 6)
+	stpt := ""
+	switch r {
+	case 1, 2:
+		stpt = "Y"
+	case 3:
+		stpt = "H"
+	case 4, 5:
+		stpt = "G"
+	case 6:
+		stpt = "F"
+	}
+	return stpt
+}
+
+func rollTL(mwUWP string) int {
+	mwuwp := NewUWP(mwUWP)
+	mwTL := mwuwp.TL().Value()
+	//mwAtmo := mwuwp.Atmo().Value()
+	tl := mwTL - 1
+	// if tl < 7 {
+	// 	// switch mwAtmo {
+	// 	// default:
+	// 	// 	tl = 0
+	// 	// case 5, 6, 8:
+	// 	// }
+	// 	tl = 0
+	// }
+	return tl
 }
 
 //RandomUWP -

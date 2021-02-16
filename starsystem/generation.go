@@ -3,6 +3,9 @@ package starsystem
 import (
 	"errors"
 	"fmt"
+	"os"
+	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -10,6 +13,7 @@ import (
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/pkg/core/astronomical"
 	"github.com/Galdoba/TR_Dynasty/pkg/core/ehex"
+	"github.com/Galdoba/TR_Dynasty/pkg/names"
 	"github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
 	"github.com/Galdoba/TR_Dynasty/tab"
 	"github.com/Galdoba/utils"
@@ -536,13 +540,18 @@ func newBodyR(planetType string, position numCode, w wrld.World) bodyDetails {
 	default:
 		bd.uwp = uwp.RandomUWP(dp, planetType, w.UWP()) //TODO: Разбить функцию для создания профайла планеты и спутника (чтобы спутник не был больше чем планета)
 		alternative := uwp.GenerateOtherWorldUWP(dice.New().SetSeed(bd.nomena), w.UWP(), planetType, starData[bd.position.starCode()], bd.position.planetCode())
-		fmt.Println(bd.position, "	T5:", bd.uwp, "	Alternative:", alternative)
+		//fmt.Println(bd.position, "	T5:", bd.uwp, "	Alternative:", alternative)
+		bd.uwp = alternative
+		if uwp.NewUWP(bd.uwp).Pops().Value() > 2 {
+			bd.name = names.RandomPlace(w.Sector() + w.Hex() + bd.nomena)
+		}
 		if planetType == "MainWorld" {
 			bd.uwp = w.UWP()
 			bd.name = w.Name()
 		}
 		if planetType == "LGG" || planetType == "SGG" || planetType == "IG" {
 			bd.uwp = uwp.NewGasGigant(dp, planetType)
+
 		}
 		bd.calculatePlanetDiameter(dp)
 		bd.jumpPointToBody = Astrogation.JumpPointFromObject(bd.diameter)
@@ -584,6 +593,9 @@ func (bd *bodyDetails) cleanDataSpecialType() {
 		bd.bodyType = "Ice Gigant"
 		bd.uwp = ""
 		bd.tags = ""
+	}
+	if bd.uwp == "" {
+		bd.name = ""
 	}
 }
 
@@ -1047,3 +1059,23 @@ func (d *SystemDetails) rollOrbitPlacement(ggType string) int {
 
 1050 - пятая планета от первой звезды
 */
+func cls() {
+	var clear map[string]func()
+	clear = make(map[string]func()) //Initialize it
+	clear["linux"] = func() {
+		cmd := exec.Command("clear") //Linux example, its tested
+		cmd.Stdout = os.Stdout
+		cmd.Run()
+	}
+	clear["windows"] = func() {
+		cmd := exec.Command("cmd", "/c", "cls") //Windows example, its tested
+		cmd.Stdout = os.Stdout
+		cmd.Run()
+	}
+	value, ok := clear[runtime.GOOS] //runtime.GOOS -> linux, windows, darwin etc.
+	if ok {                          //if we defined a clear func for that platform:
+		value() //we execute it
+	} else { //unsupported platform
+		panic("Your platform is unsupported! I can't clear terminal screen :(")
+	}
+}
