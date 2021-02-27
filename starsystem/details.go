@@ -3,6 +3,8 @@ package starsystem
 import (
 	"strconv"
 	"strings"
+
+	"github.com/Galdoba/TR_Dynasty/Astrogation"
 )
 
 /*
@@ -67,11 +69,11 @@ func (bd *bodyDetails) FullInfo() string {
 	str := bd.ShortInfo()
 	str += "\nASTROGATION DATA:\n"
 	str += "Orbital Distance	: " + strconv.FormatFloat(bd.orbitDistance, 'f', 2, 64) + " au\n"
-	// str += "Jump point To Orbit	: " + strconv.FormatFloat(bd.jumpPointToOrbit*1000, 'f', 0, 64) + " km\n"
-	// for i := 1; i <= 7; i++ {
-	// 	str += "	Thrust " + strconv.Itoa(i) + ": " + Astrogation.TravelTimeStr(bd.jumpPointToOrbit, float64(i)) + "\n"
-	// }
-
+	str += "Jump point To Orbit	: " + strconv.FormatFloat(bd.jumpPointToBody*1000, 'f', 0, 64) + " km\n"
+	for i := 1; i <= 7; i++ {
+		str += "	Thrust " + strconv.Itoa(i) + ": " + Astrogation.TravelTimeStr(bd.jumpPointToBody, float64(i)) + "\n"
+	}
+	str += "Diameter	: " + strconv.FormatFloat(bd.diameter, 'f', 2, 64) + " Mm\n"
 	return str
 }
 

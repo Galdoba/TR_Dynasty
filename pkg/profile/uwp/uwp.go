@@ -92,18 +92,28 @@ func GenerateOtherWorldUWP(dices *dice.Dicepool, mwUWP string, planetType string
 	//STARPORT
 	stpt := rollStpt(dices, mwPop)
 	tl := rollTL(mwUWP)
+	orbScore := astronomical.HabitableZoneScore(orbit, star)
+	if orbScore < 1 {
+		orbScore = orbScore * -1
+	}
+	if tl < 6+orbScore {
+		pops = 0
+		// fmt.Println("DEBUG: TL", tl)
+		// switch atmo {
+		// default:
+		// 	fmt.Println("DEBUG: Atmo", atmo)
+		// 	tl = 0
+		// 	pops = 0
+		// 	govr = 0
+		// 	laws = 0
+		// 	fmt.Println("REDUCE TO ", stpt+ehex.New(size).String()+ehex.New(atmo).String()+ehex.New(hydr).String()+ehex.New(pops).String()+ehex.New(govr).String()+ehex.New(laws).String()+"-"+ehex.New(tl).String())
+		// case 5, 6, 8:
+		// }
+	}
 	if pops == 0 {
 		tl = 0
-	}
-	if tl < 7 {
-		switch atmo {
-		default:
-			tl = 0
-			pops = 0
-			govr = 0
-			laws = 0
-		case 5, 6, 8:
-		}
+		govr = 0
+		laws = 0
 	}
 
 	uwp := stpt + ehex.New(size).String() + ehex.New(atmo).String() + ehex.New(hydr).String() + ehex.New(pops).String() + ehex.New(govr).String() + ehex.New(laws).String() + "-" + ehex.New(tl).String()

@@ -105,7 +105,7 @@ func StarDiameter(stellar string) float64 {
 		highVal = massesMap[high][5]
 	}
 	mass := aproximate(offset, grad, lowVal, highVal)
-
+	//fmt.Println("DEBUG^ return", mass)
 	return mass
 }
 

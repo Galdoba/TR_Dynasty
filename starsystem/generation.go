@@ -16,6 +16,7 @@ import (
 	"github.com/Galdoba/TR_Dynasty/pkg/names"
 	"github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
 	"github.com/Galdoba/TR_Dynasty/tab"
+	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
 
 	"github.com/Galdoba/TR_Dynasty/constant"
@@ -326,6 +327,16 @@ func (d *SystemDetails) placeSatelites(world wrld.World, stBodySlots map[numCode
 		if stBodySlots[k] == "LGG" || stBodySlots[k] == "SGG" || stBodySlots[k] == "IG" {
 			numSat, rings = d.addRingAndSat(-1)
 		}
+		///ALT
+		if stBodySlots[k] == "LGG" {
+			numSat, rings = d.addRingAndSat(d.dicepool.RollNext("1d6").DM(0).Sum())
+		}
+		if stBodySlots[k] == "SGG" {
+			numSat, rings = d.addRingAndSat(d.dicepool.RollNext("1d6").DM(-4).Sum())
+		}
+		if stBodySlots[k] == "IG" {
+			numSat, rings = d.addRingAndSat(d.dicepool.RollNext("1d6").DM(-6).Sum())
+		}
 		//fmt.Println("NumSat", numSat, rings, stBodySlots[k])
 		for i := 0; i < rings; i++ {
 			suggestOrbit := numCode{[3]int{k.starCode(), k.planetCode(), d.rollSatellitePosition()}}
@@ -396,11 +407,13 @@ func Test() {
 	d := From(world)
 	d.PrintTable()
 	fmt.Println("Enter planetary code for details:")
-	//key, _ := user.InputStr()
-	// if bd, ok := d.bodyDetail[key]; ok {
-	// 	fmt.Println(bd.FullInfo())
-	// 	fmt.Println(d.bodyDetail[key])
-	// }
+	key, _ := user.InputStr()
+	k, err := string2code(key)
+	fmt.Println(err)
+	if bd, ok := d.bodyDetail[k]; ok {
+		fmt.Println(bd.FullInfo())
+		fmt.Println(d.bodyDetail[k])
+	}
 	fmt.Println("END PROGRAMM")
 }
 
@@ -539,9 +552,13 @@ func newBodyR(planetType string, position numCode, w wrld.World) bodyDetails {
 	switch planetType {
 	default:
 		bd.uwp = uwp.RandomUWP(dp, planetType, w.UWP()) //TODO: Разбить функцию для создания профайла планеты и спутника (чтобы спутник не был больше чем планета)
+		//if position.sateliteCode() >= 0 {
 		alternative := uwp.GenerateOtherWorldUWP(dice.New().SetSeed(bd.nomena), w.UWP(), planetType, starData[bd.position.starCode()], bd.position.planetCode())
 		//fmt.Println(bd.position, "	T5:", bd.uwp, "	Alternative:", alternative)
+		//	alternative = trimSatelliteUWP(alternative, bd.bodyType)
 		bd.uwp = alternative
+		//}
+
 		if uwp.NewUWP(bd.uwp).Pops().Value() > 2 {
 			bd.name = names.RandomPlace(w.Sector() + w.Hex() + bd.nomena)
 		}
@@ -564,15 +581,35 @@ func newBodyR(planetType string, position numCode, w wrld.World) bodyDetails {
 		hz := astronomical.HabitableOrbit(starData[position.starCode()])
 		remarks := uwp.CalculateTradeCodesT5(bd.uwp, w.TradeClassificationsSl(), false, position.planetCode()-hz)
 		bd.tags = strings.Join(remarks, " ")
+
 	case "Star":
 		bd.nomena = w.Sector() + " " + w.Hex() + " " + TrvCore.NumToGreek(strCode) + " " + starData[strCode]
 		bd.diameter = utils.RoundFloat64(StarDiameter(starData[strCode])*Astrogation.SolDiametrMegameters, 2)
+		js := StarDiameter(starData[strCode]) * 0.93
+		jsstr := strconv.FormatFloat(js, 'f', 2, 64)
+		bd.name = jsstr + " au"
 
 	}
 
 	bd.cleanDataSpecialType()
 
 	return bd
+}
+
+func trimSatelliteUWP(uwp, tp string) string {
+	data := strings.Split(uwp, "")
+	if tp != constant.WTpPlanetoid && data[1] == "0" {
+		data[1] = "S"
+	}
+	//0123456-8
+	if data[4] == "0" && data[5] == "0" && data[6] == "0" {
+		data[0] = "Y"
+	}
+	uwp = ""
+	for _, d := range data {
+		uwp += d
+	}
+	return uwp
 }
 
 func (bd *bodyDetails) cleanDataSpecialType() {
@@ -594,7 +631,7 @@ func (bd *bodyDetails) cleanDataSpecialType() {
 		bd.uwp = ""
 		bd.tags = ""
 	}
-	if bd.uwp == "" {
+	if bd.uwp == "" && bd.bodyType != "Star" {
 		bd.name = ""
 	}
 }
