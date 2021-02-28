@@ -578,8 +578,24 @@ func newBodyR(planetType string, position numCode, w wrld.World) bodyDetails {
 			closestJumpPoint := utils.RoundFloat64(sShadow-bd.orbitDistance, 2)
 			bd.jumpPointToBody = utils.RoundFloat64(Astrogation.AU2Megameters*(closestJumpPoint), 3)
 		}
+		//if position.sateliteCode() >= 0 {
+		//alternative := uwp.GenerateOtherWorldUWP(dice.New().SetSeed(bd.nomena), w.UWP(), planetType, starData[bd.position.starCode()], bd.position.planetCode())
+		//fmt.Println(bd.position, "	T5:", bd.uwp, "	Alternative:", alternative)
+		//	alternative = trimSatelliteUWP(alternative, bd.bodyType)
+		//bd.uwp = trimSatelliteUWP(alternative, bd.bodyType)
+		//}
 		hz := astronomical.HabitableOrbit(starData[position.starCode()])
 		remarks := uwp.CalculateTradeCodesT5(bd.uwp, w.TradeClassificationsSl(), false, position.planetCode()-hz)
+		if position.sateliteCode() > -1 {
+			remarks = append(remarks, "Sa")
+			if position.sateliteCode() < 14 {
+				remarks = append(remarks, "Lk")
+			}
+
+		}
+		if planetType != constant.WTpPlanetoid {
+			remarks = removeFromSlice(remarks, "As")
+		}
 		bd.tags = strings.Join(remarks, " ")
 
 	case "Star":
@@ -1115,4 +1131,14 @@ func cls() {
 	} else { //unsupported platform
 		panic("Your platform is unsupported! I can't clear terminal screen :(")
 	}
+}
+
+func removeFromSlice(sl []string, elem string) []string {
+	res := []string{}
+	for _, val := range sl {
+		if val != elem {
+			res = append(res, val)
+		}
+	}
+	return res
 }
