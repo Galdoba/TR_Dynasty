@@ -10,7 +10,7 @@ import (
 	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/name"
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
-	profile "github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
+	"github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
@@ -85,7 +85,7 @@ func PassengerRoutine() {
 //MNOP
 func passengerTrafficValue(sourceWorld, targetWorld wrld.World) int {
 	//dm := TrvCore.EhexToDigit(sourceWorld.PlanetaryData(constant.PrPops))
-	uwp := profile.NewUWP(sourceWorld.UWP())
+	uwp := uwp.From(&sourceWorld)
 	dm := uwp.Pops().Value()
 	for _, val := range sourceWorld.TradeCodes() {
 		switch val {

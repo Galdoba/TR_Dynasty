@@ -7,7 +7,9 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
-	profile "github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
+	"github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
+
+	//profile "github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
 	"github.com/Galdoba/devtools/cli/user"
 )
 
@@ -78,29 +80,29 @@ func (w *World) UWP() string {
 	return "--NO DATA--"
 }
 
-//CodePops - return UWP data
-func (w *World) CodePops() string {
-	if val, ok := w.data[worldUWP]; ok {
-		uwp := profile.NewUWP(val)
-		// if err != nil {
-		// 	return err.Error()
-		// }
-		return uwp.Pops().String()
-	}
-	return "--NO DATA--"
-}
+// //CodePops - return UWP data
+// func (w *World) CodePops() string {
+// 	if val, ok := w.data[worldUWP]; ok {
+// 		uwp := uwp.New(val)
+// 		// if err != nil {
+// 		// 	return err.Error()
+// 		// }
+// 		return uwp.Pops().String()
+// 	}
+// 	return "--NO DATA--"
+// }
 
 //CodeTL - return UWP data
-func (w *World) CodeTL() string {
-	if val, ok := w.data[worldUWP]; ok {
-		uwp := profile.NewUWP(val)
-		// if err != nil {
-		// 	return err.Error()
-		// }
-		return uwp.TL().String()
-	}
-	return "--NO DATA--"
-}
+// func (w *World) CodeTL() string {
+// 	if val, ok := w.data[worldUWP]; ok {
+// 		uwp := uwp.New(val)
+// 		// if err != nil {
+// 		// 	return err.Error()
+// 		// }
+// 		return uwp.TL().String()
+// 	}
+// 	return "--NO DATA--"
+// }
 
 //SetUWP - Set UWP data
 func (w *World) SetUWP(uwp string) {
@@ -288,30 +290,13 @@ func (w World) SecondSurvey() []string {
 }
 
 func (w *World) checkLtHtTradeCodes() {
-	uwp := profile.NewUWP(w.UWP())
+	uwp := uwp.New(w.UWP())
 	if uwp.TL().Value() <= 5 && uwp.TL().Value() != 0 {
 		w.data[worldTradeClassifications] += " Lt "
 	}
 	if uwp.TL().Value() >= 12 {
 		w.data[worldTradeClassifications] += " Ht "
 	}
-
-	// if TrvCore.EhexToDigit(w.CodeTL()) <= 5 {
-	// 	w.data[worldTradeClassifications] += " Lt "
-	// }
-	// if TrvCore.EhexToDigit(w.CodeTL()) >= 12 {
-	// 	w.data[worldTradeClassifications] += " Ht "
-	// }
-
-	// if TrvCore.EhexToDigit(w.data[constant.PrTL]) <= TrvCore.EhexToDigit("5") {
-	// 	fmt.Println(TrvCore.EhexToDigit(w.data[constant.PrTL]))
-	// 	fmt.Println(w.data[constant.PrTL])
-	// 	panic(1)
-	// 	w.data[worldTradeClassifications] += " Lt "
-	// }
-	// if TrvCore.EhexToDigit(w.data[constant.PrTL]) >= TrvCore.EhexToDigit("C") {
-	// 	w.data[worldTradeClassifications] += " Ht "
-	// }
 	w.data[worldTradeClassifications] = strings.TrimSuffix(w.data[worldTradeClassifications], " ")
 }
 

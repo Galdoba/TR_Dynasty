@@ -6,7 +6,7 @@ import (
 	law "github.com/Galdoba/TR_Dynasty/Law"
 	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
-	profile "github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
+	"github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 )
 
@@ -59,12 +59,12 @@ func encounterMods(w wrld.World) (int, int) {
 //helpers
 
 func starport(w wrld.World) string {
-	prf := profile.NewUWP(w.UWP())
+	prf := uwp.From(&w)
 	return prf.Starport().String()
 }
 
 func lawLevel(w wrld.World) int {
-	prf := profile.NewUWP(w.UWP())
+	prf := uwp.From(&w)
 	return prf.Laws().Value()
 }
 

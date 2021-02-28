@@ -79,7 +79,7 @@ func GenerateOtherWorldUWP(dices *dice.Dicepool, mwUWP string, planetType string
 	//POPS
 	popsDM := popsDM(star, orbit, atmo, size)
 	pops := rollPops(dices, popsDM)
-	mwPop := NewUWP(mwUWP).Pops().Value()
+	mwPop := New(mwUWP).Pops().Value()
 	pops = utils.BoundInt(pops, 0, mwPop-1)
 	//GOVR
 	govrDM := govrDM(mwUWP)
@@ -234,7 +234,7 @@ func popsDM(star string, orbit int, atmo int, size int) int {
 
 func govrDM(mwUWP string) int {
 	dm := 0
-	mwuwp := NewUWP(mwUWP)
+	mwuwp := New(mwUWP)
 	mwGovr := mwuwp.Govr().Value()
 	switch mwGovr {
 	case 6:
@@ -248,8 +248,8 @@ func govrDM(mwUWP string) int {
 }
 
 func rollLaws(dp *dice.Dicepool, mwUWP string) int {
-	mwLaw := NewUWP(mwUWP).Laws().Value()
-	mwPop := NewUWP(mwUWP).Pops().Value()
+	mwLaw := New(mwUWP).Laws().Value()
+	mwPop := New(mwUWP).Pops().Value()
 	law := dp.RollNext("1d6").DM(-3 + mwLaw).Sum()
 	if law < 0 {
 		law = 0
@@ -305,7 +305,7 @@ func rollStpt(dp *dice.Dicepool, mwPop int) string {
 }
 
 func rollTL(mwUWP string) int {
-	mwuwp := NewUWP(mwUWP)
+	mwuwp := New(mwUWP)
 	mwTL := mwuwp.TL().Value()
 	//mwAtmo := mwuwp.Atmo().Value()
 	tl := mwTL - 1
@@ -331,11 +331,11 @@ func RandomUWP(dicepool *dice.Dicepool, planetType ...string) string {
 			pType = constant.WTpHospitable
 		}
 	}
-	mainworldUWP := newUWPr{}
+	mainworldUWP := UWP{}
 	mainworldPops := 15
 	//mainworldTL := 30
 	if len(planetType) > 1 {
-		mainworldUWP = *NewUWP(planetType[1])
+		mainworldUWP = *New(planetType[1])
 		mainworldPops = mainworldUWP.Pops().Value()
 		//	mainworldTL = mainworldUWP.TL().Value()
 	}
@@ -1103,83 +1103,17 @@ func matchTradeClassificationRequirements(uwp, reqLine string) bool {
 	return true
 }
 
-// func Goverment(uwp string) string {
-// 	return string([]byte(uwp)[5])
-// }
-
-// type UWP struct {
-// 	data string
-// }
-
-// func NewUWP(s string) (UWP, error) {
-// 	uwp := UWP{}
-// 	if !uwpValid(s) {
-// 		return uwp, errors.New("NewUWP: can't parse UWP from string")
-// 	}
-// 	uwp.data = s
-// 	return uwp, nil
-// }
-
-// func uwpValid(uwp string) bool {
-// 	if len(uwp) != 9 {
-// 		return false
-// 	}
-// 	data := strings.Split(uwp, "")
-// 	if data[7] != constant.DIVIDER {
-// 		return false
-// 	}
-// 	for i := range data {
-// 		if i == 7 {
-// 			continue
-// 		}
-// 		if data[i] == "_" {
-// 			continue
-// 		}
-// 		if TrvCore.EhexToDigit(data[i]) == -999 {
-// 			return false
-// 		}
-// 	}
-// 	return true
-// }
-
-// func (uwp UWP) Starport() string {
-// 	return string([]byte(uwp.data)[0])
-// }
-
-// func (uwp UWP) Size() string {
-// 	return string([]byte(uwp.data)[1])
-// }
-// func (uwp UWP) Atmo() string {
-// 	return string([]byte(uwp.data)[2])
-// }
-// func (uwp UWP) Hydr() string {
-// 	return string([]byte(uwp.data)[3])
-// }
-// func (uwp UWP) Pops() string {
-// 	return string([]byte(uwp.data)[4])
-// }
-// func (uwp UWP) Govr() string {
-// 	return string([]byte(uwp.data)[5])
-// }
-// func (uwp UWP) Laws() string {
-// 	return string([]byte(uwp.data)[6])
-// }
-
-// func (uwp UWP) TL() string {
-// 	return string([]byte(uwp.data)[8])
-// }
-
-type newUWPr struct {
+type UWP struct {
 	data map[string]ehex.DataRetriver
 }
 
-func (u *newUWPr) String() string {
+func (u *UWP) String() string {
 	return u.Starport().String() + u.Size().String() + u.Atmo().String() + u.Hydr().String() + u.Pops().String() + u.Govr().String() + u.Laws().String() + "-" + u.TL().String()
 }
 
-//NewUWP -
-func NewUWP(str string) *newUWPr {
-	u := newUWPr{}
+//New -
+func New(str string) *UWP {
+	u := UWP{}
 	u.data = make(map[string]ehex.DataRetriver)
 	u.data[constant.PrStarport] = ehex.New(str[0])
 	u.data[constant.PrSize] = ehex.New(str[1])
@@ -1192,29 +1126,47 @@ func NewUWP(str string) *newUWPr {
 	return &u
 }
 
-func (u *newUWPr) Starport() ehex.DataRetriver {
+type UWPer interface {
+	UWP() string
+}
+
+func From(w UWPer) *UWP {
+	u := UWP{}
+	u.data = make(map[string]ehex.DataRetriver)
+	u.data[constant.PrStarport] = ehex.New(w.UWP()[0])
+	u.data[constant.PrSize] = ehex.New(w.UWP()[1])
+	u.data[constant.PrAtmo] = ehex.New(w.UWP()[2])
+	u.data[constant.PrHydr] = ehex.New(w.UWP()[3])
+	u.data[constant.PrPops] = ehex.New(w.UWP()[4])
+	u.data[constant.PrGovr] = ehex.New(w.UWP()[5])
+	u.data[constant.PrLaws] = ehex.New(w.UWP()[6])
+	u.data[constant.PrTL] = ehex.New(w.UWP()[8])
+	return &u
+}
+
+func (u *UWP) Starport() ehex.DataRetriver {
 	return u.data[constant.PrStarport]
 }
 
-func (u *newUWPr) Size() ehex.DataRetriver {
+func (u *UWP) Size() ehex.DataRetriver {
 	return u.data[constant.PrSize]
 }
-func (u *newUWPr) Atmo() ehex.DataRetriver {
+func (u *UWP) Atmo() ehex.DataRetriver {
 	return u.data[constant.PrAtmo]
 }
-func (u *newUWPr) Hydr() ehex.DataRetriver {
+func (u *UWP) Hydr() ehex.DataRetriver {
 	return u.data[constant.PrHydr]
 }
-func (u *newUWPr) Pops() ehex.DataRetriver {
+func (u *UWP) Pops() ehex.DataRetriver {
 	return u.data[constant.PrPops]
 }
-func (u *newUWPr) Govr() ehex.DataRetriver {
+func (u *UWP) Govr() ehex.DataRetriver {
 	return u.data[constant.PrGovr]
 }
-func (u *newUWPr) Laws() ehex.DataRetriver {
+func (u *UWP) Laws() ehex.DataRetriver {
 	return u.data[constant.PrLaws]
 }
 
-func (u *newUWPr) TL() ehex.DataRetriver {
+func (u *UWP) TL() ehex.DataRetriver {
 	return u.data[constant.PrTL]
 }

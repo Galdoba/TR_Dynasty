@@ -8,8 +8,7 @@ import (
 	"time"
 
 	starport "github.com/Galdoba/TR_Dynasty/Starport"
-	"github.com/Galdoba/TR_Dynasty/TrvCore"
-	profile "github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
+	"github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
 
 	trade "github.com/Galdoba/TR_Dynasty/Trade"
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
@@ -266,8 +265,8 @@ func marketMenu() {
 	case 1:
 		clrScrn()
 		options := []string{"Common-goods Supplier", "Trade Supplier", "Morally Neutral Supplier", "Black Market Supplier"}
-		prf := profile.NewUWP(sourceWorld.UWP())
-		tl := TrvCore.EhexToDigit(prf.TL().String())
+		prf := uwp.From(&sourceWorld)
+		tl := prf.TL().Value()
 		if tl >= 8 {
 			options = append(options, "Finding an online supplier")
 		}
@@ -378,7 +377,7 @@ func depart() {
 	lsPayment := countHeads() * 250
 	total += lsPayment
 	fmt.Println(lsPayment, "Cr was charged for Life Support Supplies")
-	prf := profile.NewUWP(sourceWorld.UWP())
+	prf := uwp.From(&sourceWorld)
 	//reportErr(err2)
 	popDM := prf.Pops().Value()
 	lawsDM := prf.Laws().Value()

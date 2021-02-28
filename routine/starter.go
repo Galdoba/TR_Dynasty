@@ -14,10 +14,10 @@ import (
 	law "github.com/Galdoba/TR_Dynasty/Law"
 	starport "github.com/Galdoba/TR_Dynasty/Starport"
 	trade "github.com/Galdoba/TR_Dynasty/Trade"
-	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
+	"github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/utils"
 
@@ -385,8 +385,10 @@ func inputJumpRoute() ([]int, error) {
 }
 
 func techDifferenceDM() int {
-	tl1 := TrvCore.EhexToDigit(sourceWorld.CodeTL())
-	tl2 := TrvCore.EhexToDigit(targetWorld.CodeTL())
+	//tl1 := TrvCore.EhexToDigit(sourceWorld.CodeTL())
+	tl1 := uwp.From(&sourceWorld).TL().Value()
+	tl2 := uwp.From(&targetWorld).TL().Value()
+	//tl2 := TrvCore.EhexToDigit(targetWorld.CodeTL())
 	tlDiff := utils.Max(tl1, tl2) - utils.Min(tl1, tl2)
 	if tlDiff > 5 {
 		tlDiff = 5
@@ -431,7 +433,7 @@ func printHead() {
 	fmt.Println("----Sourceworld data---------------------------------")
 	fmt.Println("         Date: ", formatDate(day, year))
 	fmt.Println("Current World: ", sourceWorld.Hex()+" - "+sourceWorld.Name()+"  ("+sourceWorld.UWP()+")  "+sourceWorld.TradeClassifications()+"  "+sourceWorld.TravelZone())
-	if sourceWorld.CodeTL() != "--NO DATA--" {
+	if uwp.From(&sourceWorld).TL().String() != "--NO DATA--" {
 		sp, _ := starport.From(sourceWorld)
 		sec = sp.Security()
 		fmt.Println(sp.ShortInfo())
@@ -439,7 +441,7 @@ func printHead() {
 
 	}
 
-	if targetWorld.CodeTL() != "--NO DATA--" {
+	if uwp.From(&targetWorld).TL().String() != "--NO DATA--" {
 		fmt.Println("----Targetworld data---------------------------------")
 		fmt.Println("  Destination: ", targetWorld.Hex()+" - "+targetWorld.Name()+"  ("+targetWorld.UWP()+")  "+targetWorld.TradeClassifications()+"  "+targetWorld.TravelZone())
 		fmt.Println("Passenger Traffic Value:", ptValue)

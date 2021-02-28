@@ -5,7 +5,43 @@ import (
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/Astrogation"
+	"github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
 )
+
+type bodyDetails struct {
+	nomena           string
+	name             string
+	uwp              string
+	tags             string
+	bodyType         string
+	orbitDistance    float64 //радиус орбиты от звезды в AU
+	orbitDistanceSat float64 //радиус орбиты от планеты в ММ
+	jumpPointToBody  float64 //расстояние до точки прыжка с учетом (пока нет) тени звезды
+	orbitSpeed       int
+	position         numCode //
+	//SISE RELATED:
+	diameter      float64
+	planetDensity int
+}
+
+const (
+	DensityHeavyCore  = 0
+	DensityMoltenCore = 1
+	DensityRockyBody  = 2
+	DensityIcyBody    = 3
+)
+
+type WorldData struct {
+	//Astronomical:
+	stellar  string
+	position numCode
+	uwp      uwp.UWP
+	//Size Related
+	uwpSize        int
+	planetDiameter float64
+	planetDensity  float64 //Density is expressed in standard densities (Terra=1, or 5.517 grams per cubic centimeter)
+	planetMass 
+}
 
 /*
 

@@ -8,7 +8,7 @@ import (
 	trade "github.com/Galdoba/TR_Dynasty/Trade"
 	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
-	profile "github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
+	"github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/utils"
 )
@@ -178,7 +178,7 @@ func freightTrafficValue(sourceWorld, targetWorld wrld.World) int {
 	}
 
 	//dm += TrvCore.EhexToDigit(targetWorld.PlanetaryData(constant.PrPops)) // - для грузов важно население targetWorld
-	uwp := profile.NewUWP(targetWorld.UWP())
+	uwp := uwp.From(&targetWorld)
 	dm += uwp.Pops().Value()
 	for _, val := range targetWorld.TradeCodes() {
 		//fmt.Println("check", val)

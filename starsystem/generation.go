@@ -476,20 +476,6 @@ type SystemDetails struct {
 	*/
 }
 
-type bodyDetails struct {
-	nomena           string
-	name             string
-	uwp              string
-	tags             string
-	bodyType         string
-	diameter         float64
-	orbitDistance    float64 //радиус орбиты от звезды в AU
-	orbitDistanceSat float64 //радиус орбиты от планеты в ММ
-	jumpPointToBody  float64 //расстояние до точки прыжка с учетом (пока нет) тени звезды
-	orbitSpeed       int
-	position         numCode //
-}
-
 func (bd *bodyDetails) DEBUGINFO() {
 	fmt.Print("-------------------\n")
 	fmt.Print("bd.nomena = '", bd.nomena, "' string\n")
@@ -559,7 +545,7 @@ func newBodyR(planetType string, position numCode, w wrld.World) bodyDetails {
 		bd.uwp = alternative
 		//}
 
-		if uwp.NewUWP(bd.uwp).Pops().Value() > 2 {
+		if uwp.New(bd.uwp).Pops().Value() > 2 {
 			bd.name = names.RandomPlace(w.Sector() + w.Hex() + bd.nomena)
 		}
 		if planetType == "MainWorld" {
@@ -653,7 +639,7 @@ func (bd *bodyDetails) cleanDataSpecialType() {
 }
 
 func (bd *bodyDetails) calculatePlanetDiameter(dp *dice.Dicepool) {
-	sz := uwp.NewUWP(bd.uwp).Size().Value() // * 1000
+	sz := uwp.New(bd.uwp).Size().Value() // * 1000
 	switch sz {
 	case 21:
 		sz = 30

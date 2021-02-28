@@ -8,7 +8,7 @@ import (
 	trade "github.com/Galdoba/TR_Dynasty/Trade"
 	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
-	profile "github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
+	"github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
 	"github.com/Galdoba/utils"
 )
 
@@ -204,7 +204,7 @@ func taxingAgent() string {
 	if localSupplier.MerchantType() == constant.MerchantTypeIlligal {
 		return "CM"
 	}
-	prf := profile.NewUWP(sourceWorld.UWP())
+	prf := uwp.From(&sourceWorld)
 
 	return prf.Govr().String()
 }

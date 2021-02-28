@@ -6,7 +6,7 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
-	profile "github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
+	"github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
 	"github.com/Galdoba/utils"
 )
 
@@ -30,7 +30,7 @@ type lawReport struct {
 
 func NewLawReport(uwpStr string) (lawReport, error) {
 	lr := lawReport{}
-	uwp := profile.NewUWP(uwpStr)
+	uwp := uwp.New(uwpStr)
 
 	lr.dp = dice.New().SetSeed(uwpStr)
 	lr.levelOf = make(map[string]int)
