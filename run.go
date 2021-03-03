@@ -9,6 +9,9 @@ func main() {
 	//fmt.Println(astronomical.NewStellarData("G2 V"))
 	//os.Exit(3)
 	starsystem.Test()
+	// world := wrld.PickWorld()
+	// ssData := starsystem.From(world)
+	// ssData.PrintTable()
 
 	//w := wrld.PickWorld()
 	//fmt.Println(w.SecondSurvey())

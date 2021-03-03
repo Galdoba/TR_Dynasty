@@ -66,6 +66,27 @@ func From(world wrld.World) SystemDetails {
 	return d
 }
 
+//Test -
+func Test() {
+	world := wrld.PickWorld()
+	fmt.Println(world)
+	d := From(world)
+	d.PrintTable()
+	fmt.Println("Enter planetary code for details:")
+	key, _ := user.InputStr()
+	k, err := string2code(key)
+	fmt.Println(err)
+	if bd, ok := d.bodyDetail[k]; ok {
+		fmt.Println(bd.FullInfo())
+		fmt.Println(d.bodyDetail[k])
+	}
+	fmt.Println("END PROGRAMM")
+}
+
+func (d *SystemDetails) StellarBodyDetails(code string) {
+
+}
+
 func (bd *bodyDetails) syncPlanetDistance(sd SystemDetails) {
 	bd.orbitDistance = sd.bodyDetail[numCode{[3]int{bd.position.starCode(), bd.position.planetCode(), -1}}].orbitDistance
 	if bd.position.sateliteCode() == -1 {
@@ -399,23 +420,6 @@ func setupOrbitalBodySlots(starData []string) map[numCode]string {
 // func (d *SystemDetails) newGG() bodyDetails {
 
 // }
-
-//Test -
-func Test() {
-	world := wrld.PickWorld()
-	fmt.Println(world)
-	d := From(world)
-	d.PrintTable()
-	fmt.Println("Enter planetary code for details:")
-	key, _ := user.InputStr()
-	k, err := string2code(key)
-	fmt.Println(err)
-	if bd, ok := d.bodyDetail[k]; ok {
-		fmt.Println(bd.FullInfo())
-		fmt.Println(d.bodyDetail[k])
-	}
-	fmt.Println("END PROGRAMM")
-}
 
 func (d *SystemDetails) PrintTable() {
 	tbl := tab.NewTST([]string{})

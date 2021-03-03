@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/Astrogation"
-	"github.com/Galdoba/TR_Dynasty/pkg/profile/uwp"
 )
 
 type bodyDetails struct {
@@ -30,18 +29,6 @@ const (
 	DensityRockyBody  = 2
 	DensityIcyBody    = 3
 )
-
-type WorldData struct {
-	//Astronomical:
-	stellar  string
-	position numCode
-	uwp      uwp.UWP
-	//Size Related
-	uwpSize        int
-	planetDiameter float64
-	planetDensity  float64 //Density is expressed in standard densities (Terra=1, or 5.517 grams per cubic centimeter)
-	planetMass 
-}
 
 /*
 
