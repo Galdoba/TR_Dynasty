@@ -26,10 +26,10 @@ func NewGasGigant(dp *dice.Dicepool, ggType string) string {
 				size = "P"
 			case 5:
 				size = "Q"
-			case 6:
-				size = "R"
-			case 7:
-				size = "S"
+			case 6, 7:
+				size = "Z"
+			// case 7:
+			// 	size = "S"
 			case 8:
 				size = "T"
 			case 9:
@@ -115,8 +115,12 @@ func GenerateOtherWorldUWP(dices *dice.Dicepool, mwUWP string, planetType string
 		govr = 0
 		laws = 0
 	}
+	sizeGlyph := ehex.New(size).String()
+	if planetType != constant.WTpGG && planetType != constant.WTpPlanetoid && sizeGlyph == "0" {
+		sizeGlyph = "S"
+	}
 
-	uwp := stpt + ehex.New(size).String() + ehex.New(atmo).String() + ehex.New(hydr).String() + ehex.New(pops).String() + ehex.New(govr).String() + ehex.New(laws).String() + "-" + ehex.New(tl).String()
+	uwp := stpt + sizeGlyph + ehex.New(atmo).String() + ehex.New(hydr).String() + ehex.New(pops).String() + ehex.New(govr).String() + ehex.New(laws).String() + "-" + ehex.New(tl).String()
 	return uwp
 }
 
@@ -771,47 +775,6 @@ func rollStat(dp *dice.Dicepool, die, mod, dm int) int {
 	return r
 }
 
-func flux() int {
-	return TrvCore.Flux()
-}
-
-// func ehex(i int) string {
-// 	return TrvCore.DigitToEhex(i)
-// }
-
-func orderByType(profileType string) (order []string) {
-	switch profileType {
-	case "UWP":
-		order = []string{
-			constant.PrStarport,
-			constant.PrSize,
-			constant.PrAtmo,
-			constant.PrHydr,
-			constant.PrPops,
-			constant.PrGovr,
-			constant.PrLaws,
-			constant.DIVIDER,
-			constant.PrTL,
-		}
-	}
-	return order
-}
-
-// func From(pu Puller) Profile {
-// 	p := Profile{}
-// 	switch pu.(type) {
-// 	case world.World:
-// 		data := pu.PullData()
-// 		p.pType = "UWP"
-// 		p.data = data[constant.PrStarport] +
-// 			data[constant.PrSize] + data[constant.PrAtmo] + data[constant.PrHydr] +
-// 			data[constant.PrPops] + data[constant.PrGovr] + data[constant.PrLaws] +
-// 			"-" + data[constant.PrTL]
-// 		return p
-// 	}
-// 	return p
-// }
-
 //CalculateTradeCodes -
 func CalculateTradeCodes(uwp string) []string {
 	tradeCodes := constant.TravelCodesMgT2()
@@ -1035,11 +998,11 @@ func CalculateTradeCodesT5(uwp string, mwTags []string, mw bool, hz int) []strin
 
 		//Economic
 		case constant.TradeCodeHighTech:
-			if matchTradeClassificationRequirements(uwp, "-- -- -- -- -- -- CDEFGH") {
+			if matchTradeClassificationRequirements(uwp, "-- -- -- 456789ABCDEF -- -- CDEFGH") {
 				res = append(res, constant.TradeCodeHighTech)
 			}
 		case constant.TradeCodeLowTech:
-			if matchTradeClassificationRequirements(uwp, "-- -- -- -- -- -- 12345") {
+			if matchTradeClassificationRequirements(uwp, "-- -- -- 456789ABCDEF -- -- 12345") {
 				res = append(res, constant.TradeCodeLowTech)
 			}
 		case constant.TradeCodePreAgricultural:
@@ -1151,6 +1114,15 @@ func (u *UWP) Starport() ehex.DataRetriver {
 func (u *UWP) Size() ehex.DataRetriver {
 	return u.data[constant.PrSize]
 }
+
+func (u *UWP) SizeValue() float64 {
+	ehex := u.data[constant.PrSize]
+	if ehex.String() == "S" {
+		return 0.6
+	}
+	return float64(ehex.Value())
+}
+
 func (u *UWP) Atmo() ehex.DataRetriver {
 	return u.data[constant.PrAtmo]
 }

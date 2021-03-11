@@ -7,7 +7,8 @@ import (
 	"github.com/Galdoba/TR_Dynasty/Astrogation"
 )
 
-type bodyDetails struct {
+//BodyDetails -
+type BodyDetails struct {
 	nomena           string
 	name             string
 	uwp              string
@@ -21,6 +22,23 @@ type bodyDetails struct {
 	//SISE RELATED:
 	diameter      float64
 	planetDensity int
+	parentStar    string
+}
+
+func (bd *BodyDetails) PositionCode() string {
+	return code2string(bd.position)
+}
+
+func (bd *BodyDetails) ParentStar() string {
+	return bd.parentStar
+}
+
+func (bd *BodyDetails) UWPstr() string {
+	return bd.uwp
+}
+
+func (bd *BodyDetails) BodyType() string {
+	return bd.bodyType
 }
 
 const (
@@ -54,7 +72,7 @@ starsystem.Details()
 // 	return d
 // }
 
-func (bd *bodyDetails) ShortInfo() string {
+func (bd *BodyDetails) ShortInfo() string {
 	str := ""
 	str += code2string(bd.position) + "	"
 	if bd.position.planetCode() != -1 {
@@ -88,7 +106,7 @@ func (bd *bodyDetails) ShortInfo() string {
 	return str
 }
 
-func (bd *bodyDetails) FullInfo() string {
+func (bd *BodyDetails) FullInfo() string {
 	str := bd.ShortInfo()
 	str += "\nASTROGATION DATA:\n"
 	str += "Orbital Distance	: " + strconv.FormatFloat(bd.orbitDistance, 'f', 2, 64) + " au\n"

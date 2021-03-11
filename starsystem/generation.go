@@ -11,6 +11,7 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/Astrogation"
 	"github.com/Galdoba/TR_Dynasty/TrvCore"
+	"github.com/Galdoba/TR_Dynasty/dwd"
 	"github.com/Galdoba/TR_Dynasty/pkg/core/astronomical"
 	"github.com/Galdoba/TR_Dynasty/pkg/core/ehex"
 	"github.com/Galdoba/TR_Dynasty/pkg/names"
@@ -30,7 +31,7 @@ import (
 func From(world wrld.World) SystemDetails {
 	fmt.Print(world.SecondSurvey(), "\n")
 	d := SystemDetails{}
-	d.bodyDetail = make(map[numCode]bodyDetails)
+	d.bodyDetail = make(map[numCode]BodyDetails)
 	d.dicepool = dice.New().SetSeed(world.Name() + world.Name())
 	starData := parseStellarData(world)
 	stBodySlots := setupOrbitalBodySlots(starData)
@@ -52,6 +53,7 @@ func From(world wrld.World) SystemDetails {
 			if position.sateliteCode() != -1 {
 				bDetails.syncPlanetDistance(d)
 			}
+			bDetails.parentStar = starData[position.starCode()]
 			//fmt.Println(position, v)
 			//bDetails.DEBUGINFO()
 			d.bodyDetail[position] = bDetails
@@ -75,11 +77,16 @@ func Test() {
 	fmt.Println("Enter planetary code for details:")
 	key, _ := user.InputStr()
 	k, err := string2code(key)
-	fmt.Println(err)
-	if bd, ok := d.bodyDetail[k]; ok {
-		fmt.Println(bd.FullInfo())
-		fmt.Println(d.bodyDetail[k])
+	if err != nil {
+		fmt.Println(err)
 	}
+	body := d.bodyDetail[k]
+	detailedWorldData := dwd.GenerateDetailedWorldData(body.parentStar, key, body.uwp, body.bodyType, body.nomena+body.uwp)
+	detailedWorldData.PrintData()
+	// if bd, ok := d.bodyDetail[k]; ok {
+	// 	fmt.Println(bd.FullInfo())
+	// 	fmt.Println(d.bodyDetail[k])
+	// }
 	fmt.Println("END PROGRAMM")
 }
 
@@ -87,7 +94,7 @@ func (d *SystemDetails) StellarBodyDetails(code string) {
 
 }
 
-func (bd *bodyDetails) syncPlanetDistance(sd SystemDetails) {
+func (bd *BodyDetails) syncPlanetDistance(sd SystemDetails) {
 	bd.orbitDistance = sd.bodyDetail[numCode{[3]int{bd.position.starCode(), bd.position.planetCode(), -1}}].orbitDistance
 	if bd.position.sateliteCode() == -1 {
 		return
@@ -417,7 +424,7 @@ func setupOrbitalBodySlots(starData []string) map[numCode]string {
 	return stBodySlots
 }
 
-// func (d *SystemDetails) newGG() bodyDetails {
+// func (d *SystemDetails) newGG() BodyDetails {
 
 // }
 
@@ -468,7 +475,7 @@ func parseStellarData(w wrld.World) []string {
 
 //SystemDetails - карта деталей планетарных тел
 type SystemDetails struct {
-	bodyDetail map[numCode]bodyDetails
+	bodyDetail map[numCode]BodyDetails
 	dicepool   *dice.Dicepool
 	//PositionFromStar__PositionFromPlanet__Name__UWP__Actual Orbit
 	/*
@@ -480,7 +487,7 @@ type SystemDetails struct {
 	*/
 }
 
-func (bd *bodyDetails) DEBUGINFO() {
+func (bd *BodyDetails) DEBUGINFO() {
 	fmt.Print("-------------------\n")
 	fmt.Print("bd.nomena = '", bd.nomena, "' string\n")
 	fmt.Print("bd.name = '", bd.name, "' string\n")
@@ -525,8 +532,8 @@ func string2code(str string) (numCode, error) {
 	return nc, nil
 }
 
-func newBodyR(planetType string, position numCode, w wrld.World) bodyDetails {
-	bd := bodyDetails{}
+func newBodyR(planetType string, position numCode, w wrld.World) BodyDetails {
+	bd := BodyDetails{}
 	bd.position = position
 	dp := w.DicePool()
 	starData := parseStellarData(w)
@@ -541,7 +548,7 @@ func newBodyR(planetType string, position numCode, w wrld.World) bodyDetails {
 	bd.bodyType = planetType
 	switch planetType {
 	default:
-		bd.uwp = uwp.RandomUWP(dp, planetType, w.UWP()) //TODO: Разбить функцию для создания профайла планеты и спутника (чтобы спутник не был больше чем планета)
+		//bd.uwp = uwp.RandomUWP(dp, planetType, w.UWP()) //TODO: Разбить функцию для создания профайла планеты и спутника (чтобы спутник не был больше чем планета)
 		//if position.sateliteCode() >= 0 {
 		alternative := uwp.GenerateOtherWorldUWP(dice.New().SetSeed(bd.nomena), w.UWP(), planetType, starData[bd.position.starCode()], bd.position.planetCode())
 		//fmt.Println(bd.position, "	T5:", bd.uwp, "	Alternative:", alternative)
@@ -618,7 +625,7 @@ func trimSatelliteUWP(uwp, tp string) string {
 	return uwp
 }
 
-func (bd *bodyDetails) cleanDataSpecialType() {
+func (bd *BodyDetails) cleanDataSpecialType() {
 	switch bd.bodyType {
 	case "Rings":
 		bd.bodyType = "Ring System"
@@ -642,7 +649,7 @@ func (bd *bodyDetails) cleanDataSpecialType() {
 	}
 }
 
-func (bd *bodyDetails) calculatePlanetDiameter(dp *dice.Dicepool) {
+func (bd *BodyDetails) calculatePlanetDiameter(dp *dice.Dicepool) {
 	sz := uwp.New(bd.uwp).Size().Value() // * 1000
 	switch sz {
 	case 21:
@@ -679,7 +686,7 @@ func (bd *bodyDetails) calculatePlanetDiameter(dp *dice.Dicepool) {
 	bd.diameter = utils.RoundFloat64(dMm, 3)
 }
 
-func (bd *bodyDetails) calculateNomena(planetType string, position numCode, w wrld.World) {
+func (bd *BodyDetails) calculateNomena(planetType string, position numCode, w wrld.World) {
 	starData := parseStellarData(w)
 	strCode := position.starCode()
 	orbCode := position.planetCode()
@@ -699,7 +706,7 @@ func (bd *bodyDetails) calculateNomena(planetType string, position numCode, w wr
 	}
 }
 
-func (bd *bodyDetails) calculateOrbitDistanceAU(position numCode, dp *dice.Dicepool) {
+func (bd *BodyDetails) calculateOrbitDistanceAU(position numCode, dp *dice.Dicepool) {
 	orbCode := position.planetCode()
 	orbDis := locateOrbitInt(dp, orbCode)
 	bd.orbitDistance = orbDis
