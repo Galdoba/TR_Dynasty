@@ -1,6 +1,8 @@
 package asset
 
-import "errors"
+import (
+	"errors"
+)
 
 type Characteristic interface {
 	Value() (int, error)

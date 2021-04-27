@@ -7,6 +7,7 @@ const (
 	INT = "INT"
 	EDU = "EDU"
 	SOC = "SOC"
+	PSI = "PSI"
 )
 
 func listCharacteristics() []string {

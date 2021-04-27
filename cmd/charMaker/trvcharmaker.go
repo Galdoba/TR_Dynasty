@@ -25,8 +25,9 @@ func main() {
 			Action: func(c *cli.Context) error {
 				trv := entity.NewTraveller()
 				fmt.Println(trv)
-				fmt.Println(trv.Chrctr["STR"].Value())
-				fmt.Println(trv.Chrctr["STR"].Modifier())
+				sheet := trv.Sheet()
+				fmt.Print(sheet)
+
 				//придумать как красиво образаться к ассетам
 				//trv.Call["STR"].Value()?
 				return nil
