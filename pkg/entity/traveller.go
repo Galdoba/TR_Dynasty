@@ -41,6 +41,7 @@ func NewTraveller(seed ...string) Traveller {
 	t.Info.Species = "Human" //TODO: должно устанавливаться на прямую флагом с рассой
 	t.rollCharcteristics()
 	t.pickBackgroundSkills()
+
 	return t
 }
 
@@ -67,9 +68,17 @@ func (t *Traveller) pickBackgroundSkills() {
 	mod, _ := t.Chrctr[EDU].Modifier()
 	mod += 3
 	picked := []string{}
+	//list := asset.BackgroundSkills()
 	switch t.ManualMode {
 	case false:
-		picked = utils.PickFewUniqueFromList(asset.BackgroundSkills(), mod)
+		for len(t.Skill) < mod {
+			// d := strconv.Itoa(len(list))
+			// sk := list[t.Dice.RollNext("1d"+d).DM(-1).Sum()]
+			// skillName := skill.ByCode(sk).Name()
+			// if _, ok := t.Skill[skillName]; !ok {
+			// 	t.Skill[skillName] = asset.NewSkill(skillName)
+			// }
+		}
 	case true:
 		fmt.Println("func (t *Traveller) pickBackgroundSkills() - manual mode not implemented")
 	}
@@ -89,7 +98,6 @@ func (t *Traveller) Sheet() string {
 	tSpecies := FormatString(t.Info.Species, 24, false) //set len to 24 left al
 	tSpeciesTraits := SpeciesTraitsSheet(t.Info.Species)
 
-	FormatString(t.Info.Species, 24, false) //set len to 24 left al
 	//trvAtrArr := t.AtrArray()
 	// str := FormatInt(trvAtrArr[0], 2, false) //set len to 2 left al
 	// strM := SheetMod(str)

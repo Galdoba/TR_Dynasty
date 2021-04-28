@@ -27,7 +27,9 @@ func main() {
 				fmt.Println(trv)
 				sheet := trv.Sheet()
 				fmt.Print(sheet)
-
+				// for i := range trv.Skill {
+				// 	//fmt.Println(trv.Skill[i].Name(), "- picked as Background")
+				// }
 				//придумать как красиво образаться к ассетам
 				//trv.Call["STR"].Value()?
 				return nil

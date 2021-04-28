@@ -75,7 +75,7 @@ const (
 	SkillPersuade               = "1=1U=0=Persuade"
 	SkillPilot                  = "1=1V=0=Pilot"
 	SkillPilotCapitalships      = "1=1V=1=Pilot (Capital Ships)"
-	SkillPilotSmallcraft        = "1=1V=2=Pilot (Small craft)"
+	SkillPilotSmallcraft        = "1=1V=2=Pilot (Small Craft)"
 	SkillPilotSpacecraft        = "1=1V=3=Pilot (Spacecraft)"
 	SkillProfession             = "1=1W=0=Profession" //byTyp-Profession             e
 	SkillProfessionAny          = "1=1W=1=Profession (Any)"
@@ -126,12 +126,18 @@ func BackgroundSkills() []string {
 	}
 }
 
+// type asset struct {
+// 	name              string
+// 	description       string
+// 	code              string
+// 	usage             string
+// 	numericalValues   []int
+// 	numericalValuesFl []float64
+// 	list1             []string
+// }
+
 type Skill interface {
 	Proficiency() int
-	//Learn()
-	Ensure(int)
-	//Set()
-	//Delete()
 }
 
 func NewSkill(name string) Skill {
@@ -139,6 +145,7 @@ func NewSkill(name string) Skill {
 	c.name = name
 	c.usage = "присваеваем код и по коду определяем как его качать" // c.numericalValues[0] - значение скила
 	c.numericalValues = append(c.numericalValues, 0)
+
 	return &c
 }
 
@@ -148,10 +155,3 @@ func (a *asset) Proficiency() int {
 
 func (a *asset) Ensure(val int) {
 }
-
-/*
-1 - тип сущности
-2 - группа
-3 - специализация
-4 - Имя
-*/
