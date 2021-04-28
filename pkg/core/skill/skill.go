@@ -131,9 +131,21 @@ func ByCode(code int) Skill {
 	return &s
 }
 
+func CodeFromName(name string) int {
+	for i := 0; i < 1000; i++ {
+		sk, err := new(i)
+		if err != nil {
+			return -1
+		}
+		if sk.Name() == name {
+			return i
+		}
+	}
+	return -1
+}
+
 func new(skillcode int) (skill, error) {
 	s := skill{}
-
 	switch skillcode {
 	default:
 		return s, errors.New("unknown skillcode=" + strconv.Itoa(skillcode))
@@ -311,6 +323,7 @@ func new(skillcode int) (skill, error) {
 			Group:      "Drive",
 			Speciality: "",
 			Descr:      "This skill is for controlling ground vehicles of various types. There are several specialities.",
+			hasSpec:    true,
 		}
 	case Drive_Hovercraft:
 		s = skill{
@@ -359,6 +372,7 @@ func new(skillcode int) (skill, error) {
 			Group:      "Electronics",
 			Speciality: "",
 			Descr:      "This skill is used to operate electronic devices such as computers and ship-board systems. Higher levels represent the ability to repair and create electronic devices and systems. There are several specialities.",
+			hasSpec:    true,
 		}
 	case Electronics_Comms:
 		s = skill{
@@ -399,6 +413,7 @@ func new(skillcode int) (skill, error) {
 			Group:      "Engineer",
 			Speciality: "",
 			Descr:      "The Engineer skill is used to operate and maintain spacecraft and advanced vehicles. Engineer can be used to make repairs on damaged systems on spacecraft and advanced vehicles. For repairs on simpler machines and systems, use the Mechanic skill.",
+			hasSpec:    true,
 		}
 	case Engineer_Jdrive:
 		s = skill{
@@ -447,6 +462,7 @@ func new(skillcode int) (skill, error) {
 			Group:      "Flyer",
 			Speciality: "",
 			Descr:      "The various specialities of this skill cover different types of flying vehicles. Flyers only work in an atmosphere; vehicles that can leave the atmosphere and enter orbit generally use the Pilot skill.",
+			hasSpec:    true,
 		}
 	case Flyer_Airship:
 		s = skill{
@@ -503,6 +519,7 @@ func new(skillcode int) (skill, error) {
 			Group:      "Gun Combat",
 			Speciality: "",
 			Descr:      "The Gun Combat skill covers a variety of ranged weapons.",
+			hasSpec:    true,
 		}
 	case Guncombat_Archaic:
 		s = skill{
@@ -535,6 +552,7 @@ func new(skillcode int) (skill, error) {
 			Group:      "Gunner",
 			Speciality: "",
 			Descr:      "The various specialities of this skill deal with the operation of ship-mounted weapons in space combat. See Spacecraft Operations chapter for more details. Most Travellers have smaller ships equipped solely with turret weapons.",
+			hasSpec:    true,
 		}
 	case Gunner_Capital:
 		s = skill{
@@ -575,6 +593,7 @@ func new(skillcode int) (skill, error) {
 			Group:      "Heavy weapon",
 			Speciality: "",
 			Descr:      "The Heavy Weapons skill covers man-portable and larger weapons that cause extreme property damage, such as rocket launchers, artillery and large plasma weapons.",
+			hasSpec:    true,
 		}
 	case Heavyweapon_Artilery:
 		s = skill{
@@ -663,6 +682,7 @@ func new(skillcode int) (skill, error) {
 			Group:      "Melee",
 			Speciality: "",
 			Descr:      "The Melee skill covers attacking in hand-to-hand combat and the use of suitable weapons.",
+			hasSpec:    true,
 		}
 	case Melee_Blade:
 		s = skill{
@@ -719,6 +739,7 @@ func new(skillcode int) (skill, error) {
 			Group:      "Pilot",
 			Speciality: "",
 			Descr:      "The Pilot skill specialities cover different forms of  spacecraft. See Spacecraft Operations chapter for more  details.",
+			hasSpec:    true,
 		}
 	case Pilot_CapitalShips:
 		s = skill{
@@ -751,6 +772,7 @@ func new(skillcode int) (skill, error) {
 			Group:      "Profession",
 			Speciality: "",
 			Descr:      "A Traveller with a Profession skill is trained in producing useful goods or services. There are many different Profession specialities.",
+			hasSpec:    true,
 		}
 	case Profession_Any:
 		s = skill{}
@@ -763,13 +785,33 @@ func new(skillcode int) (skill, error) {
 			Descr:      "A Traveller trained in Recon is able to scout out dangers and spot threats, unusual objects or out of place people. ",
 		}
 	case Science_Physical:
-		s = skill{}
+		s = skill{
+			Code:       Science_Physical,
+			entity:     entityTraveller,
+			Group:      "Science Physical",
+			Speciality: "",
+		}
 	case Science_Life:
-		s = skill{}
+		s = skill{
+			Code:       Science_Life,
+			entity:     entityTraveller,
+			Group:      "Science Life",
+			Speciality: "",
+		}
 	case Science_Social:
-		s = skill{}
+		s = skill{
+			Code:       Science_Social,
+			entity:     entityTraveller,
+			Group:      "Science_Social",
+			Speciality: "",
+		}
 	case Science_Space:
-		s = skill{}
+		s = skill{
+			Code:       Science_Space,
+			entity:     entityTraveller,
+			Group:      "Science Space",
+			Speciality: "",
+		}
 	case Science:
 		s = skill{
 			Code:       Science,
@@ -787,6 +829,7 @@ func new(skillcode int) (skill, error) {
 			Group:      "Seafarer",
 			Speciality: "",
 			Descr:      "The Seafarer skill covers all manner of watercraft and ocean travel.",
+			hasSpec:    true,
 		}
 	case Seafarer_Oceanships:
 		s = skill{
@@ -859,6 +902,7 @@ func new(skillcode int) (skill, error) {
 			Group:      "Tactics",
 			Speciality: "",
 			Descr:      "This skill covers tactical planning and decision making, from board games to squad level combat to fleet engagements. For use in combat, see Combat chapter",
+			hasSpec:    true,
 		}
 	case Tactics_Military:
 		s = skill{
@@ -884,201 +928,11 @@ func new(skillcode int) (skill, error) {
 			Speciality: "",
 			Descr:      "The Vacc Suit skill allows a Traveller to wear and operate spacesuits and environmental suits. A Traveller will rarely need to make Vacc Suit checks under ordinary circumstances – merely possessing the skill is enough. If the Traveller does not have the requisite Vacc Suit skill for the suit he is wearing, he suffers DM-2 to all skill checks made while wearing a suit for each missing level. This skill also permits the character to operate advanced battle armour. ",
 		}
-
 	}
 	return s, nil
 }
 
 /*
-
-Vilani: The language spoken by the Vilani of the First
-Imperium; the ‘Latin' of the Third Imperium.
-Zdetl: The Zhodani spoken language.
-Oynprith: The Droyne ritual language.
-
-67
-given here. Also note that on some worlds other skills,
-such as Animals or Computer, may be used to earn a
-living in the same manner as Profession skills.
-SPECIALITIES
-● Belter: Mining asteroids for valuable ores and
-minerals.
-● Biologicals: Engineering and managing artificial
-organisms.
-● Civil Engineering: Designing structures and buildings.
-● Construction: Building orbital habitats and
-megastructures.
-● Hydroponics: Growing crops in hostile environments.
-● Polymers: Designing and using polymers.
-Recon
-A Traveller trained in Recon is able to scout out dangers
-and spot threats, unusual objects or out of place people.
-Working Out the Routine of a Trio of Guard Patrols:
-Average (8+) Recon check (1D x 10 minutes, INT).
-Spotting the Sniper Before he Shoots You: Recon check
-(1D x 10 seconds, INT) opposed by Stealth (DEX) check.
-Science
-The Science skill covers not just knowledge but also
-practical application of that knowledge where such
-practical application is possible. There are a large range
-of specialities.
-SPECIALITIES
-● Archaeology: The study of ancient civilisations,
-including the previous Imperiums and Ancients. It also
-covers techniques of investigation and excavations.
-● Astronomy: The study of stars and celestial pheonomina.
-● Biology: The study of living organisms.
-● Chemistry: The study of matter at the atomic,
-molecular, and macromolecular levels.
-● Cosmology: The study of universe and its creation.
-● Cybernetics: The study of blending living and
-synthetic life.
-● Economics: The study of trade and markets.
-● Genetics: The study of genetic codes and
-engineering.
-● History: The study of the past, as seen through
-documents and records as opposed to physical artefacts.
-● Linguistics: The study of languages.
-● Philosophy: The study of beliefs and religions.
-● Physics: The study of the fundamental forces.
-● Planetology: The study of planet formation and
-evolution.
-● Psionicology: The study of psionic powers and
-phenomena.
-Navigation
-Navigation is the planetside counterpart of astrogation,
-covering plotting courses and finding directions on the
-ground.
-Plotting a Course Using an Orbiting Satellite Beacon:
-Average (8+) Navigation check (1D x 10 minutes, INT
-or EDU).
-Avoiding Getting Lost in Thick Jungle: Difficult (10+)
-Navigation check (1D hours, INT).
-Persuade
-Persuade is a more casual, informal version of Diplomat.
-It covers fast talking, bargaining, wheedling and
-bluffing. It also covers bribery or intimidation.
-Bluffing Your Way Past a Guard: Opposed Persuade
-check (1D minutes, INT or SOC).
-Haggling in a Bazaar: Opposed Persuade check (1D
-minutes, INT or SOC).
-Intimidating a Thug: Opposed Persuade check (1D
-minutes, STR or SOC).
-Asking the Alien Space Princess to Marry You: Formidable
-(14+) Persuade check (1D x 10 minutes, SOC).
-Pilot
-The Pilot skill specialities cover different forms of
-spacecraft. See Spacecraft Operations chapter for more
-details.
-SPECIALITIES
-Small Craft: Shuttles and other craft under 100 tons.
-Spacecraft: Trade ships and other vessels between 100
-and 5,000 tons.
-Capital Ships: Battleships and other ships over 5,000 tons.
-Profession
-A Traveller with a Profession skill is trained in producing
-useful goods or services. There are many different
-Profession specialities, but each one works the same
-way – the Traveller can make a Profession check to earn
-money on a planet that supports that trade. The amount
-of money raised is Cr250 x the Effect of the check per
-month. Unlike other skills with specialties, levels in
-the Profession skill do not grant the ability to use other
-specialties at level 0. Each specialty must be learned
-individually. Someone with a Profession skill of 0 has a
-general grasp of working for a living but little experience
-beyond the most menial jobs.
-There are a huge range of potential specialities for this
-skill, one for every possible profession in the universe.
-Some examples suitable to a science fiction setting are
-68
-● Psychology: The study of thought and society.
-● Robotics: The study of robot construction and use.
-● Sophontology: The study of intelligent living
-creatures.
-● Xenology: The study of alien life forms.
-Remembering a Commonly Known Fact: Routine (6+)
-Science check (1D minutes, EDU).
-Researching a Problem Related to a Field of Science:
-Average (8+) Science check (1D days, INT).
-Seafarer
-The Seafarer skill covers all manner of watercraft and
-ocean travel.
-SPECIALITIES
-● Ocean Ships: For motorised sea-going
-vessels. Personal: Used for very small waterborne
-craft such as canoes and rowboats.
-● Sail: This skill is for wind-driven watercraft.
-● Submarine: For vehicles that travel underwater.
-Stealth
-A Traveller trained in the Stealth skill is adept at staying
-unseen, unheard, and unnoticed.
-Sneaking Past a Guard: Stealth check (1D x 10 seconds,
-DEX) opposed by Recon (INT) check.
-Avoiding Detection by a Security Patrol: Stealth check
-(1D minutes, DEX) opposed by Recon (INT) check.
-Steward
-The Steward skill allows the Traveller to serve and
-care for nobles and high-class passengers. It covers
-everything from proper address and behaviour to
-cooking and tailoring, as well as basic management
-skills. A Traveller with the Steward skill is necessary
-on any ship offering High Passage. See Spacecraft
-Operations chapter for more details.
-Cooking a Fine Meal: Average (8+) Steward check (1D
-hours, EDU).
-Calming Down an Angry Duke who has Just Been Told
-you Will not be Jumping to his Destination on Time:
-Difficult (10+) Steward check (1D minutes, SOC).
-Streetwise
-A Traveller with the Streetwise skill understands the urban
-environment and the power structures in society. On his
-homeworld and in related systems, he knows criminal
-contacts and fixers. On other worlds, he can quickly intuit
-power structures and can fit into local underworlds.
-Finding a Dealer in Illegal Materials or Technologies:
-Average (8+) Streetwise check (1D x 10 hours, INT).
-Evading a Police Search: Streetwise check (1D x 10
-minutes, INT) opposed by Recon (INT) check.
-Survival
-The Survival skill is the wilderness counterpart of the urban
-Streetwise skill – the Traveller is trained to survive in the
-wild, build shelters, hunt or trap animals, avoid exposure
-and so forth. He can recognise plants and animals of
-his homeworld and related planets, and can pick up on
-common clues and traits even on unfamiliar worlds.
-Gathering Supplies in the Wilderness to Survive for a
-Week: Average (8+) Survival check (1D days, EDU).
-Identifying a Poisonous Plant: Average (8+) Survival
-check (1D x 10 seconds, INT or EDU).
-Tactics
-This skill covers tactical planning and decision making,
-from board games to squad level combat to fleet
-engagements. For use in combat, see Combat chapter.
-SPECIALITIES
-● Military: Co-ordinating the attacks of foot troops or
-vehicles on the ground.
-● Naval: Co-ordinating the attacks of a spacecraft or
-fleet.
-Developing a Strategy for Attacking an Enemy Base:
-Average (8+) Tactics (military) check (1D x 10 hours,
-INT).
-Vacc Suit
-The Vacc Suit skill allows a Traveller to wear and operate
-spacesuits and environmental suits. A Traveller will
-rarely need to make Vacc Suit checks under ordinary
-circumstances – merely possessing the skill is enough. If
-the Traveller does not have the requisite Vacc Suit skill
-for the suit he is wearing, he suffers DM-2 to all skill
-checks made while wearing a suit for each missing level.
-This skill also permits the character to operate advanced
-battle armour.
-Performing a Systems Check on Battle Dress: Average
-(8+) Vacc Suit check (1D minutes, EDU).
-
-
-
-
 fmt.Print(char.Skills[skill.Advocate].Description())
 entity:
 	traveller
@@ -1089,14 +943,8 @@ entity:
 		characteristic
 
 	firm
-
-
-
-
-
-
-
 */
+
 func (s *skill) Name() string {
 	name := s.Group
 	if s.Speciality != "" {
@@ -1107,4 +955,26 @@ func (s *skill) Name() string {
 
 func (s *skill) Description() string {
 	return s.Descr
+}
+
+func BackgroundSkills() []int {
+	return []int{
+		Admin,
+		Animals,
+		Art,
+		Athletics,
+		Carouse,
+		Drive,
+		Electronics,
+		Flyer,
+		Language,
+		Mechanic,
+		Medic,
+		Profession,
+		Science,
+		Seafarer,
+		Streetwise,
+		Survival,
+		VaccSuit,
+	}
 }
