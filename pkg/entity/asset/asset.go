@@ -3,6 +3,7 @@ package asset
 type asset struct {
 	name              string
 	description       string
+	code              string
 	usage             string
 	numericalValues   []int
 	numericalValuesFl []float64
@@ -20,6 +21,7 @@ func (a *asset) Valid() asset {
 func (a *asset) Name() string {
 	return a.name
 }
+
 func (a *asset) Description() string {
 	return a.description
 }
