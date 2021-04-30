@@ -1,128 +1,75 @@
 package asset
 
+import "errors"
+
 const (
-	SkillAdmin                  = "1=11=0=Admin"
-	SkillAdvocate               = "1=12=0=Advocate"
-	SkillAnimals                = "1=13=0=Animals"
-	SkillAnimalsHandling        = "1=13=1=Animals (Handling)"
-	SkillAnimalsTraining        = "1=13=2=Animals (Training)"
-	SkillAnimalsVeterinary      = "1=13=3=Animals (Veterinary)"
-	SkillArt                    = "1=14=0=Art"
-	SkillArtHolography          = "1=14=1=Art (Holography)"
-	SkillArtInstrument          = "1=14=2=Art (Instrument)"
-	SkillArtPerformer           = "1=14=3=Art (Performer)"
-	SkillArtVisualMedia         = "1=14=4=Art (Visual Media)"
-	SkillArtWrite               = "1=14=5=Art (Write)"
-	SkillAstrogation            = "1=15=0=Astrogation"
-	SkillAthletics              = "1=16=0=Athletics"
-	SkillAthleticsDEX           = "1=16=1=Athletics (DEX)"
-	SkillAthleticsEND           = "1=16=2=Athletics (END)"
-	SkillAthleticsSTR           = "1=16=3=Athletics (STR)"
-	SkillBroker                 = "1=17=0=Broker"
-	SkillCarouse                = "1=18=0=Carouse"
-	SkillDeception              = "1=19=0=Deception"
-	SkillDiplomat               = "1=1A=0=Diplomat"
-	SkillDrive                  = "1=1B=0=Drive"
-	SkillDriveHovercraft        = "1=1B=1=Drive (Hovercraft)"
-	SkillDriveMole              = "1=1B=2=Drive (Mole)"
-	SkillDriveTrack             = "1=1B=3=Drive (Track)"
-	SkillDriveWalker            = "1=1B=4=Drive (Walker)"
-	SkillDriveWheel             = "1=1B=5=Drive (Wheel)"
-	SkillElectronics            = "1=1C=0=Electronics"
-	SkillElectronicsComms       = "1=1C=1=Electronics (Comms)"
-	SkillElectronicsComputers   = "1=1C=2=Electronics (Computers)"
-	SkillElectronicsRemoteops   = "1=1C=3=Electronics (Remote Ops)"
-	SkillElectronicsSensors     = "1=1C=4=Electronics (Sensors)"
-	SkillEngineer               = "1=1D=0=Engineer"
-	SkillEngineerJdrive         = "1=1D=1=Engineer (J-drive)"
-	SkillEngineerLifesupport    = "1=1D=2=Engineer (Life Support)"
-	SkillEngineerMdrive         = "1=1D=3=Engineer (M-drive)"
-	SkillEngineerPower          = "1=1D=4=Engineer (Power)"
-	SkillExplosives             = "1=1E=0=Explosives"
-	SkillFlyer                  = "1=1F=0=Flyer"
-	SkillFlyerAirship           = "1=1F=1=Flyer (Airship)"
-	SkillFlyerGrav              = "1=1F=2=Flyer (Grav)"
-	SkillFlyerOrnithopter       = "1=1F=3=Flyer (Ornithopter)"
-	SkillFlyerRotor             = "1=1F=4=Flyer (Rotor)"
-	SkillFlyerWing              = "1=1F=5=Flyer (Wing)"
-	SkillGambler                = "1=1G=0=Gambler"
-	SkillGuncombat              = "1=1J=0=Gun Combat"
-	SkillGuncombatArchaic       = "1=1J=1=Gun Combat (Archaic)"
-	SkillGuncombatEnergy        = "1=1J=2=Gun Combat (Energy)"
-	SkillGuncombatSlug          = "1=1J=3=Gun Combat (Slug)"
-	SkillGunner                 = "1=1H=0=Gunner"
-	SkillGunnerCapital          = "1=1H=1=Gunner (Capital)"
-	SkillGunnerOrtilery         = "1=1H=2=Gunner (Ortilery)"
-	SkillGunnerScreen           = "1=1H=3=Gunner (Screen)"
-	SkillGunnerTurret           = "1=1H=4=Gunner (Turret)"
-	SkillHeavyweapon            = "1=1K=0=Heavy Weapon"
-	SkillHeavyweaponArtilery    = "1=1K=1=Heavy Weapon (Artilery)"
-	SkillHeavyweaponManportable = "1=1K=2=Heavy Weapon (Man Portable)"
-	SkillHeavyweaponVehicle     = "1=1K=3=Heavy Weapon (Vehicle)"
-	SkillInvestigate            = "1=1L=0=Investigate"
-	SkillJackofalltrades        = "1=1M=0=Jack-of-all-Trades"
-	SkillLanguage               = "1=1N=0=Language"          //byRac-LanguageAnglic         e
-	SkillLanguageAnglic         = "1=1N=1=Language (Anglic)" //byRac-LanguageAnglic         e
-	SkillLeadership             = "1=1P=0=Leadership"
-	SkillMechanic               = "1=1Q=0=Mechanic"
-	SkillMedic                  = "1=1R=0=Medic"
-	SkillMelee                  = "1=1S=0=Melee"
-	SkillMeleeBlade             = "1=1S=1=Melee (Blade)"
-	SkillMeleeBludgeon          = "1=1S=2=Melee (Bludgeon)"
-	SkillMeleeNatural           = "1=1S=3=Melee (Natural)"
-	SkillMeleeUnarmed           = "1=1S=4=Melee (Unarmed)"
-	SkillNavigation             = "1=1T=0=Navigation"
-	SkillPersuade               = "1=1U=0=Persuade"
-	SkillPilot                  = "1=1V=0=Pilot"
-	SkillPilotCapitalships      = "1=1V=1=Pilot (Capital Ships)"
-	SkillPilotSmallcraft        = "1=1V=2=Pilot (Small Craft)"
-	SkillPilotSpacecraft        = "1=1V=3=Pilot (Spacecraft)"
-	SkillProfession             = "1=1W=0=Profession" //byTyp-Profession             e
-	SkillProfessionAny          = "1=1W=1=Profession (Any)"
-	SkillRecon                  = "1=21=0=Recon"
-	SkillSciencePhysical        = "1=22=0=Science" //byField Science                d
-	SkillScienceLife            = "1=23=0=Science" //byField Science                d
-	SkillScienceSocial          = "1=24=0=Science" //byField Science                d
-	SkillScienceSpace           = "1=25=0=Science" //byField Science                d
-	SkillScience                = "1=26=0=Science"
-	SkillScienceAny             = "1=26=1=Science (ANY)"
-	SkillSeafarer               = "1=27=0=Seafarer"
-	SkillSeafarerOceanships     = "1=27=1=Seafarer (Ocean Ships)"
-	SkillSeafarerPersonal       = "1=27=2=Seafarer (Personal)"
-	SkillSeafarerSail           = "1=27=3=Seafarer (Sail)"
-	SkillSeafarerSubmarine      = "1=27=4=Seafarer (Submarine)"
-	SkillStealth                = "1=28=0=Stealth"
-	SkillSteward                = "1=29=0=Steward"
-	SkillStreetwise             = "1=2A=0=Streetwise"
-	SkillSurvival               = "1=2B=0=Survival"
-	SkillTactics                = "1=2C=0=Tactics"
-	SkillTacticsMilitary        = "1=2C=1=Tactics (Military)"
-	SkillTacticsNavy            = "1=2C=2=Tactics (Navy)"
-	SkillVaccsuit               = "1=2D=0=Vacc Suit"
+	GroupAdmin           = "Admin"
+	GroupAdvocate        = "Advocate"
+	GroupAnimals         = "Animals"
+	GroupArt             = "Art"
+	GroupAstrogation     = "Astrogation"
+	GroupAthletics       = "Athletics"
+	GroupBroker          = "Broker"
+	GroupCarouse         = "Carouse"
+	GroupDeception       = "Deception"
+	GroupDiplomat        = "Diplomat"
+	GroupDrive           = "Drive"
+	GroupElectronics     = "Electronics"
+	GroupEngineer        = "Engineer"
+	GroupExplosives      = "Explosives"
+	GroupFlyer           = "Flyer"
+	GroupGambler         = "Gambler"
+	GroupGuncombat       = "Gun Combat"
+	GroupGunner          = "Gunner"
+	GroupHeavyweapon     = "Heavy Weapon"
+	GroupInvestigate     = "Investigate"
+	GroupJackofalltrades = "Jack-of-all-Trades"
+	GroupLanguage        = "Language" //byRac-LanguageAnglic         e
+	GroupLeadership      = "Leadership"
+	GroupMechanic        = "Mechanic"
+	GroupMedic           = "Medic"
+	GroupMelee           = "Melee"
+	GroupNavigation      = "Navigation"
+	GroupPersuade        = "Persuade"
+	GroupPilot           = "Pilot"
+	GroupProfession      = "Profession" //byTyp-Profession             e
+	GroupRecon           = "Recon"
+	GroupSciencePhysical = "Science Physical" //byField Science                d
+	GroupScienceLife     = "Science Life"     //byField Science                d
+	GroupScienceSocial   = "Science Social"   //byField Science                d
+	GroupScienceSpace    = "Science Space"    //byField Science                d
+	GroupScience         = "Science"
+	GroupSeafarer        = "Seafarer"
+	GroupStealth         = "Stealth"
+	GroupSteward         = "Steward"
+	GroupStreetwise      = "Streetwise"
+	GroupSurvival        = "Survival"
+	GroupTactics         = "Tactics"
+	GroupVaccsuit        = "Vacc Suit"
 )
 
 func BackgroundSkills() []string {
 	return []string{
-		SkillAdmin,
-		SkillAnimals,
-		SkillArt,
-		SkillAthletics,
-		SkillCarouse,
-		SkillDrive,
-		SkillElectronics,
-		SkillFlyer,
-		SkillLanguage,
-		SkillMechanic,
-		SkillMedic,
-		SkillProfession,
-		SkillScienceLife,
-		SkillSciencePhysical,
-		SkillScienceSocial,
-		SkillScienceSpace,
-		SkillSeafarer,
-		SkillStreetwise,
-		SkillSurvival,
-		SkillVaccsuit,
+		GroupAdmin,
+		GroupAnimals,
+		GroupArt,
+		GroupAthletics,
+		GroupCarouse,
+		GroupDrive,
+		GroupElectronics,
+		GroupFlyer,
+		GroupLanguage,
+		GroupMechanic,
+		GroupMedic,
+		GroupProfession,
+		GroupScienceLife,
+		GroupSciencePhysical,
+		GroupScienceSocial,
+		GroupScienceSpace,
+		GroupSeafarer,
+		GroupStreetwise,
+		GroupSurvival,
+		GroupVaccsuit,
 	}
 }
 
@@ -138,20 +85,172 @@ func BackgroundSkills() []string {
 
 type Skill interface {
 	Proficiency() int
+	Specialities() ([]string, []int)
+	Train(string) error
 }
 
-func NewSkill(name string) Skill {
-	c := asset{}
-	c.name = name
-	c.usage = "присваеваем код и по коду определяем как его качать" // c.numericalValues[0] - значение скила
-	c.numericalValues = append(c.numericalValues, 0)
+//Proficiency() int
+//Train()
+//Ensure()
+//Set()
 
+func BasicTraining(name string) Skill {
+	c := asset{} //в данном случае ассетом является вся группа скилов. если я хочу увеличить специализацию то мне нужна проверка
+	//является ли эта специализация частью данной группы. При создании группы я добавляю все ее специализации в лист ассета 1
+	specs := groupSpecs(name)
+	for i := range specs {
+		c.list1 = append(c.list1, specs[i])
+		c.numericalValues = append(c.numericalValues, 0)
+	}
+	if len(specs) == 0 {
+		c.list1 = append(c.list1, name)
+		c.numericalValues = append(c.numericalValues, 0)
+	}
+	c.numericalValues = append(c.numericalValues, 0)
 	return &c
+}
+
+func (a *asset) IsPresent(skill string) bool {
+	for _, val := range a.list1 {
+		if val == skill {
+			return true
+		}
+	}
+	return false
+}
+
+func groupSpecs(group string) []string {
+	specs := []string{}
+	//specs = append(specs, group) - если список специализаций пуст - то качаем группу как отдельный навык
+	switch group {
+	default:
+	case GroupAnimals:
+		specs = append(specs, group+" (Handling)")
+		specs = append(specs, group+" (Veterinary)")
+		specs = append(specs, group+" (Training)")
+	case GroupArt:
+		specs = append(specs, group+" (Performer)")
+		specs = append(specs, group+" (Holography)")
+		specs = append(specs, group+" (Instrument)")
+		specs = append(specs, group+" (Visual Media)")
+		specs = append(specs, group+" (Write)")
+	case GroupAthletics:
+		specs = append(specs, group+" (Dexterity)")
+		specs = append(specs, group+" (Endurance)")
+		specs = append(specs, group+" (Strength)")
+	case GroupDrive:
+		specs = append(specs, group+" (Hovercraft)")
+		specs = append(specs, group+" (Mole)")
+		specs = append(specs, group+" (Track)")
+		specs = append(specs, group+" (Walker)")
+		specs = append(specs, group+" (Wheel)")
+	case GroupElectronics:
+		specs = append(specs, group+" (Comms)")
+		specs = append(specs, group+" (Computers)")
+		specs = append(specs, group+" (Remote Ops)")
+		specs = append(specs, group+" (Sensors)")
+	case GroupEngineer:
+		specs = append(specs, group+" (M-drive)")
+		specs = append(specs, group+" (J-drive)")
+		specs = append(specs, group+" (Life Support)")
+		specs = append(specs, group+" (Power)")
+	case GroupFlyer:
+		specs = append(specs, group+" (Airship)")
+		specs = append(specs, group+" (Grav)")
+		specs = append(specs, group+" (Ornithopter)")
+		specs = append(specs, group+" (Rotor)")
+		specs = append(specs, group+" (Wing)")
+	case GroupGunner:
+		specs = append(specs, group+" (Turret)")
+		specs = append(specs, group+" (Ortillery)")
+		specs = append(specs, group+" (Screen)")
+		specs = append(specs, group+" (Capital)")
+	case GroupGuncombat:
+		specs = append(specs, group+" (Archaic)")
+		specs = append(specs, group+" (Energy)")
+		specs = append(specs, group+" (Slug)")
+	case GroupHeavyweapon:
+		specs = append(specs, group+" (Artillery)")
+		specs = append(specs, group+" (Man Portable)")
+		specs = append(specs, group+" (Vehicle)")
+	case GroupLanguage:
+		specs = append(specs, group+" (Anglic)")
+		specs = append(specs, group+" (Vilani)")
+		specs = append(specs, group+" (Zdetl)")
+		specs = append(specs, group+" (Oynprith)")
+		specs = append(specs, group+" (Aslan)")
+		specs = append(specs, group+" (Vargr)")
+	case GroupMelee:
+		specs = append(specs, group+" (Unarmed)")
+		specs = append(specs, group+" (Blade)")
+		specs = append(specs, group+" (Bludgeon)")
+		specs = append(specs, group+" (Natural)")
+	case GroupPilot:
+		specs = append(specs, group+" (Small Craft)")
+		specs = append(specs, group+" (Spacecraft)")
+		specs = append(specs, group+" (Capital Ships)")
+	case GroupProfession:
+		specs = append(specs, group+" (Profession 1)")
+		specs = append(specs, group+" (Profession 2)")
+		specs = append(specs, group+" (Profession 3)")
+	case GroupScienceLife:
+		group = "Sciense"
+		specs = append(specs, group+" (Biology)")
+		specs = append(specs, group+" (Cybernetics)")
+		specs = append(specs, group+" (Genetics)")
+		specs = append(specs, group+" (Psionicology)")
+	case GroupSciencePhysical:
+		group = "Sciense"
+		specs = append(specs, group+" (Physics)")
+		specs = append(specs, group+" (Chemistry)")
+		specs = append(specs, group+" (Electronics)")
+	case GroupScienceSocial:
+		group = "Sciense"
+		specs = append(specs, group+" (Archeology)")
+		specs = append(specs, group+" (Economics)")
+		specs = append(specs, group+" (History)")
+		specs = append(specs, group+" (Linguistics)")
+		specs = append(specs, group+" (Philosophy)")
+		specs = append(specs, group+" (Psychology)")
+		specs = append(specs, group+" (Sophontology)")
+	case GroupScienceSpace:
+		group = "Sciense"
+		specs = append(specs, group+" (Planetology)")
+		specs = append(specs, group+" (Robotics)")
+		specs = append(specs, group+" (Xenology)")
+	case GroupSeafarer:
+		specs = append(specs, group+" (Ocean Ships)")
+		specs = append(specs, group+" (Personal)")
+		specs = append(specs, group+" (Sail)")
+		specs = append(specs, group+" (Submarine)")
+	case GroupTactics:
+		specs = append(specs, group+" (Military)")
+		specs = append(specs, group+" (Naval)")
+
+	}
+	return specs
 }
 
 func (a *asset) Proficiency() int {
 	return a.numericalValues[0]
 }
 
-func (a *asset) Ensure(val int) {
+func (a *asset) Specialities() ([]string, []int) {
+	specs := []string{}
+	vals := []int{}
+	for i, val := range a.list1 {
+		specs = append(specs, val)
+		vals = append(vals, a.numericalValues[i])
+	}
+	return specs, vals
+}
+
+func (a *asset) Train(spec string) error {
+	for i := range a.list1 {
+		if spec == a.list1[i] {
+			a.numericalValues[i]++
+			return nil
+		}
+	}
+	return errors.New("'" + spec + "' not found among specialisations")
 }

@@ -2,6 +2,7 @@ package entity
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 
 	"github.com/Galdoba/TR_Dynasty/pkg/core/ehex"
@@ -41,6 +42,7 @@ func NewTraveller(seed ...string) Traveller {
 	t.Info.Species = "Human" //TODO: должно устанавливаться на прямую флагом с рассой
 	t.rollCharcteristics()
 	t.pickBackgroundSkills()
+	t.Train("Admin")
 
 	return t
 }
@@ -68,24 +70,17 @@ func (t *Traveller) pickBackgroundSkills() {
 	mod, _ := t.Chrctr[EDU].Modifier()
 	mod += 3
 	picked := []string{}
-	//list := asset.BackgroundSkills()
+	list := asset.BackgroundSkills()
 	switch t.ManualMode {
 	case false:
-		for len(t.Skill) < mod {
-			// d := strconv.Itoa(len(list))
-			// sk := list[t.Dice.RollNext("1d"+d).DM(-1).Sum()]
-			// skillName := skill.ByCode(sk).Name()
-			// if _, ok := t.Skill[skillName]; !ok {
-			// 	t.Skill[skillName] = asset.NewSkill(skillName)
-			// }
+		for len(picked) < mod {
+			picked = utils.AppendUniqueStr(picked, t.Dice.RollFromList(list))
 		}
 	case true:
 		fmt.Println("func (t *Traveller) pickBackgroundSkills() - manual mode not implemented")
 	}
-
 	for i := range picked {
-		t.Skill[picked[i]] = asset.NewSkill(picked[i])
-		//t.Skill[picked[i]] = asset.NewSkill(skill.ByCode(i).Name())
+		t.Skill[picked[i]] = asset.BasicTraining(picked[i])
 	}
 }
 
@@ -97,15 +92,7 @@ func (t *Traveller) Sheet() string {
 	tAge := FormatInt(t.Age(), 3, false)                //set len to 3 left al
 	tSpecies := FormatString(t.Info.Species, 24, false) //set len to 24 left al
 	tSpeciesTraits := SpeciesTraitsSheet(t.Info.Species)
-
-	//trvAtrArr := t.AtrArray()
-	// str := FormatInt(trvAtrArr[0], 2, false) //set len to 2 left al
-	// strM := SheetMod(str)
-	// dex := FormatInt(trvAtrArr[1], 2, false) //set len to 2 left al
-	// end := FormatInt(trvAtrArr[2], 2, false) //set len to 2 left al
-	// int := FormatInt(trvAtrArr[3], 2, false) //set len to 2 left al
-	// edu := FormatInt(trvAtrArr[4], 2, false) //set len to 2 left al
-	// soc := FormatInt(trvAtrArr[5], 2, false) //set len to 2 left al
+	skillList := listAllSkills(t)
 
 	sh := "+---INFO----------------------------+---ARMOR---------------------------------------------------------------------------+\n"
 	sh += "| Name: " + tName + " | TYPE              | RAD | PROTECTION | KG |             INSTALLED MODS            |\n"
@@ -126,6 +113,18 @@ func (t *Traveller) Sheet() string {
 	sh += "| Psionic Powers: UNTESTED[XX] (-3) |                       |                   |                                       |\n"
 	sh += "=        [Untested or talents list] =                       =                   = __Additional career benefits__        |\n"
 	sh += "+---SKILLS--------------------------+-----------------------+-------------------+---------------------------------------+\n"
+	third := (len(skillList) / 4) + 1
+	//fmt.Println(len(skillList), "|")
+	for len(skillList) < third*4 {
+		skillList = append(skillList, "                           ")
+	}
+	for i := range skillList {
+		if i >= third {
+			continue
+		}
+		//fmt.Println(third, len(skillList), "|", i, third+i, (third+third)+i, third+third+third+i)
+		sh += "| " + skillList[i] + " | " + skillList[third+i] + " | " + skillList[(third+third)+i] + " | " + skillList[(third+third+third)+i] + " |\n"
+	}
 	sh += "+-----------------------------------+-----------------------+-------------------+---------------------------------------+\n"
 	return sh
 }
@@ -135,7 +134,7 @@ func (t *Traveller) Sheet() string {
 | Name: [Traveller Name]            | TYPE              | RAD | PROTECTION | KG |             INSTALLED MODS            |
 | UPP : 123456-7                    | Armor name 1      | XXX |     XX     | XX | [Loooooooooooooooooooong Description] |
 | Rads: xxxx             Age: XXX   | Armor name 2      | XXX |     XX     | XX | Options:             [No Description] |
-| Species: Human                    | Armor name 3      | XXX |     XX     | XX | Options:             [No Description] |
+| Species: Human                    | Armor name 3      | XXX |     XX     | XX | 1234567890123456789012345678901234567 |
 | Species Traits: _Mandatory_______ | Armor name 4      | XXX |     XX     | XX | Options:             [No Description] |
 =                 _Additionals_____ =  ____Additional Armor data__              =                                       =
 | Homeworld: [Homeworld Name      ] +---FINANCES------------+---CAREER SUMMARY--+---CAREER BENEFITS---------------------+
@@ -234,4 +233,24 @@ func SpeciesTraitsSheet(race string) []string {
 		traits[i] = FormatString(traits[i], 17, false)
 	}
 	return traits
+}
+
+func listAllSkills(t *Traveller) []string {
+	list := []string{}
+	for _, v := range t.Skill {
+		specs, vals := v.Specialities()
+		for i := range specs {
+			for len(specs[i]) < 25 {
+				specs[i] += " "
+			}
+			list = append(list, specs[i]+" "+strconv.Itoa(vals[i]))
+		}
+	}
+	sort.Strings(list)
+
+	return list
+}
+
+func (t *Traveller) Train(sk string) {
+
 }
