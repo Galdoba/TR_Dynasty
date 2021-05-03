@@ -141,7 +141,7 @@ func CodeFromName(name string) int {
 			return i
 		}
 	}
-	return -1
+	return -2
 }
 
 func new(skillcode int) (skill, error) {
@@ -977,4 +977,11 @@ func BackgroundSkills() []int {
 		Survival,
 		VaccSuit,
 	}
+}
+
+func NameIsValid(name string) bool {
+	if CodeFromName(name) == -2 {
+		return false
+	}
+	return true
 }

@@ -1,13 +1,17 @@
 package entity
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/pkg/core/ehex"
+	"github.com/Galdoba/TR_Dynasty/pkg/core/skill"
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 	"github.com/Galdoba/TR_Dynasty/pkg/entity/asset"
+	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
 )
 
@@ -25,6 +29,7 @@ type Info struct {
 	PsiStatus   string
 	Species     string
 	TermsServed int
+	TermsLog    []string
 }
 
 func NewTraveller(seed ...string) Traveller {
@@ -42,7 +47,6 @@ func NewTraveller(seed ...string) Traveller {
 	t.Info.Species = "Human" //TODO: должно устанавливаться на прямую флагом с рассой
 	t.rollCharcteristics()
 	t.pickBackgroundSkills()
-	t.Train("Admin")
 
 	return t
 }
@@ -85,7 +89,7 @@ func (t *Traveller) pickBackgroundSkills() {
 }
 
 func (t *Traveller) Sheet() string {
-	utils.ClearScreen()
+	//utils.ClearScreen()
 	tName := FormatString(t.Info.Name, 27, false)       //set len to 27 left al
 	tUPP := FormatString(t.UPPsheetString(), 27, false) //set len to 27 left al
 	tRads := FormatInt(t.Info.Rads, 5, false)           //set len to 4 left al
@@ -93,6 +97,7 @@ func (t *Traveller) Sheet() string {
 	tSpecies := FormatString(t.Info.Species, 24, false) //set len to 24 left al
 	tSpeciesTraits := SpeciesTraitsSheet(t.Info.Species)
 	skillList := listAllSkills(t)
+	careerList := listAllCareers(t)
 
 	sh := "+---INFO----------------------------+---ARMOR---------------------------------------------------------------------------+\n"
 	sh += "| Name: " + tName + " | TYPE              | RAD | PROTECTION | KG |             INSTALLED MODS            |\n"
@@ -102,15 +107,15 @@ func (t *Traveller) Sheet() string {
 	sh += "| Species Traits: " + tSpeciesTraits[0] + " | Armor name 4      | XXX |     XX     | XX | Options:             [No Description] |\n"
 	//sh += "=                 _Additionals_____ =  ____Additional Armor data__              =                                       =\n"
 	sh += "| Homeworld: [Homeworld Name      ] +---FINANCES------------+---CAREER SUMMARY--+---CAREER BENEFITS---------------------+\n"
-	sh += "| s123456-7 __ __ __ __ __ __ __ __ | Pension:              | Law Enforcement 2 | 1234567890123456789012345678901234567 |\n"
-	sh += "+---CHARACTERISTICS-----------------+   XXXXXX Cr/Year      | Scavenger       1 |                                       |\n"
-	sh += "|" + AtrBox(t.Chrctr[STR]) + "|" + AtrBox(t.Chrctr[DEX]) + "|" + AtrBox(t.Chrctr[END]) + "| Debt:                 | Marine Support  1 |                                       |\n"
-	sh += "| Strength  | Dexterity | Endurance |   XXXXXXX xCr         | Drifter         8 |                                       |\n"
-	sh += "+-----------+-----------+-----------+ Cash on Hand:         |                   |                                       |\n"
-	sh += "|" + AtrBox(t.Chrctr[INT]) + "|" + AtrBox(t.Chrctr[EDU]) + "|" + AtrBox(t.Chrctr[SOC]) + "|   XXXXXXX xCr         |                   |                                       |\n"
-	sh += "| Intellect | Education |   Social  | Living Cost:          |                   |                                       |\n"
-	sh += "+-----------+-----------+-----------+   XXXXXXX  Cr/Month   |                   |                                       |\n"
-	sh += "| Psionic Powers: UNTESTED[XX] (-3) |                       |                   |                                       |\n"
+	sh += "| s123456-7 __ __ __ __ __ __ __ __ | Pension:              | " + careerList[0] + " | 1234567890123456789012345678901234567 |\n"
+	sh += "+---CHARACTERISTICS-----------------+   XXXXXX Cr/Year      | " + careerList[1] + " |                                       |\n"
+	sh += "|" + AtrBox(t.Chrctr[STR]) + "|" + AtrBox(t.Chrctr[DEX]) + "|" + AtrBox(t.Chrctr[END]) + "| Debt:                 | " + careerList[2] + " |                                       |\n"
+	sh += "| Strength  | Dexterity | Endurance |   XXXXXXX xCr         | " + careerList[3] + " |                                       |\n"
+	sh += "+-----------+-----------+-----------+ Cash on Hand:         | " + careerList[4] + " |                                       |\n"
+	sh += "|" + AtrBox(t.Chrctr[INT]) + "|" + AtrBox(t.Chrctr[EDU]) + "|" + AtrBox(t.Chrctr[SOC]) + "|   XXXXXXX xCr         | " + careerList[5] + " |                                       |\n"
+	sh += "| Intellect | Education |   Social  | Living Cost:          | " + careerList[6] + " |                                       |\n"
+	sh += "+-----------+-----------+-----------+   XXXXXXX  Cr/Month   | " + careerList[7] + " |                                       |\n"
+	sh += "| Psionic Powers: UNTESTED[XX] (-3) |                       | " + careerList[8] + " |                                       |\n"
 	sh += "=        [Untested or talents list] =                       =                   = __Additional career benefits__        |\n"
 	sh += "+---SKILLS--------------------------+-----------------------+-------------------+---------------------------------------+\n"
 	third := (len(skillList) / 4) + 1
@@ -247,10 +252,84 @@ func listAllSkills(t *Traveller) []string {
 		}
 	}
 	sort.Strings(list)
-
 	return list
 }
 
-func (t *Traveller) Train(sk string) {
+func listAllCareers(t *Traveller) []string {
+	allList := []string{}
+	for _, val := range t.Info.TermsLog {
+		allList = append(allList, FormatString(val, 17, false))
+	}
+	for len(allList) < 9 {
+		allList = append(allList, FormatString("", 17, false))
+	}
+	return allList
+}
 
+func (t *Traveller) SkillPresent(sk string) bool {
+	for _, skil := range t.Skill {
+		spec, _ := skil.Specialities()
+		for _, spk := range spec {
+			if spk == sk {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (t *Traveller) Train(thing string) error {
+	switch thing {
+	case STR, DEX, END, INT, EDU, SOC:
+		val, _ := t.Chrctr[thing].Value()
+		t.Chrctr[thing].SetCharacteristicValue(val + 1)
+		return nil
+	}
+
+	if !skill.NameIsValid(thing) {
+		panic(errors.New("TrvCore_SkillCode unknown for '" + thing + "'"))
+	}
+	if !t.SkillPresent(thing) {
+		data := strings.Split(thing, " (")
+		switch len(data) {
+		case 2:
+			t.Skill[data[0]] = asset.BasicTraining(data[0])
+			return nil
+		case 1:
+			t.Skill[thing] = asset.BasicTraining(thing)
+		}
+	}
+	for key, v := range t.Skill {
+		spec, _ := v.Specialities()
+		if thing == key {
+			message := "Choose Speciality to train:"
+			thing = t.chooseFromList(message, spec)
+			return t.Skill[key].Train(thing)
+		}
+		if utils.ListContains(spec, thing) {
+			return t.Skill[key].Train(thing)
+		}
+
+	}
+
+	return nil
+}
+
+func (t *Traveller) chooseFromList(message string, list []string) string {
+	chosen := ""
+	switch t.ManualMode {
+	case false:
+		chosen = t.Dice.RollFromList(list)
+	case true:
+		chosen = chooseManualy(message, list)
+	}
+	return chosen
+}
+
+func chooseManualy(message string, list []string) string {
+	pick, err := user.ChooseOne(message, list)
+	if err != nil {
+		panic(err.Error())
+	}
+	return list[pick]
 }

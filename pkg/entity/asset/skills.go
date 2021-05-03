@@ -1,6 +1,8 @@
 package asset
 
-import "errors"
+import (
+	"errors"
+)
 
 const (
 	GroupAdmin           = "Admin"
@@ -97,6 +99,7 @@ type Skill interface {
 func BasicTraining(name string) Skill {
 	c := asset{} //в данном случае ассетом является вся группа скилов. если я хочу увеличить специализацию то мне нужна проверка
 	//является ли эта специализация частью данной группы. При создании группы я добавляю все ее специализации в лист ассета 1
+	c.name = name
 	specs := groupSpecs(name)
 	for i := range specs {
 		c.list1 = append(c.list1, specs[i])
@@ -124,6 +127,7 @@ func groupSpecs(group string) []string {
 	//specs = append(specs, group) - если список специализаций пуст - то качаем группу как отдельный навык
 	switch group {
 	default:
+		specs = append(specs, group)
 	case GroupAnimals:
 		specs = append(specs, group+" (Handling)")
 		specs = append(specs, group+" (Veterinary)")
@@ -246,6 +250,10 @@ func (a *asset) Specialities() ([]string, []int) {
 }
 
 func (a *asset) Train(spec string) error {
+	if len(a.list1) == 1 {
+		a.numericalValues[0]++
+		return nil
+	}
 	for i := range a.list1 {
 		if spec == a.list1[i] {
 			a.numericalValues[i]++
