@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/Galdoba/TR_Dynasty/pkg/entity"
+	"github.com/Galdoba/TR_Dynasty/pkg/entity/career"
 	"github.com/urfave/cli"
 )
 
@@ -16,7 +17,7 @@ func main() {
 	app.Usage = "TODO"
 	app.Flags = []cli.Flag{}
 
-	app.Commands = []cli.Command{
+	app.Commands = []*cli.Command{
 		//////////////////////////////////////
 		{
 			Name:  "new",
@@ -27,10 +28,9 @@ func main() {
 				fmt.Println(trv)
 				sheet := trv.Sheet()
 				fmt.Print(sheet)
-				
-
-				
-				
+				cr := career.NewCareer(career.RandomCareer())
+				fmt.Println(cr)
+				fmt.Println(career.Imperial_Agent_LawEnforcement)
 				// for i := range trv.Skill {
 				// 	//fmt.Println(trv.Skill[i].Name(), "- picked as Background")
 				// }
