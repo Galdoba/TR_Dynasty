@@ -1,14 +1,28 @@
 package main
 
 import (
-	"github.com/Galdoba/TR_Dynasty/starsystem"
+	"fmt"
+
+	"github.com/Galdoba/TR_Dynasty/constant"
+	"github.com/Galdoba/TR_Dynasty/pkg/t5trade"
+	"github.com/Galdoba/TR_Dynasty/wrld"
 )
 
 func main() {
+	fmt.Println("Select Source World:")
+	sourceworld := wrld.PickWorld()
+	fmt.Println("Select Market World:")
+	marketworld := wrld.PickWorld()
+
+	cargo := t5trade.NewCargo(sourceworld.GetСharacteristic(constant.PrTL).Value(), sourceworld.TradeCodes())
+	sell := t5trade.SellPrice(cargo, marketworld.GetСharacteristic(constant.PrTL).Value(), sourceworld.TradeCodes())
+	fmt.Println(cargo)
+	fmt.Println(sell)
+	//t5trade.Test()
 
 	//fmt.Println(astronomical.NewStellarData("G2 V"))
 	//os.Exit(3)
-	starsystem.Test()
+	//starsystem.Test()
 	// world := wrld.PickWorld()
 	// ssData := starsystem.From(world)
 	// ssData.PrintTable()

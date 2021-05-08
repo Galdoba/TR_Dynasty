@@ -17,7 +17,7 @@ func main() {
 	app.Usage = "TODO"
 	app.Flags = []cli.Flag{}
 
-	app.Commands = []*cli.Command{
+	app.Commands = []cli.Command{
 		//////////////////////////////////////
 		{
 			Name:  "new",
