@@ -11,9 +11,11 @@ import (
 func main() {
 	fmt.Println("Select Source World:")
 	sourceworld := wrld.PickWorld()
+	fmt.Println(sourceworld.SecondSurvey())
 	fmt.Println("Select Market World:")
 	marketworld := wrld.PickWorld()
-
+	fmt.Println(marketworld.SecondSurvey())
+	fmt.Println("---------------------------------")
 	cargo := t5trade.NewCargo(sourceworld.GetСharacteristic(constant.PrTL).Value(), sourceworld.TradeCodes())
 	sell := t5trade.SellPrice(cargo, marketworld.GetСharacteristic(constant.PrTL).Value(), sourceworld.TradeCodes())
 	fmt.Println(cargo)

@@ -308,8 +308,11 @@ func PickWorld() World {
 		if err != nil {
 
 		}
+		if len(input) < 2 {
+			continue
+		}
 		data, err := otu.GetDataOn(input)
-		fmt.Println("Data", data)
+		//fmt.Println("Data", data)
 		if err != nil {
 			fmt.Print("WARNING: " + err.Error() + "\n")
 			continue
