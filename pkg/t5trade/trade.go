@@ -5,15 +5,28 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Galdoba/TR_Dynasty/constant"
 	"github.com/Galdoba/TR_Dynasty/pkg/core/ehex"
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
+	"github.com/Galdoba/TR_Dynasty/wrld"
 	"github.com/Galdoba/utils"
 )
 
 func Test() {
-	cargo := NewCargo(12, []string{"Ri", "Pa", "An", "Cp", "Ph"})
-	fmt.Println("Sourceworld Cargo ID:", cargo.CargoID)
-	fmt.Println("Marketworld Cargo price:", SellPrice(cargo, 10, []string{"Ri", "Ph", "Pa", "Pz"}))
+	fmt.Println("Select Source World:")
+	sourceworld := wrld.PickWorld()
+	fmt.Println(sourceworld.SecondSurvey())
+	fmt.Println("Select Market World:")
+	marketworld := wrld.PickWorld()
+	fmt.Println(marketworld.SecondSurvey())
+	fmt.Println("---------------------------------")
+	cargo := NewCargo(sourceworld.GetСharacteristic(constant.PrTL).Value(), sourceworld.TradeCodes())
+	sell := SellPrice(cargo, marketworld.GetСharacteristic(constant.PrTL).Value(), sourceworld.TradeCodes())
+	fmt.Println(cargo)
+	fmt.Println(sell)
+	fmt.Println("=============")
+	chart := randomTradeGoods(cargo.CargoID)
+
 }
 
 /*
@@ -147,12 +160,6 @@ func randomTradeGoods(cargoID string) string {
 		ag := dp.RollNext("1d2").Sum()
 		chart = append(chart, ag)
 	}
-	if utils.ListContains(data, "Ga") {
-		chart = append(chart, 1)
-	}
-	if utils.ListContains(data, "Fa") {
-		chart = append(chart, 2)
-	}
 	if utils.ListContains(data, "As") {
 		chart = append(chart, 3)
 	}
@@ -184,8 +191,12 @@ func randomTradeGoods(cargoID string) string {
 		chart = append(chart, 12)
 	}
 	if len(chart) == 0 {
-		chart = append(chart, 12)
+		chart = append(chart, 7)
 	}
-
+	fmt.Println("Chart:", chart)
 	return descr
+}
+
+func chart1() []string {
+
 }
