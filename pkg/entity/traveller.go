@@ -11,6 +11,7 @@ import (
 	"github.com/Galdoba/TR_Dynasty/pkg/core/skill"
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 	"github.com/Galdoba/TR_Dynasty/pkg/entity/asset"
+	"github.com/Galdoba/TR_Dynasty/pkg/entity/career"
 	"github.com/Galdoba/devtools/cli/user"
 	"github.com/Galdoba/utils"
 )
@@ -21,6 +22,7 @@ type Traveller struct {
 	Info       Info
 	Chrctr     map[string]asset.Characteristic
 	Skill      map[string]asset.Skill
+	CareerMap  map[string]career.Career
 }
 
 type Info struct {
@@ -28,8 +30,12 @@ type Info struct {
 	Rads        int
 	PsiStatus   string
 	Species     string
+	Education   string
+	LastTerm    string
 	TermsServed int
 	TermsLog    []string
+	TermsLogI   []int
+	careerRank  map[string]int
 }
 
 func NewTraveller(seed ...string) Traveller {
@@ -47,8 +53,69 @@ func NewTraveller(seed ...string) Traveller {
 	t.Info.Species = "Human" //TODO: должно устанавливаться на прямую флагом с рассой
 	t.rollCharcteristics()
 	t.pickBackgroundSkills()
+	allTerms := career.Allterms()
+	maxTerms := 5
+	d := strconv.Itoa(len(allTerms))
+	r := t.Dice.RollNext("1d" + d).DM(-1).Sum()
+	fmt.Println("pick ", allTerms[r])
+	t.Info.careerRank = make(map[string]int)
+	careerEnded := false
+termLoop:
+	for !careerEnded {
+		fmt.Println("Term left", maxTerms)
+
+		fmt.Print("Qualification:")
+		switch ListContainsInt(t.Info.TermsLogI, allTerms[r]) {
+		case true:
+			fmt.Println("No Qualification Needed")
+		case false:
+			switch t.Dice.RollNext("2d6").Sum() > 6 {
+			case true:
+				fmt.Println("PASSED")
+				t.Info.TermsLogI = append(t.Info.TermsLogI, allTerms[r])
+			case false:
+				fmt.Println("FAILED")
+				continue
+			}
+		}
+		fmt.Print("Survival:")
+		maxTerms--
+		switch t.Dice.RollNext("2d6").Sum() > 6 {
+		case true:
+			t.Info.TermsServed++
+			t.Info.TermsLogI = append(t.Info.TermsLogI, allTerms[r])
+			fmt.Println("PASSED")
+			fmt.Println("EVENT ROLL")
+		case false:
+			fmt.Println("FAILED")
+			fmt.Println("MISHAP ROLL")
+			break termLoop
+		}
+		fmt.Print("Advansment:")
+		switch t.Dice.RollNext("2d6").Sum() > 6 {
+		case true:
+			t.Info.TermsServed++
+			t.Info.TermsLogI = append(t.Info.TermsLogI, allTerms[r])
+			fmt.Println("PASSED")
+			fmt.Println("EVENT ROLL")
+		case false:
+			fmt.Println("FAILED")
+			fmt.Println("MISHAP ROLL")
+
+			continue
+		}
+	}
 
 	return t
+}
+
+func ListContainsInt(list []int, num int) bool {
+	for _, val := range list {
+		if val == num {
+			return true
+		}
+	}
+	return false
 }
 
 func (t *Traveller) rollCharcteristics() {
@@ -71,7 +138,7 @@ func (t *Traveller) rollCharcteristics() {
 
 func (t *Traveller) pickBackgroundSkills() {
 	t.Skill = make(map[string]asset.Skill)
-	mod, _ := t.Chrctr[EDU].Modifier()
+	mod := t.Chrctr[EDU].Modifier()
 	mod += 3
 	picked := []string{}
 	list := asset.BackgroundSkills()
@@ -188,12 +255,12 @@ func (t *Traveller) UPPsheetString() string {
 	upp := ""
 	for _, chr := range listCharacteristics() {
 		if val, ok := t.Chrctr[chr]; ok {
-			v, _ := val.Value()
+			v := val.Value()
 			upp += ehex.New(v).String()
 		}
 	}
 	if val, ok := t.Chrctr[PSI]; ok { //PSI is a rare case
-		v, _ := val.Value()
+		v := val.Value()
 		upp += "-" + ehex.New(v).String()
 	}
 
@@ -207,24 +274,24 @@ func (t *Traveller) Age() int {
 func (t *Traveller) AtrArray() []int {
 	aa := []int{}
 	for _, a := range listCharacteristics() {
-		v, _ := t.Chrctr[a].Value()
+		v := t.Chrctr[a].Value()
 		aa = append(aa, v)
 	}
 	if psi, ok := t.Chrctr[PSI]; ok {
-		psiVal, _ := psi.Value()
+		psiVal := psi.Value()
 		aa = append(aa, psiVal)
 	}
 	return aa
 }
 
 func AtrBox(a asset.Characteristic) string {
-	v, _ := a.Value()
+	v := a.Value()
 	str := "  "
 	if v < 10 && v > -1 {
 		str += " "
 	}
 	str += strconv.Itoa(v) + "  ("
-	aM, _ := a.Modifier()
+	aM := a.Modifier()
 	if aM > -1 {
 		str += "+"
 	}
@@ -281,7 +348,7 @@ func (t *Traveller) SkillPresent(sk string) bool {
 func (t *Traveller) Train(thing string) error {
 	switch thing {
 	case STR, DEX, END, INT, EDU, SOC:
-		val, _ := t.Chrctr[thing].Value()
+		val := t.Chrctr[thing].Value()
 		t.Chrctr[thing].SetCharacteristicValue(val + 1)
 		return nil
 	}

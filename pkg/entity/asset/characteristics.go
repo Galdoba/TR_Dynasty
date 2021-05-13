@@ -1,12 +1,8 @@
 package asset
 
-import (
-	"errors"
-)
-
 type Characteristic interface {
-	Value() (int, error)
-	Modifier() (int, error)
+	Value() int
+	Modifier() int
 	SetCharacteristicValue(int)
 }
 
@@ -16,18 +12,18 @@ func NewCharacteristic(name string) Characteristic {
 	return &c
 }
 
-func (a *asset) Value() (int, error) {
+func (a *asset) Value() int {
 	if len(a.numericalValues) < 1 {
-		return 0, errors.New("a.numericalValues empty")
+		return 0
 	}
-	return a.numericalValues[0], nil
+	return a.numericalValues[0]
 }
 
-func (a *asset) Modifier() (int, error) {
+func (a *asset) Modifier() int {
 	if len(a.numericalValues) < 2 {
-		return 0, errors.New("characteristic modifier not set")
+		return 0
 	}
-	return a.numericalValues[1], nil
+	return a.numericalValues[1]
 }
 
 func (a *asset) SetCharacteristicValue(newVal int) {
