@@ -5,7 +5,6 @@ import (
 )
 
 func main() {
-
 	t5trade.Test()
 
 	//fmt.Println(astronomical.NewStellarData("G2 V"))
