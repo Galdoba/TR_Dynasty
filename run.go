@@ -1,11 +1,14 @@
 package main
 
 import (
-	"github.com/Galdoba/TR_Dynasty/pkg/t5trade"
+	"github.com/Galdoba/TR_Dynasty/GunMaker/weapons"
 )
 
 func main() {
-	t5trade.Test()
+
+	weapons.ConstructTest()
+
+	//t5trade.Test()
 
 	//fmt.Println(astronomical.NewStellarData("G2 V"))
 	//os.Exit(3)

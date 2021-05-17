@@ -144,6 +144,18 @@ func (e ehexStruct) String() string {
 	return string(e.bt)
 }
 
+func (e ehexStruct) AsMod() string {
+	val := e.Value()
+	if val < 0 {
+		val = val * -1
+		return New(val).String()
+	}
+	if val > 9 {
+		return "?"
+	}
+	return New(val).String()
+}
+
 func (e ehexStruct) Value() int {
 	v := -1
 	switch e.bt {
