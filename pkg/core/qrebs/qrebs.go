@@ -30,6 +30,28 @@ func New() EvaluationData {
 	return ed
 }
 
+func Standard() EvaluationData {
+	ed := EvaluationData{}
+	ed.data = make(map[int]int)
+	ed.data[QUALITY] = 5
+	return ed
+}
+
+func Custom(q, r, e, b, s int) EvaluationData {
+	ed := EvaluationData{}
+	ed.data = make(map[int]int)
+	ed.data[QUALITY] = q
+	ed.data[RELIABILITY] = r
+	ed.data[EASEOFUSE] = e
+	ed.data[BURDEN] = b
+	ed.data[SAFETY] = s
+	return ed
+}
+
+func (ed *EvaluationData) Change(dataID, value int) {
+	ed.data[dataID] = ed.data[dataID] + value
+}
+
 //By Stat//////////////////////////////////
 
 func (ed *EvaluationData) Quality() string {
@@ -38,6 +60,10 @@ func (ed *EvaluationData) Quality() string {
 		return str
 	}
 	return "-"
+}
+
+func (ed *EvaluationData) QualityI() int {
+	return ed.data[1]
 }
 
 func (ed *EvaluationData) Reliability() string {
