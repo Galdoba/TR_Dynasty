@@ -162,8 +162,32 @@ func (wp *Weapon) ApplyDescriptor(descr string) {
 		fmt.Println(wp.Category, "Description not implemented")
 	case "Long Guns":
 		wp.applyLongGunsDescriptor(descr)
+	case Handguns:
+		wp.applyHandgunsDescriptor(descr)
 	}
 	wp.codes[7] = strconv.Itoa(wp.TL)
+}
+
+func (wp *Weapon) applyHandgunsDescriptor(descr string) {
+	switch descr {
+	default:
+		fmt.Println(wp.Category, "Description not implemented 1")
+	case "":
+		wp.HitDice++
+	case "Accelerator":
+		wp.codes[2] = "Ac"
+		wp.TL = wp.TL + 4
+		wp.Mass = wp.Mass * 0.6
+		wp.HitDice += 2
+		wp.Cr = wp.Cr * 3.0
+	case "Laser":
+		wp.codes[2] = "L"
+		wp.TL = wp.TL + 5
+		wp.Mass = wp.Mass * 1.2
+		wp.HitDice += 2
+		wp.Cr = wp.Cr * 2.0
+		wp.Traits = append(wp.Traits, "Zero-G")
+	}
 }
 
 func (wp *Weapon) applyLongGunsDescriptor(descr string) {
