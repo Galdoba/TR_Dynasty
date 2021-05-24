@@ -132,22 +132,25 @@ func weaponBurden() [][]string {
 	return data
 }
 
-func stageBurden() [][]string {
+func weaponStage() [][]string {
 	data := [][]string{
 		[]string{"Category | Code | Descriptor      | TL  | R= | Mass  | qreBs | Misc  | D2 | Comment                | Cr"},
-		[]string{"Burden   |      | (blank)         | 0   | 0  | x1.0  | 0     |       | 0  |                        | x1.0"},
-		[]string{"Burden   | aD   | Anti-Designator | +3  | +1 | x3.0  | +3    |       | 1  | Not Pistols. Shotguns. | x3.0"},
-		[]string{"Burden   | B    | Body            | +2  | =1 | x0.5  | -4    |       | -1 | Only Pistols.          | x3.0"},
-		[]string{"Burden   | D    | Disposable      | +3  | 0  | x0.9  | -1    | Q= -2 | 0  |                        | x0.5"},
-		[]string{"Burden   | H    | Heavy           | 0   | +1 | x1.3  | +3    |       | 1  | Not Laser              | x2.0"},
-		[]string{"Burden   | Lt   | Light           | 0   | -1 | x0.7  | -1    |       | -1 | Not Laser              | x1.1"},
-		[]string{"Burden   | M    | Magnum          | +1  | +1 | x1.1  | +1    |       | 1  | Only Pistols.          | x1.1"},
-		[]string{"Burden   | M    | Medium          | 0   | 0  | x1.0  | 0     |       | 0  | Not Pistols.           | x1.0"},
-		[]string{"Burden   | R    | Recoilless      | +1  | -1 | x1.2  | 0     |       | 1  |                        | x3.0"},
-		[]string{"Burden   | Sn   | Snub            | +1  | =2 | x0.7  | -3    |       | 1  |                        | x1.5"},
-		[]string{"Burden   | Vh   | Vheavy          | 0   | +5 | x4.0  | +4    |       | 5  |                        | x5.0"},
-		[]string{"Burden   | Vl   | Vlight          | +1  | -2 | x0.6  | -2    |       | -1 |                        | x2.0"},
-		[]string{"Burden   | Vrf  | VRF             | +2  | 0  | x14.0 | +5    |       | 1  | Only Guns and MGs      | x9.0"},
+		[]string{"Stage             (blank)           0     0    x1.0    0               0                             x1.0"},
+		[]string{"Stage      A      Advanced          +3    0    x0.8    -3              2                             x2.0"},
+		[]string{"Stage      Alt    Alternate         0     +1   x1.1    F               2                             x1.1"},
+		[]string{"Stage B Basic 0 +0 x1.3 +1 0 x 0.7"},
+		[]string{"Stage E Early -1 -1 x1.7 +1 0 EOU - 1 x 1.2"},
+		[]string{"Stage Exp Experimental -3 -1 x2.0 +3 R= - 2 0 x 4.0"},
+		[]string{"Stage Gen Generic +1 0 x1.0 0 0 x 0.5"},
+		[]string{"Stage Im Improved +1 0 x1.0 -1 R= +1 1 EOU + 1 x 1.1"},
+		[]string{"Stage Mod Modified +2 0 x0.9 0 1 x 1.2"},
+		[]string{"Stage Pr Precision +6 +3 x4.0 +2 0 Only Designators. x 5.0"},
+		[]string{"Stage P Prototype -2 -1 x1.9 +2 0 x 3.0"},
+		[]string{"Stage R Remote +1 0 x1.0 0 0 Not Pistols. x 7.0"},
+		[]string{"Stage Sn Sniper +1 +1 x1.1 +1 Q= +2 0 Only Rifles. X 2.0"},
+		[]string{"Stage St Standard 0 0 x1.0 0 1 x 1.0"},
+		[]string{"Stage T Target 0 0 x1.1 +1 Q= +2 0 Only Rifles and Pistols. x 1.5"},
+		[]string{"Stage Ul Ultimate +4 0 x0.7 -4 R= +4 2 x 1.4"},
 	}
 	return data
 }
