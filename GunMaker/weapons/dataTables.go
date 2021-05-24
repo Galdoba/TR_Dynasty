@@ -114,20 +114,40 @@ func weaponsDiscriptors() [][]string {
 
 func weaponBurden() [][]string {
 	data := [][]string{
-		[]string{"Category Code Descriptor      TL  R= Mass qreBs Misc D1 D2 Comment                D3 Cr"},
-		[]string{"Burden        (blank)         0   0  x1.0 0             0                            x1.0"},
-		[]string{"Burden   aD   Anti-Designator +3  +1 x3.0 +3 1             Not Pistols. Shotguns.    x 3.0"},
-		[]string{"Burden   B    Body            +2  =1 x0.5 -4 -1 Only Pistols. x 3.0"},
-		[]string{"Burden   D    Disposable      +3  0 x0.9 -1 Q= -2 0 x 0.5"},
-		[]string{"Burden   H    Heavy           0   +1 x1.3 +3 1 Not Laser x 2.0"},
-		[]string{"Burden   Lt   Light           0   -1 x0.7 -1 -1 Not Laser x 1.1"},
-		[]string{"Burden   M    Magnum          +1  +1 x1.1 +1 1 Only Pistols. x 1.1"},
-		[]string{"Burden   M    Medium          0   0 x1.0 0 0 Not Pistols. x 1.0"},
-		[]string{"Burden   R    Recoilless      +1  -1 x1.2 0 1 x 3.0"},
-		[]string{"Burden   Sn   Snub            +1  =2 x0.7 -3 1 x 1.5"},
-		[]string{"Burden   Vh   Vheavy          0 +5 x4.0 +4 5 x 5.0"},
-		[]string{"Burden   Vl   Vlight          +1 -2 x0.6 -2 -1 x 2.0"},
-		[]string{"Burden   Vrf  VRF             +2 0 x14.0 +5 1 Only Guns and MGs x 9.0"},
+		[]string{"Category | Code | Descriptor      | TL  | R= | Mass  | qreBs | Misc  | D2 | Comment                | Cr"},
+		[]string{"Burden   |      | (blank)         | 0   | 0  | x1.0  | 0     |       | 0  |                        | x1.0"},
+		[]string{"Burden   | aD   | Anti-Designator | +3  | +1 | x3.0  | +3    |       | 1  | Not Pistols. Shotguns. | x3.0"},
+		[]string{"Burden   | B    | Body            | +2  | =1 | x0.5  | -4    |       | -1 | Only Pistols.          | x3.0"},
+		[]string{"Burden   | D    | Disposable      | +3  | 0  | x0.9  | -1    | Q= -2 | 0  |                        | x0.5"},
+		[]string{"Burden   | H    | Heavy           | 0   | +1 | x1.3  | +3    |       | 1  | Not Laser              | x2.0"},
+		[]string{"Burden   | Lt   | Light           | 0   | -1 | x0.7  | -1    |       | -1 | Not Laser              | x1.1"},
+		[]string{"Burden   | M    | Magnum          | +1  | +1 | x1.1  | +1    |       | 1  | Only Pistols.          | x1.1"},
+		[]string{"Burden   | M    | Medium          | 0   | 0  | x1.0  | 0     |       | 0  | Not Pistols.           | x1.0"},
+		[]string{"Burden   | R    | Recoilless      | +1  | -1 | x1.2  | 0     |       | 1  |                        | x3.0"},
+		[]string{"Burden   | Sn   | Snub            | +1  | =2 | x0.7  | -3    |       | 1  |                        | x1.5"},
+		[]string{"Burden   | Vh   | Vheavy          | 0   | +5 | x4.0  | +4    |       | 5  |                        | x5.0"},
+		[]string{"Burden   | Vl   | Vlight          | +1  | -2 | x0.6  | -2    |       | -1 |                        | x2.0"},
+		[]string{"Burden   | Vrf  | VRF             | +2  | 0  | x14.0 | +5    |       | 1  | Only Guns and MGs      | x9.0"},
+	}
+	return data
+}
+
+func stageBurden() [][]string {
+	data := [][]string{
+		[]string{"Category | Code | Descriptor      | TL  | R= | Mass  | qreBs | Misc  | D2 | Comment                | Cr"},
+		[]string{"Burden   |      | (blank)         | 0   | 0  | x1.0  | 0     |       | 0  |                        | x1.0"},
+		[]string{"Burden   | aD   | Anti-Designator | +3  | +1 | x3.0  | +3    |       | 1  | Not Pistols. Shotguns. | x3.0"},
+		[]string{"Burden   | B    | Body            | +2  | =1 | x0.5  | -4    |       | -1 | Only Pistols.          | x3.0"},
+		[]string{"Burden   | D    | Disposable      | +3  | 0  | x0.9  | -1    | Q= -2 | 0  |                        | x0.5"},
+		[]string{"Burden   | H    | Heavy           | 0   | +1 | x1.3  | +3    |       | 1  | Not Laser              | x2.0"},
+		[]string{"Burden   | Lt   | Light           | 0   | -1 | x0.7  | -1    |       | -1 | Not Laser              | x1.1"},
+		[]string{"Burden   | M    | Magnum          | +1  | +1 | x1.1  | +1    |       | 1  | Only Pistols.          | x1.1"},
+		[]string{"Burden   | M    | Medium          | 0   | 0  | x1.0  | 0     |       | 0  | Not Pistols.           | x1.0"},
+		[]string{"Burden   | R    | Recoilless      | +1  | -1 | x1.2  | 0     |       | 1  |                        | x3.0"},
+		[]string{"Burden   | Sn   | Snub            | +1  | =2 | x0.7  | -3    |       | 1  |                        | x1.5"},
+		[]string{"Burden   | Vh   | Vheavy          | 0   | +5 | x4.0  | +4    |       | 5  |                        | x5.0"},
+		[]string{"Burden   | Vl   | Vlight          | +1  | -2 | x0.6  | -2    |       | -1 |                        | x2.0"},
+		[]string{"Burden   | Vrf  | VRF             | +2  | 0  | x14.0 | +5    |       | 1  | Only Guns and MGs      | x9.0"},
 	}
 	return data
 }
