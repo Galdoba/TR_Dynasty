@@ -6,7 +6,7 @@ import (
 
 func main() {
 
-	weapons.ConstructTest()
+	weapons.TestGunMaker()
 
 	//t5trade.Test()
 
