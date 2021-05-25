@@ -1,12 +1,18 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/Galdoba/TR_Dynasty/GunMaker/weapons"
 )
 
 func main() {
-
-	weapons.TestGunMaker()
+	wpc := weapons.NewWeaponConstructor()
+	wpc.SetAutoMod(true)
+	val := weapons.New(wpc)
+	fmt.Println(wpc)
+	fmt.Println(val)
+	//weapons.TestGunMaker()
 
 	//t5trade.Test()
 

@@ -1,7 +1,5 @@
 package weapons
 
-import "errors"
-
 const (
 	MeleeWeapons = iota
 	BodyWeapons
@@ -13,21 +11,35 @@ const (
 	WeaponsPortability
 )
 
-func DataFrom(table, row, col int) (string, error) {
+func DataFrom(table, row, col int) string {
+	data := [][]string{}
 	switch table {
 	default:
-		return "", errors.New("unknown table adressed")
-	case MeleeWeapons,
-		BodyWeapons,
-		RangeWeapons,
-		WeaponsDiscriptors,
-		WeaponsBurden,
-		WeaponsStage,
-		WeaponsUsers,
-		WeaponsPortability:
-
+		return "---"
+	case MeleeWeapons:
+		data = meleeWeapons()
+	case BodyWeapons:
+		data = bodyWeapons()
+	case RangeWeapons:
+		data = rangeWeapons()
+	case WeaponsDiscriptors:
+		data = weaponsDiscriptors()
+	case WeaponsBurden:
+		data = weaponBurden()
+	case WeaponsStage:
+		data = weaponStage()
+	case WeaponsUsers:
+		data = weaponUsers()
+	case WeaponsPortability:
+		data = weaponPortability()
 	}
-	return "0"
+	for row >= len(data) { //временная заглушка чтобы не мучаться с ошибками
+		row = row - len(data)
+	}
+	for col >= len(data[0]) {
+		col = col - len(data[0])
+	}
+	return data[row][col]
 }
 
 func meleeWeapons() [][]string {
