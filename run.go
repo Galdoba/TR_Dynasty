@@ -3,15 +3,19 @@ package main
 import (
 	"fmt"
 
-	"github.com/Galdoba/TR_Dynasty/GunMaker/weapons"
+	"github.com/Galdoba/TR_Dynasty/systemextended"
+	"github.com/Galdoba/TR_Dynasty/wrld"
 )
 
 func main() {
-	wpc := weapons.NewWeaponConstructor()
-	wpc.SetAutoMod(true)
-	val := weapons.New(wpc)
-	fmt.Println(wpc)
-	fmt.Println(val)
+	smc := systemextended.NewSystemMapConstructor(wrld.PickWorld())
+	fmt.Println("/////////")
+	fmt.Println(smc)
+	// wpc := weapons.NewWeaponConstructor()
+	// wpc.SetAutoMod(true)
+	// val := weapons.New(wpc)
+	// fmt.Println(wpc)
+	// fmt.Println(val)
 	//weapons.TestGunMaker()
 
 	//t5trade.Test()
