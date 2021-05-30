@@ -58,6 +58,8 @@ func PullOtuData() {
 	for i, val := range lines {
 		fmt.Println("Check entry", i)
 		fmt.Println(val)
+		val = strings.ReplaceAll(val, "’", "'")
+
 		if val != "Sector	SS	Hex	Name	UWP	Bases	Remarks	Zone	PBG	Allegiance	Stars	{Ix}	(Ex)	[Cx]	Nobility	W	RU" {
 			utils.AddLineToFile("dataClean.txt", val)
 		}

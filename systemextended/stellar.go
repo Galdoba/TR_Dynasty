@@ -2,11 +2,13 @@ package systemextended
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/pkg/core/astronomical"
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 	"github.com/Galdoba/TR_Dynasty/wrld"
+	"github.com/Galdoba/utils"
 )
 
 type SysyemMapConstructor struct {
@@ -14,10 +16,29 @@ type SysyemMapConstructor struct {
 }
 
 func NewSystemMapConstructor(w wrld.World) SysyemMapConstructor {
+	testOnData()
 	smc := SysyemMapConstructor{}
 	smc.Dicepool = w.DicePool()
 	defineHZ(w)
 	return smc
+}
+
+func testOnData() {
+	varMap := make(map[string]int)
+	varKeys := []string{}
+	for _, data := range utils.LinesFromTXT("d:\\golang\\src\\github.com\\Galdoba\\TR_Dynasty\\data.txt") {
+		parts := strings.Split(data, "	")
+		stellarData := parts[10]
+		stelParts := strings.Split(stellarData, " ")
+		for _, sp := range stelParts {
+			varMap[sp]++
+			varKeys = utils.AppendUniqueStr(varKeys, sp)
+		}
+	}
+	for i, key := range varKeys {
+		fmt.Println(i, "-", key, "-", varMap[key])
+	}
+	os.Exit(0)
 }
 
 type systemCoordinates struct {
