@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/Galdoba/TR_Dynasty/pkg/core/astronomical"
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
@@ -25,8 +26,22 @@ func NewSystemMapConstructor(w wrld.World) SysyemMapConstructor {
 
 func parceStars(stellar string) (stars []string) {
 	data := strings.Split(stellar, " ")
+	starDetected := ""
 	for i := 0; i < len(data); i++ {
-		switch data[i]
+		switch data[i] {
+		default:
+			if starDetected != "" {
+				stars = append(stars, starDetected)
+			}
+			starDetected = data[i]
+		case "Ia", "Ib", "II", "III", "IV", "V", "VI", "VII":
+			starDetected = starDetected + " " + data[i]
+			stars = append(stars, starDetected)
+			starDetected = ""
+		}
+	}
+	if starDetected != "" {
+		stars = append(stars, starDetected)
 	}
 	return
 }
@@ -34,9 +49,26 @@ func parceStars(stellar string) (stars []string) {
 func testOnData() {
 	varMap := make(map[string]int)
 	varKeys := []string{}
-	for _, data := range utils.LinesFromTXT("d:\\golang\\src\\github.com\\Galdoba\\TR_Dynasty\\data.txt") {
+	// for _, data := range utils.LinesFromTXT("d:\\golang\\src\\github.com\\Galdoba\\TR_Dynasty\\data.txt") {
+	// 	parts := strings.Split(data, "	")
+	// 	stellarData := parts[10]
+	// 	stelParts := strings.Split(stellarData, " ")
+	// 	for _, sp := range stelParts {
+	// 		varMap[sp]++
+	// 		varKeys = utils.AppendUniqueStr(varKeys, sp)
+	// 	}
+	// }
+	for _, data := range utils.LinesFromTXT("c:\\Users\\pemaltynov\\go\\src\\github.com\\Galdoba\\TR_Dynasty\\data.txt") {
 		parts := strings.Split(data, "	")
 		stellarData := parts[10]
+		stars := parceStars(stellarData)
+		fmt.Print("Try '", stellarData, "\n")
+		for _, val := range stars {
+			fmt.Print("'", val, "'\n")
+		}
+		if len(stars) > 1 {
+			time.Sleep(time.Second)
+		}
 		stelParts := strings.Split(stellarData, " ")
 		for _, sp := range stelParts {
 			varMap[sp]++
@@ -44,7 +76,7 @@ func testOnData() {
 		}
 	}
 	for i, key := range varKeys {
-		fmt.Println(i, "-", key, "-", varMap[key])
+		fmt.Print(i, " '", key, "' ", varMap[key], "\n")
 	}
 	os.Exit(0)
 }
