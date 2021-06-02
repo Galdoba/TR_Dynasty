@@ -19,8 +19,16 @@ func NewSystemMapConstructor(w wrld.World) SysyemMapConstructor {
 	testOnData()
 	smc := SysyemMapConstructor{}
 	smc.Dicepool = w.DicePool()
-	defineHZ(w)
+
 	return smc
+}
+
+func parceStars(stellar string) (stars []string) {
+	data := strings.Split(stellar, " ")
+	for i := 0; i < len(data); i++ {
+		switch data[i]
+	}
+	return
 }
 
 func testOnData() {
