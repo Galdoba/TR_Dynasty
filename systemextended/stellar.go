@@ -16,12 +16,42 @@ type SysyemMapConstructor struct {
 	Dicepool *dice.Dicepool
 }
 
+type starSystemMap struct {
+}
+
 func NewSystemMapConstructor(w wrld.World) SysyemMapConstructor {
-	testOnData()
+	//testOnData()
 	smc := SysyemMapConstructor{}
 	smc.Dicepool = w.DicePool()
+	stars := parceStars(w.Stellar())
+	starMap := generateSystemStarmap(w.DicePool(), stars)
+	for i := range stars {
+		fmt.Println(stars[i], starMap[i])
+	}
 
 	return smc
+}
+
+func generateSystemStarmap(dp *dice.Dicepool, stars []string) []string {
+	starNumMatch := false
+	foundStars := []string{}
+	for !starNumMatch {
+		foundStars = []string{"P"}
+		if dp.FluxNext() >= 4 {
+			foundStars = append(foundStars, "Pc")
+		}
+		for _, val := range []string{"C", "N", "F"} {
+			if dp.FluxNext() >= 4 {
+				foundStars = append(foundStars, val)
+				if dp.FluxNext() >= 4 {
+					foundStars = append(foundStars, val+"c")
+				}
+			}
+		}
+		starNumMatch = (len(stars) == len(foundStars))
+	}
+
+	return foundStars
 }
 
 func parceStars(stellar string) (stars []string) {
