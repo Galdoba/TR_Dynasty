@@ -91,7 +91,8 @@ func GenerateOtherWorldUWP(dices *dice.Dicepool, mwUWP string, planetType string
 	}
 	//STARPORT
 	stpt := rollStpt(dices, mwPop)
-	tl := rollTL(mwUWP)
+	//tl := rollTL(mwUWP)
+	tl := rollTLt5(mwUWP, dices, stpt, size, atmo, hydr, pops, govr)
 	orbScore := astronomical.HabitableZoneScore(orbit, star)
 	if orbScore < 1 {
 		orbScore = orbScore * -1
@@ -321,6 +322,62 @@ func rollTL(mwUWP string) int {
 	// 	// }
 	// 	tl = 0
 	// }
+	return tl
+}
+
+func rollTLt5(mwUWP string, dices *dice.Dicepool, stpt string, siz, atm, hyd, pop, gov int) int {
+	r := dices.RollNext("1d6").Sum()
+	tl := r
+	switch siz {
+	case 0, 1:
+		tl = tl + 2
+	case 2, 3, 4:
+		tl++
+	}
+	switch atm {
+	case 0, 1, 2, 3, 10, 11, 12, 13, 14, 15:
+		tl++
+	}
+	switch hyd {
+	case 9:
+		tl++
+	case 10:
+		tl = tl + 2
+	}
+	switch pop {
+	case 1, 2, 3, 4, 5:
+		tl++
+	case 9:
+		tl = tl + 2
+	case 10:
+		tl = tl + 4
+	}
+	switch gov {
+	case 0, 5:
+		tl++
+	case 13:
+		tl = tl - 2
+	}
+	switch stpt {
+	case "A":
+		tl = tl + 6
+	case "B":
+		tl = tl + 4
+	case "C":
+		tl = tl + 2
+	case "X":
+		tl = tl - 4
+	case "F":
+		tl++
+	}
+	mwuwp := New(mwUWP)
+	mwTL := mwuwp.TL().Value()
+	if tl >= mwTL {
+		tl = mwTL - 1
+	}
+	if tl < 0 {
+		tl = 0
+	}
 	return tl
 }
 

@@ -162,3 +162,13 @@ func parseStellarData(w wrld.World) []string {
 	}
 	return stars
 }
+
+/*
+
+AC0D/SectorName SubsectorName/SS 0205 SystemName
+Alpha [G2 V]	3	Bee
+Beta [M5 V]	1
+
+
+
+*/

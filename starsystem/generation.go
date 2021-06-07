@@ -356,15 +356,15 @@ func (d *SystemDetails) placeSatelites(world wrld.World, stBodySlots map[numCode
 			numSat, rings = d.addRingAndSat(-1)
 		}
 		///ALT
-		if stBodySlots[k] == "LGG" {
-			numSat, rings = d.addRingAndSat(d.dicepool.RollNext("1d6").DM(0).Sum())
-		}
-		if stBodySlots[k] == "SGG" {
-			numSat, rings = d.addRingAndSat(d.dicepool.RollNext("1d6").DM(-4).Sum())
-		}
-		if stBodySlots[k] == "IG" {
-			numSat, rings = d.addRingAndSat(d.dicepool.RollNext("1d6").DM(-6).Sum())
-		}
+		// if stBodySlots[k] == "LGG" {
+		// 	numSat, rings = d.addRingAndSat(d.dicepool.RollNext("1d6").DM(0).Sum())
+		// }
+		// if stBodySlots[k] == "SGG" {
+		// 	numSat, rings = d.addRingAndSat(d.dicepool.RollNext("1d6").DM(-4).Sum())
+		// }
+		// if stBodySlots[k] == "IG" {
+		// 	numSat, rings = d.addRingAndSat(d.dicepool.RollNext("1d6").DM(-6).Sum())
+		// }
 		//fmt.Println("NumSat", numSat, rings, stBodySlots[k])
 		for i := 0; i < rings; i++ {
 			suggestOrbit := numCode{[3]int{k.starCode(), k.planetCode(), d.rollSatellitePosition()}}
@@ -424,10 +424,6 @@ func setupOrbitalBodySlots(starData []string) map[numCode]string {
 	return stBodySlots
 }
 
-// func (d *SystemDetails) newGG() BodyDetails {
-
-// }
-
 func (d *SystemDetails) PrintTable() {
 	tbl := tab.NewTST([]string{})
 	for _, val := range allKeys2() {
@@ -477,14 +473,6 @@ func parseStellarData(w wrld.World) []string {
 type SystemDetails struct {
 	bodyDetail map[numCode]BodyDetails
 	dicepool   *dice.Dicepool
-	//PositionFromStar__PositionFromPlanet__Name__UWP__Actual Orbit
-	/*
-		Primary		Fijari	Ka V
-		0		Keetle	SGG
-		5		Ra-La-Lantra	LGG
-		5	0	Ring System	YR00000-0	3.28
-		5	8	B'kolior	X621000-0	3.28
-	*/
 }
 
 func (bd *BodyDetails) DEBUGINFO() {

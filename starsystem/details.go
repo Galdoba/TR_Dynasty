@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/Astrogation"
+	"github.com/Galdoba/TR_Dynasty/pkg/core/astronomical"
 )
 
 //BodyDetails -
@@ -103,6 +104,14 @@ func (bd *BodyDetails) ShortInfo() string {
 		str += "         "
 	}
 	str += "	" + bd.name
+
+	js := astronomical.ShadowOrbit(bd.parentStar)
+	switch bd.position.planetCode() <= js {
+	case true:
+		str += "	" + "X"
+	case false:
+		str += "	" + ""
+	}
 	return str
 }
 

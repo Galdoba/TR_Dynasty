@@ -1,16 +1,14 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/Galdoba/TR_Dynasty/systemextended"
+	"github.com/Galdoba/TR_Dynasty/starsystem"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 )
 
 func main() {
-	smc := systemextended.NewSystemMapConstructor(wrld.PickWorld())
-	fmt.Println("/////////")
-	fmt.Println(smc)
+	// smc := systemextended.NewSystemMapConstructor(wrld.PickWorld())
+	// fmt.Println("/////////")
+	// fmt.Println(smc)
 	// wpc := weapons.NewWeaponConstructor()
 	// wpc.SetAutoMod(true)
 	// val := weapons.New(wpc)
@@ -23,9 +21,9 @@ func main() {
 	//fmt.Println(astronomical.NewStellarData("G2 V"))
 	//os.Exit(3)
 	//starsystem.Test()
-	// world := wrld.PickWorld()
-	// ssData := starsystem.From(world)
-	// ssData.PrintTable()
+	world := wrld.PickWorld()
+	ssData := starsystem.From(world)
+	ssData.PrintTable()
 
 	//w := wrld.PickWorld()
 	//fmt.Println(w.SecondSurvey())
