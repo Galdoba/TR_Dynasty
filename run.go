@@ -1,5 +1,7 @@
 package main
 
+import "github.com/Galdoba/TR_Dynasty/starsystem"
+
 func main() {
 	// smc := systemextended.NewSystemMapConstructor(wrld.PickWorld())
 	// fmt.Println("/////////")
@@ -15,7 +17,7 @@ func main() {
 
 	//fmt.Println(astronomical.NewStellarData("G2 V"))
 	//os.Exit(3)
-	//??starsystem.StarsystemTest()
+	starsystem.StarsystemTest()
 
 	//w := wrld.PickWorld()
 	//fmt.Println(w.SecondSurvey())
