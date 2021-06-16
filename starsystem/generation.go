@@ -27,6 +27,12 @@ import (
 	"github.com/Galdoba/TR_Dynasty/wrld"
 )
 
+func StarsystemTest() {
+	world := wrld.PickWorld()
+	ssData := From(world)
+	ssData.PrintTable()
+}
+
 //From - генерирует детали всех планетарных тел в системе на основе данных из SecondSurveyT5
 func From(world wrld.World) SystemDetails {
 	fmt.Print(world.SecondSurvey(), "\n")

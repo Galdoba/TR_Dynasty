@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/Galdoba/TR_Dynasty/starsystem"
-	"github.com/Galdoba/TR_Dynasty/wrld"
 )
 
 func main() {
@@ -20,10 +19,7 @@ func main() {
 
 	//fmt.Println(astronomical.NewStellarData("G2 V"))
 	//os.Exit(3)
-	//starsystem.Test()
-	world := wrld.PickWorld()
-	ssData := starsystem.From(world)
-	ssData.PrintTable()
+	starsystem.StarsystemTest()
 
 	//w := wrld.PickWorld()
 	//fmt.Println(w.SecondSurvey())

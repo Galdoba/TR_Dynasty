@@ -20,6 +20,7 @@ type BodyDetails struct {
 	jumpPointToBody  float64 //расстояние до точки прыжка с учетом (пока нет) тени звезды
 	orbitSpeed       int
 	position         numCode //
+	playersInOrbit   bool
 	//SISE RELATED:
 	diameter      float64
 	planetDensity int
@@ -109,6 +110,12 @@ func (bd *BodyDetails) ShortInfo() string {
 	switch bd.position.planetCode() <= js {
 	case true:
 		str += "	" + "X"
+	case false:
+		str += "	" + ""
+	}
+	switch bd.playersInOrbit {
+	case true:
+		str += "	" + "P"
 	case false:
 		str += "	" + ""
 	}
