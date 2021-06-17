@@ -2,6 +2,7 @@ package mithril
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
@@ -44,6 +45,16 @@ func ResultIs(r int, expect string) bool {
 	switch last {
 	case "+", "-":
 		data = strings.TrimSuffix(expect, last)
+		pts, err := strconv.Atoi(data)
+		if err != nil {
+			panic(err)
+		}
+		compareWith = append(compareWith, pts)
+		if r >= pts {
+			return true
+		}
+	default:
+
 	}
 	return true
 
