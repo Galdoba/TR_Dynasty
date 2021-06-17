@@ -1,13 +1,16 @@
 package dice
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/Galdoba/utils"
+	"github.com/pkg/errors"
 )
 
 //Dicepool -
@@ -25,22 +28,7 @@ type Dicepool struct {
 	rand       rand.Rand
 }
 
-// func main() {
-// 	dp := Roll("15d16").RerollEach(1).ResultSum()
-// 	fmt.Println(dp)
-
-// 	/*
-// 		Example:
-// 			result := roll.Dice("2d6").RerollSum(12)
-// 			roll.Dice("2d6").RerollEach(1)
-
-// 			каждая функция действия должна принимать dp и отдавать его измененным
-
-//   dice.New(SeedFromStr("Planet Name")).RollSdd("2d6")
-
-// 	*/
-// }
-
+//New - Создает дайспул со случайным сидом
 func New() *Dicepool {
 	dp := Dicepool{}
 	dp.seed = time.Now().UTC().UnixNano()
@@ -50,7 +38,7 @@ func New() *Dicepool {
 }
 
 //Roll - создает и возвращает структуру из которой можно брать результат,
-//манипулировать.
+//манипулировать. Нужно для одноразовых случайных бросков.
 func Roll(code string) *Dicepool {
 	dp := Dicepool{}
 	time.Sleep(time.Millisecond)
@@ -68,6 +56,8 @@ func Roll(code string) *Dicepool {
 	return &dp
 }
 
+//RollNext - Делает бросок сохраняя объект дайспула
+//Продолжая последовальность результатов чтобы при необходимости повторить результаты
 func (dp *Dicepool) RollNext(code string) *Dicepool {
 	dp.result = nil
 	dp.dice, dp.edges = decodeDiceCode(code)
@@ -86,6 +76,7 @@ func (dp *Dicepool) FluxNext() int {
 	return d1 - d2
 }
 
+//RollFromList - возвращает случайный элемент слайса на основе последовательности дайспула
 func (dp *Dicepool) RollFromList(sl []string) string {
 	dp.result = nil
 	dp.dice, dp.edges = 1, len(sl)
@@ -119,6 +110,19 @@ func encodeDiceCode(dice, edges int) string {
 //Result - возвращает слайс с результатами броска дайспула
 func (dp *Dicepool) Result() []int {
 	return dp.result
+}
+
+//ResultIs - расшифровывает код валидных результатов и сравнивает с ними результат броска
+func (dp *Dicepool) ResultIs(code string) bool {
+	rc := newResultCode(code)
+	return compare(rc, dp)
+}
+
+func errWarn(err error) {
+	if err != nil {
+		fmt.Println("ERROR WARNING!!!")
+		fmt.Println(err.Error())
+	}
 }
 
 //Sum - возвращает сумму очков броска
@@ -420,4 +424,73 @@ func FluxBAD() int {
 		return d1 - d2
 	}
 	return d2 - d1
+}
+
+////////////////
+//ResultCodeReader
+
+type resultCode struct {
+	codeBody      string
+	codeType      string //Asend/Desend/slice
+	valid         bool
+	compareValues []int
+	err           error
+}
+
+func compare(rc resultCode, dp *Dicepool) bool {
+	if !rc.valid {
+		return false
+	}
+	switch rc.codeType {
+	case "+":
+		if dp.Sum() >= rc.compareValues[0] {
+			return true
+		}
+	case "-":
+		if dp.Sum() <= rc.compareValues[0] {
+			return true
+		}
+	default:
+		for i := rc.compareValues[0]; i <= rc.compareValues[1]; i++ {
+			if i == dp.Sum() {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func newResultCode(code string) resultCode {
+	rc := resultCode{}
+	rc.codeBody = code
+	last := string(rc.codeBody[len(rc.codeBody)-1:])
+	switch last {
+	case "+", "-":
+		rc.codeType = last
+	default:
+		last = ""
+		rc.codeType = "slice"
+	}
+	rc.codeBody = strings.TrimSuffix(rc.codeBody, last)
+	codeParts := strings.Split(rc.codeBody, " ")
+	for i, part := range codeParts {
+		pt, err := strconv.Atoi(part)
+		switch {
+		case err == nil:
+			rc.compareValues = append(rc.compareValues, pt)
+		default:
+			rc.err = errors.New("can't read resultCode value from part " + strconv.Itoa(i) + ": " + err.Error())
+			return rc
+		}
+	}
+	if len(rc.compareValues) != 1 && (rc.codeType == "+" || rc.codeType == "-") {
+		rc.err = errors.New("code parsing incorect")
+		return rc
+	}
+	if len(rc.compareValues) == 1 {
+		rc.compareValues = append(rc.compareValues, rc.compareValues[0])
+	}
+	sort.Sort(sort.IntSlice(rc.compareValues))
+	rc.valid = true
+	return rc
 }

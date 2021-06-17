@@ -1,6 +1,9 @@
 package main
 
+import "github.com/Galdoba/TR_Dynasty/mithril"
+
 func main() {
+	mithril.TestWeather()
 	// smc := systemextended.NewSystemMapConstructor(wrld.PickWorld())
 	// fmt.Println("/////////")
 	// fmt.Println(smc)

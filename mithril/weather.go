@@ -2,8 +2,6 @@ package mithril
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 )
@@ -11,53 +9,74 @@ import (
 const (
 	weatherWARM        = "The temperature is 4-8 C"
 	weatherCOOL        = "The temperature is 0-4 C"
-	weatherCOLD        = "The temperature is -20 - 0 C"
-	weatherVERYCOLD    = "The temperature is -20 - -40 C"
-	weatherEXTREMECOLD = "The temperature is -50 and lower"
+	weatherCOLD        = "The temperature is -20 C - 0 C"
+	weatherVERYCOLD    = "The temperature is -40 C - -20 C"
+	weatherEXTREMECOLD = "The temperature is -50 C and lower"
 )
 
 type WeatherState struct {
-	dice           *dice.Dicepool
+	dicepool       *dice.Dicepool
 	conditions     string
 	daysSinceStorm int
 }
 
 func NewWeather() WeatherState {
 	ws := WeatherState{}
-	ws.dice = dice.New()
+	ws.dicepool = dice.New().SetSeed("Mithril2")
 	return ws
 }
 
-func (ws *WeatherState) RollStorm() {
-	r := ws.dice.RollNext("2d6").DM(ws.daysSinceStorm).Sum()
-	precipation := "None"
-	if r < 7 {
-		fmt.Println("Precipation:", precipation)
-		return
+func TestWeather() {
+	ws := NewWeather()
+	for i := 0; i < 100; i++ {
+		fmt.Println("---------", "day", i+1, "---------")
+		fmt.Print("Weather    :  ")
+		ws.RollWeatherConditions()
+		ws.RollStorm()
 	}
 
 }
 
-func ResultIs(r int, expect string) bool {
-	last := string(expect[len(expect)-1:])
-	data := ""
-	compareWith := []int{}
-	switch last {
-	case "+", "-":
-		data = strings.TrimSuffix(expect, last)
-		pts, err := strconv.Atoi(data)
-		if err != nil {
-			panic(err)
+func (ws *WeatherState) RollStorm() {
+	r := ws.dicepool.RollNext("2d6").DM(ws.daysSinceStorm).Sum()
+	precipation := "None"
+	ws.daysSinceStorm++
+	switch {
+	case ws.dicepool.ResultIs("7+"):
+		precipation = "significant precipitation that day"
+	case ws.dicepool.ResultIs("13+"):
+		precipation = "serious storm"
+		if ws.dicepool.RollNext("1d6").Sum() == 1 {
+			precipation += " (accompanied by spectacular lightning)"
 		}
-		compareWith = append(compareWith, pts)
-		if r >= pts {
-			return true
-		}
-	default:
-
+		ws.daysSinceStorm = 0
 	}
-	return true
+	fmt.Println("Precipation: ", r, "	|", precipation)
+	fmt.Println("Days since Storm:", ws.daysSinceStorm)
+}
 
+func (ws *WeatherState) RollWeatherConditions() {
+	dms := 0
+	if ws.daysSinceStorm == 0 {
+		dms = -4
+	}
+	//r := ws.dicepool.RollNext("2d6").DM(dms).Sum()
+	ws.dicepool.RollNext("2d6").DM(dms).Sum()
+	weather := "UNDEFINED (error)"
+	switch {
+	case ws.dicepool.ResultIs("2-"):
+		weather = weatherEXTREMECOLD
+	case ws.dicepool.ResultIs("3 5"):
+		weather = weatherVERYCOLD
+	case ws.dicepool.ResultIs("6 9"):
+		weather = weatherCOLD
+	case ws.dicepool.ResultIs("10 11"):
+		weather = weatherCOLD
+	case ws.dicepool.ResultIs("12+"):
+		weather = weatherWARM
+	}
+
+	fmt.Println(ws.dicepool.Sum(), "	|", weather)
 }
 
 /*
