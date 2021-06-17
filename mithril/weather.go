@@ -42,14 +42,15 @@ func (ws *WeatherState) RollStorm() {
 	precipation := "None"
 	ws.daysSinceStorm++
 	switch {
-	case ws.dicepool.ResultIs("7+"):
-		precipation = "significant precipitation that day"
+
 	case ws.dicepool.ResultIs("13+"):
 		precipation = "serious storm"
 		if ws.dicepool.RollNext("1d6").Sum() == 1 {
 			precipation += " (accompanied by spectacular lightning)"
 		}
 		ws.daysSinceStorm = 0
+	case ws.dicepool.ResultIs("7+"):
+		precipation = "significant precipitation that day"
 	}
 	fmt.Println("Precipation: ", r, "	|", precipation)
 	fmt.Println("Days since Storm:", ws.daysSinceStorm)
