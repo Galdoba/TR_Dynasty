@@ -1,9 +1,9 @@
 package main
 
-import "github.com/Galdoba/TR_Dynasty/mithril"
+import "github.com/Galdoba/TR_Dynasty/starsystem"
 
 func main() {
-	mithril.TestWeather()
+	//mithril.TestWeather()
 	// smc := systemextended.NewSystemMapConstructor(wrld.PickWorld())
 	// fmt.Println("/////////")
 	// fmt.Println(smc)
@@ -18,7 +18,7 @@ func main() {
 
 	//fmt.Println(astronomical.NewStellarData("G2 V"))
 	//os.Exit(3)
-	//starsystem.StarsystemTest()
+	starsystem.StarsystemTest()
 
 	//w := wrld.PickWorld()
 	//fmt.Println(w.SecondSurvey())

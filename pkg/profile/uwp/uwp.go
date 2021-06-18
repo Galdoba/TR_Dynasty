@@ -196,6 +196,8 @@ func hydrDM(orbit int, star string, atmo int) int {
 	switch astronomical.Zone(orbit, star) {
 	case astronomical.ZoneOuter:
 		hydrDM += -2
+	case astronomical.ZoneInner:
+		hydrDM += -4
 	}
 	if atmo < 2 {
 		hydrDM += -4
