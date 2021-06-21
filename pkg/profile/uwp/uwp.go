@@ -62,6 +62,9 @@ func NewGasGigant(dp *dice.Dicepool, ggType string) string {
 
 //GenerateOtherWorldUWP -
 func GenerateOtherWorldUWP(dices *dice.Dicepool, mwUWP string, planetType string, star string, orbit int) string { //planetType string - используем ли?
+	if planetType == constant.WTpPlanetoid {
+		return "BELT     "
+	}
 	//SIZE
 	sizeDM := sizeDM(star, orbit)
 	size := rollSize(dices, planetType, sizeDM)
@@ -82,8 +85,7 @@ func GenerateOtherWorldUWP(dices *dice.Dicepool, mwUWP string, planetType string
 	mwPop := New(mwUWP).Pops().Value()
 	pops = utils.BoundInt(pops, 0, mwPop-1)
 	//GOVR
-	govrDM := govrDM(mwUWP)
-	govr := rollGovr(dices, pops, govrDM)
+	govr := rollGovr(dices, pops, mwUWP)
 	//LAWS
 	laws := rollLaws(dices, mwUWP)
 	if pops == 0 {
@@ -93,23 +95,8 @@ func GenerateOtherWorldUWP(dices *dice.Dicepool, mwUWP string, planetType string
 	stpt := rollStpt(dices, mwPop)
 	//tl := rollTL(mwUWP)
 	tl := rollTLt5(mwUWP, dices, stpt, size, atmo, hydr, pops, govr)
-	orbScore := astronomical.HabitableZoneScore(orbit, star)
-	if orbScore < 1 {
-		orbScore = orbScore * -1
-	}
-	if tl < 6+orbScore {
-		pops = 0
-		// fmt.Println("DEBUG: TL", tl)
-		// switch atmo {
-		// default:
-		// 	fmt.Println("DEBUG: Atmo", atmo)
-		// 	tl = 0
-		// 	pops = 0
-		// 	govr = 0
-		// 	laws = 0
-		// 	fmt.Println("REDUCE TO ", stpt+ehex.New(size).String()+ehex.New(atmo).String()+ehex.New(hydr).String()+ehex.New(pops).String()+ehex.New(govr).String()+ehex.New(laws).String()+"-"+ehex.New(tl).String())
-		// case 5, 6, 8:
-		// }
+	if tl > ehex.New(mwUWP[8]).Value()-1 {
+		tl = ehex.New(mwUWP[8]).Value() - 1
 	}
 	if pops == 0 {
 		tl = 0
@@ -120,7 +107,6 @@ func GenerateOtherWorldUWP(dices *dice.Dicepool, mwUWP string, planetType string
 	if planetType != constant.WTpGG && planetType != constant.WTpPlanetoid && sizeGlyph == "0" {
 		sizeGlyph = "S"
 	}
-
 	uwp := stpt + sizeGlyph + ehex.New(atmo).String() + ehex.New(hydr).String() + ehex.New(pops).String() + ehex.New(govr).String() + ehex.New(laws).String() + "-" + ehex.New(tl).String()
 	return uwp
 }
@@ -267,8 +253,33 @@ func rollLaws(dp *dice.Dicepool, mwUWP string) int {
 	return law
 }
 
-func rollGovr(dp *dice.Dicepool, pops int, dm int) int {
-	govr := dp.RollNext("1d6").DM(dm).Sum()
+func rollGovr(dp *dice.Dicepool, pops int, mwUWP string) int {
+	mwGOV := ehex.New(mwUWP[5]).Value()
+	dm := 0
+	if mwGOV == 6 {
+		dm = pops
+	}
+	if mwGOV >= 7 {
+		dm = -1
+	}
+	// govr := dp.RollNext("1d6").DM(dm).Sum()
+	// if pops == 0 {
+	// 	govr = 0
+	// }
+	govr := 0
+	r := dp.RollNext("1d6").DM(dm).Sum()
+	switch r {
+	case 1, 0:
+		govr = 0
+	case 2:
+		govr = 1
+	case 3:
+		govr = 2
+	case 4:
+		govr = 3
+	default:
+		govr = 6
+	}
 	if pops == 0 {
 		govr = 0
 	}
@@ -284,30 +295,46 @@ func rollPops(dp *dice.Dicepool, dm int) int {
 }
 
 func rollStpt(dp *dice.Dicepool, mwPop int) string {
-	dm := 0
-	switch mwPop {
-	case 0:
-		dm += -3
-	case 1:
-		dm += -2
-	default:
-		if mwPop > 5 {
-			dm += 2
-		}
-	}
-	r := dp.RollNext("1d6").DM(dm).Sum()
-	r = utils.BoundInt(r, 1, 6)
+	//dm := 0
+	r := dp.RollNext("1d6").Sum()
+	spIndex := mwPop - r
 	stpt := ""
-	switch r {
+	switch spIndex {
+	default:
+		if spIndex >= 4 {
+			stpt = "F"
+		}
+		if spIndex <= 0 {
+			stpt = "Y"
+		}
 	case 1, 2:
-		stpt = "Y"
-	case 3:
 		stpt = "H"
-	case 4, 5:
+	case 3:
 		stpt = "G"
-	case 6:
-		stpt = "F"
 	}
+	// switch mwPop {
+	// case 0:
+	// 	dm += -3
+	// case 1:
+	// 	dm += -2
+	// default:
+	// 	if mwPop > 5 {
+	// 		dm += 2
+	// 	}
+	// }
+	// r := dp.RollNext("1d6").DM(dm).Sum()
+	// r = utils.BoundInt(r, 1, 6)
+	// stpt := ""
+	// switch r {
+	// case 1, 2:
+	// 	stpt = "Y"
+	// case 3:
+	// 	stpt = "H"
+	// case 4, 5:
+	// 	stpt = "G"
+	// case 6:
+	// 	stpt = "F"
+	// }
 	return stpt
 }
 

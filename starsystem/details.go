@@ -6,6 +6,8 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/Astrogation"
 	"github.com/Galdoba/TR_Dynasty/pkg/core/astronomical"
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
+	"github.com/Galdoba/utils"
 )
 
 //BodyDetails -
@@ -25,6 +27,7 @@ type BodyDetails struct {
 	diameter      float64
 	planetDensity int
 	parentStar    string
+	stringKey     string
 }
 
 func (bd *BodyDetails) PositionCode() string {
@@ -96,7 +99,7 @@ func (bd *BodyDetails) ShortInfo() string {
 	case 2:
 		str += "	" + strconv.FormatFloat(bd.orbitDistance, 'f', 2, 64) + " au"
 	case 3:
-		str += "	" + strconv.FormatFloat(bd.orbitDistanceSat, 'f', 2, 64) + " Mm"
+		str += "	 " // + strconv.FormatFloat(bd.orbitDistanceSat, 'f', 2, 64) + " Mm"
 	}
 	str += "	" + bd.bodyType
 	str += "	" + bd.uwp
@@ -145,3 +148,186 @@ func (bd *BodyDetails) FullInfo() string {
 
 
 */
+
+/////////////////////ASTEROID BELTS
+func (bd *BodyDetails) AsteroidDetails() string {
+	dp := dice.New().SetSeed(bd.nomena)
+	r1 := dp.RollNext("2d6").Sum()
+	r2 := dp.RollNext("1d6").Sum()
+	preDomSize := "undefined"
+	switch r1 {
+	case 2:
+		preDomSize = "1m"
+	case 3:
+		preDomSize = "5m"
+	case 4:
+		preDomSize = "10m"
+	case 5:
+		preDomSize = "25m"
+	case 6:
+		preDomSize = "50m"
+	case 7:
+		preDomSize = "100m"
+	case 8:
+		preDomSize = "300m"
+	case 9:
+		preDomSize = "1km"
+	case 10:
+		preDomSize = "5km"
+	case 11:
+		preDomSize = "50km"
+	case 12:
+		preDomSize = "500km"
+	}
+	maxSize := "undefined"
+	switch r2 {
+	case 1, 2:
+		maxSize = preDomSize
+	case 3:
+		maxSize = "1km"
+	case 4:
+		maxSize = "10km"
+	case 5:
+		maxSize = "100km"
+	case 6:
+		maxSize = "1000km"
+	}
+	orbZone := astronomical.Zone(bd.position.planetCode(), bd.parentStar)
+	zoneDM := 0
+	switch orbZone {
+	case astronomical.ZoneInner:
+		zoneDM = -4
+	case astronomical.ZoneOuter:
+		zoneDM = 2
+	}
+	beltZone := ""
+	dp.RollNext("2d6").DM(zoneDM)
+	switch {
+	case dp.ResultIs("4-"):
+		beltZone = "N-ZONE"
+	case dp.ResultIs("5 8"):
+		beltZone = "M-ZONE"
+	case dp.ResultIs("9+"):
+		beltZone = "C-ZONE"
+	}
+	composition := rollZonePersentage(beltZone, dp)
+	width := ""
+	widthDM := 2
+	switch bd.position.planetCode() {
+	case 0, 1, 2, 3, 4:
+		widthDM = -3
+	case 5, 6, 7, 8:
+		widthDM = -1
+	case 9, 10, 11, 12:
+		widthDM = 1
+	}
+	r3 := dp.RollNext("2d6").DM(widthDM).Sum()
+	r3 = utils.BoundInt(r3, 2, 12)
+	switch r3 {
+	case 2:
+		width = "0.01 AU"
+	case 3:
+		width = "0.05 AU"
+	case 4:
+		width = "0.1 AU"
+	case 5:
+		width = "0.1 AU"
+	case 6:
+		width = "0.5 AU"
+	case 7:
+		width = "0.5 AU"
+	case 8:
+		width = "1.0 AU"
+	case 9:
+		width = "1.5 AU"
+	case 10:
+		width = "2.0 AU"
+	case 11:
+		width = "5.0 AU"
+	case 12:
+		width = "10.0 AU"
+	}
+	return preDomSize + "/" + maxSize + ", " + composition + ", " + width
+}
+
+func rollZonePersentage(zoneType string, dp *dice.Dicepool) string {
+	r := dp.RollNext("2d6").Sum()
+	switch zoneType {
+	case "N-ZONE":
+		switch r {
+		case 2:
+			return "n-40 m-30 c-30"
+		case 3:
+			return "n-40 m-40 c-20"
+		case 4:
+			return "n-40 m-40 c-20"
+		case 5:
+			return "n-40 m-40 c-20"
+		case 6:
+			return "n-40 m-40 c-20"
+		case 7:
+			return "n-50 m-40 c-10"
+		case 8:
+			return "n-50 m-40 c-10"
+		case 9:
+			return "n-50 m-40 c-10"
+		case 10:
+			return "n-50 m-30 c-20"
+		case 11:
+			return "n-60 m-50 c-10"
+		case 12:
+			return "n-60 m-40 c-00"
+		}
+	case "M-ZONE":
+		switch r {
+		case 2:
+			return "n-20 m-30 c-50"
+		case 3:
+			return "n-30 m-50 c-20"
+		case 4:
+			return "n-20 m-60 c-20"
+		case 5:
+			return "n-20 m-60 c-20"
+		case 6:
+			return "n-30 m-60 c-10"
+		case 7:
+			return "n-20 m-70 c-10"
+		case 8:
+			return "n-10 m-70 c-20"
+		case 9:
+			return "n-10 m-80 c-10"
+		case 10:
+			return "n-10 m-80 c-10"
+		case 11:
+			return "n-00 m-80 c-20"
+		case 12:
+			return "n-00 m-90 c-10"
+		}
+	case "C-ZONE":
+		switch r {
+		case 2:
+			return "n-20 m-30 c-50"
+		case 3:
+			return "n-20 m-30 c-50"
+		case 4:
+			return "n-20 m-30 c-50"
+		case 5:
+			return "n-10 m-30 c-60"
+		case 6:
+			return "n-10 m-30 c-60"
+		case 7:
+			return "n-10 m-20 c-70"
+		case 8:
+			return "n-10 m-20 c-70"
+		case 9:
+			return "n-10 m-10 c-80"
+		case 10:
+			return "n-00 m-10 c-90"
+		case 11:
+			return "n-00 m-10 c-90"
+		case 12:
+			return "n-00 m-20 c-80"
+		}
+	}
+	return "Error"
+}
