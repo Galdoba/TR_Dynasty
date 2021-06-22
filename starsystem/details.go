@@ -1,6 +1,7 @@
 package starsystem
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -25,7 +26,8 @@ type BodyDetails struct {
 	playersInOrbit   bool
 	//SISE RELATED:
 	diameter      float64
-	planetDensity int
+	densityType   int
+	planetDensity float64
 	parentStar    string
 	stringKey     string
 }
@@ -46,12 +48,30 @@ func (bd *BodyDetails) BodyType() string {
 	return bd.bodyType
 }
 
+func (bd *BodyDetails) PlanetDensity() float64 {
+	return bd.planetDensity
+}
+
 const (
-	DensityHeavyCore  = 0
-	DensityMoltenCore = 1
-	DensityRockyBody  = 2
-	DensityIcyBody    = 3
+	DensityUndefined  = 0
+	DensityHeavyCore  = 1
+	DensityMoltenCore = 2
+	DensityRockyBody  = 3
+	DensityIcyBody    = 4
 )
+
+func (bd *BodyDetails) calculatePlanetDensity() {
+	if bd.densityType == 0 {
+		fmt.Println(bd)
+		switch bd.bodyType {
+		default:
+		case "Star":
+			panic(bd.bodyType)
+		}
+
+	}
+	bd.planetDensity = 5.00
+}
 
 /*
 
@@ -142,9 +162,12 @@ func (bd *BodyDetails) FullInfo() string {
 //Sector	SS	Hex	Name	UWP	Bases	Remarks	Zone	PBG	Allegiance	Stars	{Ix}	(Ex)	[Cx]	Nobility	W	RU
 
 /*
-+----------------------------------------------------------------------------------------------
-|Alpha 3       | Borite | E655796-4 | Mainworld | Ag Ga Lt Fr |
-|
+Name       : Borite (Alpha 4 Ey)
+Type       : Stormworld (Mainworld: B189456-4)
+Starport   : A (600/200 Highport TAS Naval Scout)
+Physical   : 4 (7623 km / 0.42 g)
+Atmosphere : 7 (N2O2, with Sulfur Compounds / 1.00 Ta)
+Hydrosphere: 2 (N2O2, with Sulfur Compounds / 1.00 Ta)
 
 
 */

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/Galdoba/utils"
 )
 
 //StellarData - характеристики описывающие звезду
@@ -863,3 +865,94 @@ func allStarCodes() []string {
 
 //StellarDataMap - хранит в себе Spectral Types, Stellar Sizes и Stellar Digit
 var StellarDataMap map[string][]string
+
+func stellarToNum(spCls string) int {
+	class := " "
+	dec := " "
+	spDat := strings.Split(spCls, "")
+	validClass := []string{"O", "B", "A", "F", "G", "K", "M"}
+	validDec := []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
+	if len(spDat) < 2 {
+		fmt.Println("ERROR: Stellar Data not parsed")
+		return -3
+	}
+	switch {
+	case utils.ListContains(validClass, spDat[0]) && utils.ListContains(validDec, spDat[1]):
+		class = spDat[0]
+		dec = spDat[1]
+	default:
+		fmt.Println("ERROR: Stellar Data not parsed")
+		return -2
+	}
+	index := 0
+	for i, val := range validClass {
+		if val == class {
+			index = index + (i * 10)
+		}
+	}
+	for i, val := range validDec {
+		if val == dec {
+			index = index + i
+		}
+	}
+	return index
+}
+
+/*
+
+
+
+SecondSurvey <= Name
+
+Placement <= SecondSurvey
+Flux <= SecondSurvey
+
+0 ORBITAL
+0.1- Orbit Zones <= placement
+
+1 SIZE
+1.1 Basic World Type				placement
+1.2a Planet Diameter				UWP, Flux
+1.2b Planet Density					UWP, Flux
+1.3a GG UWP Size					placement
+1.3b GG Diameter					1.3a, Flux
+1.3c GG Density						Flux
+1.4a Belt Diameter					Flux
+1.4b Belt Zones						placement, SecondSurvey
+1.4c Belt Orbit Width				placement
+1.4d Belt Profile					1.4a, 1.4b, 1.4c
+1.5 World Mass						UWP, 1.2b
+1.6 World Gravity					UWP, 1.5
+1.7 Planet Orbital Priod
+1.7a Stellar Mass					placement, SecondSurvey
+1.7b Orbital Distance				placement
+1.7c Orbital Period					1.7a, 1.7b
+1.8 Satellite Orbital Priod
+1.8a Satellite Orbital Distance		placement, 1.2a
+1.8b Orbital Priod					1.8a, 1.5
+1.9 Rotational Period				Flux, (1.7a || 1.5), 1.7b
+1.10 Axial Tilt						Flux
+1.11 Orbital Eccentricity			Flux
+1.12 Seismic Stress Factor			1.2b, placement, (1.7a || 1.5)
+
+2 ATMO
+2.1 Atmospheric Composition			UWP, Flux
+2.2 Surface Atmospheric Pressure	UWP, Flux
+2.3 Surface Temperature
+2.3a Stellar Luminosity				placement, SecondSurvey
+2.3b Orbit Factor					placement
+2.3c Energy Absorbtion				UWP
+2.3d Greenhouse Effect				UWP, Flux
+2.3e Base Temperature				2.3a, 2.3b, 2.3c, 2.3d
+2.4 Orbital Eccentricity Effects	1.11
+2.5 Latitude Temperature Effects	UWP
+2.6a Axial Tilt Base Increase		2.3e, 1.10
+2.6b Axial Tilt Base Decrease		2.3e, 1.10
+2.6c Axial Tilt Latitude Effects	1.10
+2.7a Lenght of Day and Night		1.9
+2.7b Rotation-Luminocity Factor		2.3a, 1.7b
+2.7c Daytime Rotation Effects		UWP, 1.9, 2.3e,
+2.7d Nighttime Rotation Effects		UWP, 1.9, 2.3e,
+
+
+*/
