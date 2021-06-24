@@ -1010,11 +1010,36 @@ Flux <= SecondSurvey
 5.8h Profile							5.8a - 5.8g
 
 6 LAWS
-6.1
+6.1 Uniformity of the Law				UWP, 4.7c, Flux
+6.2 Legal Profile						UWP, Flux
 
-
-
-
+7 TECHNOLOGY
+7.1 High Common TL						UWP
+7.2a Low Common TL Limit				7.1
+7.2b Low Common TL						7.1, Flux, UWP, 4.7c
+7.3a Energy TL Limits					7.1
+7.3b Energy TL							7.3a, Flux
+7.4a Computer/Robotics TL Limit			7.3a
+7.4b Computer/Robotics TL 				7.1, Flux, UWP, 7.4a
+7.5a Communcations TL Limits 			7.3a
+7.5b Communication TL					7.5a, 7.4b, Flux
+7.6a Medical TL Limits					7.3a
+7.6b Medical TL							7.4b, Flux, 4.7c, 7.6a
+7.7a Enviromental TL Limits				7.3a
+7.7b Enviromental TL 					7.1, UWP, Flux, 7.7a
+7.8a Land Transport TL Limits			7.3a
+7.8b Land Transport TL					7.3b, Flux, UWP, 7.8a
+7.9a Water Transport TL Limits			7.8b
+7.9b Water Transport TL					7.8b, Flux, UWP, 7.9a
+7.10a Air Transport TL Limits			7.8b
+7.10b Air Transport TL					7.3b, Flux, UWP, 7.10a
+7.11a Space Transport TL Limits			7.3a
+7.11b Space Transport TL				7.3b, 7.4b, Flux, UWP, 4.7c, 7.11a
+7.12a Personal Military TL Limits		7.3a
+7.12b Personal Military TL 				7.3b, Flux, 4.7b, 7.12a
+7.13a Heavy Military TL Limits			7.3a
+7.13b Heavy Military TL Limits			7.8b, Flux, 4.7b, 7.13a
+7.14 Novelty TL							SecondSurvey (нужно научить программу ориентироваться)
 
 
 
