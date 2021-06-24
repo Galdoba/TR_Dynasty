@@ -1,8 +1,21 @@
 package main
 
-import "github.com/Galdoba/TR_Dynasty/starsystem"
+import (
+	"fmt"
+	"time"
+
+	"github.com/Galdoba/TR_Dynasty/pkg/word"
+)
 
 func main() {
+
+	for i := 0; i < 20; i++ {
+		time.Sleep(time.Millisecond * 100)
+		seed := i + 122494
+		test, _ := word.New(word.Language_Vilani, seed)
+		fmt.Println(test.Shout())
+	}
+
 	//mithril.TestWeather()
 	// smc := systemextended.NewSystemMapConstructor(wrld.PickWorld())
 	// fmt.Println("/////////")
@@ -18,7 +31,7 @@ func main() {
 
 	//fmt.Println(astronomical.NewStellarData("G2 V"))
 	//os.Exit(3)
-	starsystem.StarsystemTest()
+	//starsystem.StarsystemTest()
 
 	//w := wrld.PickWorld()
 	//fmt.Println(w.SecondSurvey())
