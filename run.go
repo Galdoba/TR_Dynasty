@@ -2,13 +2,6 @@ package main
 
 func main() {
 
-	for i := 0; i < 20; i++ {
-		time.Sleep(time.Millisecond * 100)
-		seed := i + 122494
-		test, _ := word.New(word.Language_Vilani, seed)
-		fmt.Println(test.Shout())
-	}
-
 	//mithril.TestWeather()
 	// smc := systemextended.NewSystemMapConstructor(wrld.PickWorld())
 	// fmt.Println("/////////")
