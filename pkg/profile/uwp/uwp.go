@@ -1,6 +1,7 @@
 package uwp
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -1164,6 +1165,27 @@ func From(w UWPer) *UWP {
 	u.data[constant.PrLaws] = ehex.New(w.UWP()[6])
 	u.data[constant.PrTL] = ehex.New(w.UWP()[8])
 	return &u
+}
+
+func FromString(s string) (*UWP, error) {
+	s = strings.ToUpper(s)
+	u := UWP{}
+	if len(s) != 9 {
+		return nil, fmt.Errorf("uwp.FromString(s): input '%v' has lenght = %v (must be 9)", s, len(s))
+	}
+	if string(s[7]) != "-" {
+		return nil, fmt.Errorf("uwp.FromString(s): input '%v' has wrong format (must be 'A123456-7')", s)
+	}
+	u.data = make(map[string]ehex.DataRetriver)
+	u.data[constant.PrStarport] = ehex.New(s[0])
+	u.data[constant.PrSize] = ehex.New(s[1])
+	u.data[constant.PrAtmo] = ehex.New(s[2])
+	u.data[constant.PrHydr] = ehex.New(s[3])
+	u.data[constant.PrPops] = ehex.New(s[4])
+	u.data[constant.PrGovr] = ehex.New(s[5])
+	u.data[constant.PrLaws] = ehex.New(s[6])
+	u.data[constant.PrTL] = ehex.New(s[8])
+	return &u, nil
 }
 
 func (u *UWP) Starport() ehex.DataRetriver {

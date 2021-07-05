@@ -1,15 +1,6 @@
 package main
 
-import (
-	"os"
-
-	"github.com/Galdoba/TR_Dynasty/pkg/sai"
-	"github.com/Galdoba/TR_Dynasty/starsystem"
-)
-
 func main() {
-	sai.TestSAI()
-	os.Exit(2)
 	//mithril.TestWeather()
 	// smc := systemextended.NewSystemMapConstructor(wrld.PickWorld())
 	// fmt.Println("/////////")
@@ -25,7 +16,7 @@ func main() {
 
 	//fmt.Println(astronomical.NewStellarData("G2 V"))
 	//os.Exit(3)
-	starsystem.StarsystemTest()
+	//starsystem.StarsystemTest()
 
 	//w := wrld.PickWorld()
 	//fmt.Println(w.SecondSurvey())
