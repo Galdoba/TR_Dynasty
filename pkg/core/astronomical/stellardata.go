@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/Galdoba/utils"
 )
 
 //StellarData - характеристики описывающие звезду
@@ -863,3 +865,182 @@ func allStarCodes() []string {
 
 //StellarDataMap - хранит в себе Spectral Types, Stellar Sizes и Stellar Digit
 var StellarDataMap map[string][]string
+
+func stellarToNum(spCls string) int {
+	class := " "
+	dec := " "
+	spDat := strings.Split(spCls, "")
+	validClass := []string{"O", "B", "A", "F", "G", "K", "M"}
+	validDec := []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
+	if len(spDat) < 2 {
+		fmt.Println("ERROR: Stellar Data not parsed")
+		return -3
+	}
+	switch {
+	case utils.ListContains(validClass, spDat[0]) && utils.ListContains(validDec, spDat[1]):
+		class = spDat[0]
+		dec = spDat[1]
+	default:
+		fmt.Println("ERROR: Stellar Data not parsed")
+		return -2
+	}
+	index := 0
+	for i, val := range validClass {
+		if val == class {
+			index = index + (i * 10)
+		}
+	}
+	for i, val := range validDec {
+		if val == dec {
+			index = index + i
+		}
+	}
+	return index
+}
+
+/*
+
+
+
+SecondSurvey <= Name
+
+Placement <= SecondSurvey
+Flux <= SecondSurvey
+
+0 ORBITAL
+0.1- Orbit Zones <= placement
+
+1 SIZE
+1.1 Basic World Type					placement
+1.2a Planet Diameter					UWP, Flux
+1.2b Planet Density (Planet Core)		UWP, Flux
+1.3a GG UWP Size						placement
+1.3b GG Diameter						1.3a, Flux
+1.3c GG Density							Flux
+1.4a Belt Diameter						Flux
+1.4b Belt Zones							placement, SecondSurvey
+1.4c Belt Orbit Width					placement
+1.4d Belt Profile						1.4a, 1.4b, 1.4c
+1.5 World Mass							UWP, 1.2b
+1.6 World Gravity						UWP, 1.5
+1.7 Planet Orbital Priod
+1.7a Stellar Mass						placement, SecondSurvey
+1.7b Orbital Distance					placement
+1.7c Orbital Period						1.7a, 1.7b
+1.8 Satellite Orbital Priod
+1.8a Satellite Orbital Distance			placement, 1.2a
+1.8b Orbital Priod						1.8a, 1.5
+1.9 Rotational Period					Flux, (1.7a || 1.5), 1.7b
+1.10 Axial Tilt							Flux
+1.11 Orbital Eccentricity				Flux
+1.12 Seismic Stress Factor				1.2b, placement, (1.7a || 1.5)
+
+2 ATMO
+2.1 Atmospheric Composition				UWP, Flux
+2.2 Surface Atmospheric Pressure		UWP, Flux
+2.3 Surface Temperature
+2.3a Stellar Luminosity					placement, SecondSurvey
+2.3b Orbit Factor						placement
+2.3c Energy Absorbtion					UWP
+2.3d Greenhouse Effect					UWP, Flux
+2.3e Base Temperature					2.3a, 2.3b, 2.3c, 2.3d
+2.4 Orbital Eccentricity Effects		1.11
+2.5 Latitude Temperature Effects		UWP
+2.6a Axial Tilt Base Increase			2.3e, 1.10
+2.6b Axial Tilt Base Decrease			2.3e, 1.10
+2.6c Axial Tilt Latitude Effects		1.10
+2.7a Lenght of Day and Night			1.9
+2.7b Rotation-Luminocity Factor			2.3a, 1.7b
+2.7c Daytime Rotation Effects			UWP, 1.9, 2.3e,
+2.7d Nighttime Rotation Effects			UWP, 1.9, 2.3e,
+2.8, 2.9, 2.10 last priority
+2.11 Temperature Worksheet 				UWP, 1.10, 1.9, 1.11, 2.3e, 2.4, 2.7c, 2.7d, 2.6a, 2.6b
+2.12 Native Life						UWP, 2.3e, placement, SecondSurvey
+2.13 Atmospheric Terraforming			UWP, Flux
+2.14 Greenhouse Effect Terraforming		UWP, Flux
+2.13 Albedo Terraforming				UWP, Flux
+
+3 HYDRO
+3.1 Hydrographic Percentage				UWP, Flux
+3.2 Hydrographic Composituion			UWP, 2.1
+3.3 Tectonic Plates						UWP, 1.2b, Flux
+3.4 Hydrographic Terraforming			UWP, 2.12, Flux
+3.5 Terrain Terraforming 				UWP, 2.12, Flux
+3.6 Continents and Oceans				3.1, Flux
+3.7 Volcanoes							3.6, 1.12, Flux
+3.8 Resources and Goods					UWP, 2.12, Flux
+3.9 Weather Control						UWP, Flux
+
+4 POPULATION
+4.1 Total World Population				UWP, SecondSurvey, Flux
+4.2 Cities (Colony)						UWP, Flux
+4.3a Very Large Cities					UWP, Flux
+4.3c Large Cities						UWP, Flux, 4.1
+4.3e Medium Cities						UWP, Flux, 4.1
+4.3g Moderate Cities					UWP, Flux, 4.1, 4.3e
+4.3e Small Cities						UWP, Flux, 4.3g
+4.3k Very Small Cities					UWP, Flux, 4.3g
+4.4 Primary, Secondary, Tretiary Cities	4.1
+4.5 Starports and Spaceports			UWP, 4.4, Flux
+4.6 Orbital Cities						UWP, 2.12
+4.7 Social Outlook
+4.7a Progressiveness					UWP, Flux
+4.7b Aggressiveness						UWP, Flux
+4.7c Extenssiveness						UWP, Flux, 4.7a
+4.8a Number of Customs					Flux
+4.8b - 4.8h Describe Custom				Flux
+
+5 GOVERMENT
+5.1 Goverment Organization				UWP, Flux
+5.1a Balkanizad World					UWP, Flux, 5.1
+5.2 Representative Authority			UWP, Flux, 5.1
+5.3 Division of Authority				UWP, Flux, 5.1
+5.4 3-Way Division						UWP, Flux, 5.3
+5.5 Organization of other Authorities	UWP, Flux, 5.4
+5.6 2-Way Division						UWP, Flux, 5.3
+5.7 Organization of other Authoritie	UWP, Flux, 5.6
+5.8 Religion							UWP
+5.8a God View							5.8, UWP, Flux
+5.8b Spiritual Aim						Flux, 5.8a
+5.8c Devotion Required					Flux, 5.8b
+5.8d Organization Structure				Flux, 5.8c
+5.8e Liturgical Formality				Flux, 5.8d
+5.8f Missionary Fervor					Flux, 5.8e
+5.8g Number of Adherents				UWP, Flux, 5.8f
+5.8h Profile							5.8a - 5.8g
+
+6 LAWS
+6.1 Uniformity of the Law				UWP, 4.7c, Flux
+6.2 Legal Profile						UWP, Flux
+
+7 TECHNOLOGY
+7.1 High Common TL						UWP
+7.2a Low Common TL Limit				7.1
+7.2b Low Common TL						7.1, Flux, UWP, 4.7c
+7.3a Energy TL Limits					7.1
+7.3b Energy TL							7.3a, Flux
+7.4a Computer/Robotics TL Limit			7.3a
+7.4b Computer/Robotics TL 				7.1, Flux, UWP, 7.4a
+7.5a Communcations TL Limits 			7.3a
+7.5b Communication TL					7.5a, 7.4b, Flux
+7.6a Medical TL Limits					7.3a
+7.6b Medical TL							7.4b, Flux, 4.7c, 7.6a
+7.7a Enviromental TL Limits				7.3a
+7.7b Enviromental TL 					7.1, UWP, Flux, 7.7a
+7.8a Land Transport TL Limits			7.3a
+7.8b Land Transport TL					7.3b, Flux, UWP, 7.8a
+7.9a Water Transport TL Limits			7.8b
+7.9b Water Transport TL					7.8b, Flux, UWP, 7.9a
+7.10a Air Transport TL Limits			7.8b
+7.10b Air Transport TL					7.3b, Flux, UWP, 7.10a
+7.11a Space Transport TL Limits			7.3a
+7.11b Space Transport TL				7.3b, 7.4b, Flux, UWP, 4.7c, 7.11a
+7.12a Personal Military TL Limits		7.3a
+7.12b Personal Military TL 				7.3b, Flux, 4.7b, 7.12a
+7.13a Heavy Military TL Limits			7.3a
+7.13b Heavy Military TL Limits			7.8b, Flux, 4.7b, 7.13a
+7.14 Novelty TL							SecondSurvey (нужно научить программу ориентироваться)
+
+
+
+*/

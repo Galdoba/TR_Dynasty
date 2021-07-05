@@ -31,6 +31,14 @@ func StarsystemTest() {
 	world := wrld.PickWorld()
 	ssData := From(world)
 	ssData.PrintTable()
+	key, _ := user.InputStr()
+	for k, v := range ssData.bodyDetail {
+		if v.stringKey == key {
+			fmt.Println("User Selected:", k)
+			fmt.Println(v)
+		}
+	}
+
 }
 
 //From - генерирует детали всех планетарных тел в системе на основе данных из SecondSurveyT5
@@ -60,6 +68,7 @@ func From(world wrld.World) SystemDetails {
 				bDetails.syncPlanetDistance(d)
 			}
 			bDetails.parentStar = starData[position.starCode()]
+			bDetails.stringKey = code2string(position)
 			//fmt.Println(position, v)
 			//bDetails.DEBUGINFO()
 			d.bodyDetail[position] = bDetails
@@ -537,7 +546,6 @@ func newBodyR(planetType string, position numCode, w wrld.World) BodyDetails {
 	}
 	sDiam := utils.RoundFloat64(StarDiameter(starData[strCode]), 2) //диаметр звезды
 	sShadow := Astrogation.StarJumpShadowAU(sDiam)                  //тень звезды в AU
-	//fmt.Println("Star Shadow:", sShadow, "AU")
 	bd.calculateNomena(planetType, position, w)
 	bd.bodyType = planetType
 	switch planetType {
@@ -545,10 +553,8 @@ func newBodyR(planetType string, position numCode, w wrld.World) BodyDetails {
 		//bd.uwp = uwp.RandomUWP(dp, planetType, w.UWP()) //TODO: Разбить функцию для создания профайла планеты и спутника (чтобы спутник не был больше чем планета)
 		//if position.sateliteCode() >= 0 {
 		alternative := uwp.GenerateOtherWorldUWP(dice.New().SetSeed(bd.nomena), w.UWP(), planetType, starData[bd.position.starCode()], bd.position.planetCode())
-		//fmt.Println(bd.position, "	T5:", bd.uwp, "	Alternative:", alternative)
-		//	alternative = trimSatelliteUWP(alternative, bd.bodyType)
+
 		bd.uwp = alternative
-		//}
 
 		if uwp.New(bd.uwp).Pops().Value() > 2 {
 			bd.name = names.RandomPlace(w.Sector() + w.Hex() + bd.nomena)
@@ -569,25 +575,25 @@ func newBodyR(planetType string, position numCode, w wrld.World) BodyDetails {
 			closestJumpPoint := utils.RoundFloat64(sShadow-bd.orbitDistance, 2)
 			bd.jumpPointToBody = utils.RoundFloat64(Astrogation.AU2Megameters*(closestJumpPoint), 3)
 		}
-		//if position.sateliteCode() >= 0 {
-		//alternative := uwp.GenerateOtherWorldUWP(dice.New().SetSeed(bd.nomena), w.UWP(), planetType, starData[bd.position.starCode()], bd.position.planetCode())
-		//fmt.Println(bd.position, "	T5:", bd.uwp, "	Alternative:", alternative)
-		//	alternative = trimSatelliteUWP(alternative, bd.bodyType)
-		//bd.uwp = trimSatelliteUWP(alternative, bd.bodyType)
-		//}
 		hz := astronomical.HabitableOrbit(starData[position.starCode()])
 		remarks := uwp.CalculateTradeCodesT5(bd.uwp, w.TradeClassificationsSl(), false, position.planetCode()-hz)
 		if position.sateliteCode() > -1 {
-			remarks = append(remarks, "Sa")
+			addTC := "Sa"
 			if position.sateliteCode() < 14 {
-				remarks = append(remarks, "Lk")
+				addTC = "Lk"
 			}
-
+			remarks = append(remarks, addTC)
 		}
 		if planetType != constant.WTpPlanetoid {
 			remarks = removeFromSlice(remarks, "As")
 		}
 		bd.tags = strings.Join(remarks, " ")
+	case "Planetoid":
+		fmt.Println("Skip belt")
+		bd.bodyType = "Belt"
+		bd.calculateOrbitDistanceAU(position, dp)
+		bd.parentStar = parseStellarData(w)[position.starCode()]
+		bd.name = bd.AsteroidDetails()
 
 	case "Star":
 		bd.nomena = w.Sector() + " " + w.Hex() + " " + TrvCore.NumToGreek(strCode) + " " + starData[strCode]
@@ -638,7 +644,7 @@ func (bd *BodyDetails) cleanDataSpecialType() {
 		bd.uwp = ""
 		bd.tags = ""
 	}
-	if bd.uwp == "" && bd.bodyType != "Star" {
+	if bd.uwp == "" && bd.bodyType != "Star" && bd.bodyType != "Belt" {
 		bd.name = ""
 	}
 }
