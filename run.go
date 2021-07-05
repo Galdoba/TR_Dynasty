@@ -1,8 +1,15 @@
 package main
 
-import "github.com/Galdoba/TR_Dynasty/starsystem"
+import (
+	"os"
+
+	"github.com/Galdoba/TR_Dynasty/pkg/sai"
+	"github.com/Galdoba/TR_Dynasty/starsystem"
+)
 
 func main() {
+	sai.TestSAI()
+	os.Exit(2)
 	//mithril.TestWeather()
 	// smc := systemextended.NewSystemMapConstructor(wrld.PickWorld())
 	// fmt.Println("/////////")
