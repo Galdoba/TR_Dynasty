@@ -26,18 +26,18 @@ func main() {
 			ArgsUsage:   "UWP: string represents world data",
 			Category:    "Encounter",
 			Action: func(c *cli.Context) error {
-				fmt.Println("Start Space Encounter")
 				return actions.SpaceEncounter(c)
 			},
 			Flags: []cli.Flag{
 				&cli.StringFlag{
-					Name:        "uwp",
-					Usage:       "",
-					EnvVar:      "",
-					FilePath:    "",
-					Required:    true,
-					Value:       "",
-					Destination: new(string),
+					Name:     "uwp",
+					Usage:    "Set UWP to determine generator options (mandatory)",
+					Required: true,
+				},
+				&cli.IntFlag{
+					Name:  "days, d",
+					Usage: "Set number of days players spend in space. Each day 1D is rolled, if 6 - encounter occurs",
+					Value: 0,
 				},
 			},
 		},
