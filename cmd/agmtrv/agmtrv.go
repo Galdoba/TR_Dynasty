@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Galdoba/TR_Dynasty/cmd/autoGM/actions"
+	"github.com/Galdoba/TR_Dynasty/cmd/agmtrv/actions"
 	"github.com/urfave/cli"
 )
 
