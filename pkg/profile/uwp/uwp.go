@@ -226,21 +226,6 @@ func popsDM(star string, orbit int, atmo int, size int) int {
 	return dm
 }
 
-func govrDM(mwUWP string) int {
-	dm := 0
-	mwuwp := New(mwUWP)
-	mwGovr := mwuwp.Govr().Value()
-	switch mwGovr {
-	case 6:
-		dm += mwuwp.Pops().Value()
-	default:
-		if mwGovr > 6 {
-			dm++
-		}
-	}
-	return dm
-}
-
 func rollLaws(dp *dice.Dicepool, mwUWP string) int {
 	mwLaw := New(mwUWP).Laws().Value()
 	mwPop := New(mwUWP).Pops().Value()
@@ -337,22 +322,6 @@ func rollStpt(dp *dice.Dicepool, mwPop int) string {
 	// 	stpt = "F"
 	// }
 	return stpt
-}
-
-func rollTL(mwUWP string) int {
-	mwuwp := New(mwUWP)
-	mwTL := mwuwp.TL().Value()
-	//mwAtmo := mwuwp.Atmo().Value()
-	tl := mwTL - 1
-	// if tl < 7 {
-	// 	// switch mwAtmo {
-	// 	// default:
-	// 	// 	tl = 0
-	// 	// case 5, 6, 8:
-	// 	// }
-	// 	tl = 0
-	// }
-	return tl
 }
 
 func rollTLt5(mwUWP string, dices *dice.Dicepool, stpt string, siz, atm, hyd, pop, gov int) int {
@@ -1017,12 +986,12 @@ func CalculateTradeCodesT5(uwp string, mwTags []string, mw bool, hz int) []strin
 			}
 			//Secondary
 		case constant.TradeCodeFarming:
-			if matchTradeClassificationRequirements(uwp, "-- 456789 45678 23456 -- -- --") && mw == false {
+			if matchTradeClassificationRequirements(uwp, "-- 456789 45678 23456 -- -- --") && !mw {
 				res = append(res, constant.TradeCodeFarming)
 			}
 			//
 		case constant.TradeCodeMining:
-			if matchTradeClassificationRequirements(uwp, "-- -- -- 23456 -- -- --") && mw == false {
+			if matchTradeClassificationRequirements(uwp, "-- -- -- 23456 -- -- --") && !mw {
 				for _, val := range mwTags {
 					if val != "In" {
 						continue
@@ -1032,7 +1001,7 @@ func CalculateTradeCodesT5(uwp string, mwTags []string, mw bool, hz int) []strin
 				//res = append(res, constant.TradeCodeAgricultural)
 			}
 		case constant.TradeCodeMilitaryRule:
-			if matchTradeClassificationRequirements(uwp, "-- -- -- -- -- -- --") && mw == false {
+			if matchTradeClassificationRequirements(uwp, "-- -- -- -- -- -- --") && !mw {
 				for _, val := range mwTags {
 					if val != "Ph" && val != "Hi" {
 						continue
@@ -1049,11 +1018,11 @@ func CalculateTradeCodesT5(uwp string, mwTags []string, mw bool, hz int) []strin
 				//				res = append(res, constant.TradeCodeMilitaryRule)
 			}
 		case constant.TradeCodePenalColony:
-			if matchTradeClassificationRequirements(uwp, "-- 23AB 12345 3456 6 6789 --") && mw == false {
+			if matchTradeClassificationRequirements(uwp, "-- 23AB 12345 3456 6 6789 --") && !mw {
 				res = append(res, constant.TradeCodePenalColony)
 			}
 		case constant.TradeCodeReserve:
-			if matchTradeClassificationRequirements(uwp, "-- -- -- 01234 6 045 --") && mw == false {
+			if matchTradeClassificationRequirements(uwp, "-- -- -- 01234 6 045 --") && !mw {
 				res = append(res, constant.TradeCodeReserve)
 			}
 			//Political
@@ -1105,7 +1074,7 @@ func CalculateTradeCodesT5(uwp string, mwTags []string, mw bool, hz int) []strin
 				res = append(res, constant.TradeCodeNonAgricultural)
 			}
 		case constant.TradeCodePrisonExileCamp:
-			if matchTradeClassificationRequirements(uwp, "-- 23AB 12345 3456 -- 6789 --") && mw == true {
+			if matchTradeClassificationRequirements(uwp, "-- 23AB 12345 3456 -- 6789 --") && !mw {
 				res = append(res, constant.TradeCodePrisonExileCamp)
 			}
 		case constant.TradeCodePreIndustrial:
@@ -1203,6 +1172,7 @@ func FromString(s string) (*UWP, error) {
 	if string(s[7]) != "-" {
 		return nil, fmt.Errorf("uwp.FromString(s): input '%v' has wrong format (must be 'A123456-7')", s)
 	}
+
 	u.data = make(map[string]ehex.DataRetriver)
 	u.data[constant.PrStarport] = ehex.New(s[0])
 	u.data[constant.PrSize] = ehex.New(s[1])
@@ -1212,7 +1182,49 @@ func FromString(s string) (*UWP, error) {
 	u.data[constant.PrGovr] = ehex.New(s[5])
 	u.data[constant.PrLaws] = ehex.New(s[6])
 	u.data[constant.PrTL] = ehex.New(s[8])
+	if !validateUWP(&u) {
+		return nil, fmt.Errorf("'%v' is invaid UWP", s)
+	}
 	return &u, nil
+}
+
+func validateUWP(u *UWP) bool {
+	switch u.data[constant.PrStarport].String() {
+	default:
+		return false
+	case "A", "B", "C", "D", "E", "X", "F", "G", "H", "Y":
+	}
+	switch u.data[constant.PrSize].String() {
+	default:
+		return false
+	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "S", "R":
+	}
+	switch u.data[constant.PrAtmo].String() {
+	default:
+		return false
+	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F":
+	}
+	switch u.data[constant.PrHydr].String() {
+	default:
+		return false
+	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A":
+	}
+	switch u.data[constant.PrPops].String() {
+	default:
+		return false
+	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F":
+	}
+	switch u.data[constant.PrGovr].String() {
+	default:
+		return false
+	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F":
+	}
+	switch u.data[constant.PrLaws].String() {
+	default:
+		return false
+	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "J":
+	}
+	return true
 }
 
 func (u *UWP) Starport() ehex.DataRetriver {

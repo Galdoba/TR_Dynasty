@@ -119,10 +119,11 @@ func isWildSpace(uwp *uwp.UWP) bool {
 }
 
 func isUntravelled(uwp *uwp.UWP) bool {
+	strprt := uwp.Starport().String()
 	switch {
 	default:
 		return false
-	case uwp.Starport().String() == "X":
+	case strprt == "X", strprt == "Y":
 		return true
 	case uwp.Pops().Value() == 0 || uwp.Govr().Value() == 0 || uwp.Laws().Value() == 0:
 		return true
