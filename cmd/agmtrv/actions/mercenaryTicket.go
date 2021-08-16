@@ -77,7 +77,7 @@ func (t *Ticket) creationPhase() {
 	t.creationStep1() //WORKING OUT THE EMPLOYER DETAILS
 	t.creationStep2() //INCLUDING THE EMPLOYEE DETAILS
 	t.creationStep3() //SERVICE REQUIRED
-	t.creationStep4() //PRE-TICKET SUPPORT
+	t.creationStep4() //PRE-TICKET SUPPORT tyy
 	t.service.payGrade = t.service.payGrade + (t.ticketAdjustments / 2)
 	status(t)
 	os.Exit(1)
