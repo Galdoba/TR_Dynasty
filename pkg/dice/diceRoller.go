@@ -267,6 +267,15 @@ func (dp *Dicepool) ReplaceOne(die, newVal int) *Dicepool {
 	return dp
 }
 
+//Shout - выводит процесс в стандартный выход
+func (dp *Dicepool) Shout() *Dicepool {
+	fmt.Println("------------------------------")
+	fmt.Printf("Rolling: %vd%v + (%v)\n", dp.dice, dp.edges, dp.modTotal)
+	fmt.Printf("Result: %v (%v)\n", dp.result, dp.Sum())
+	fmt.Println("------------------------------")
+	return dp
+}
+
 //ReRoll - меняет значение броска
 // func (dp *Dicepool) ReRoll() *Dicepool {
 // 	code := encodeDiceCode(dp.dice, dp.edges)

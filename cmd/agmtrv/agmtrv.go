@@ -41,6 +41,17 @@ func main() {
 				},
 			},
 		},
+		{
+			Name:        "ticket",
+			Usage:       "Construct random Mercenary Ticket MgT1 S1 p42-62",
+			UsageText:   "Set Space Encounter at world's near space. Demands UWP for data generation",
+			Description: "LONG DESCR",
+			ArgsUsage:   "UWP: string represents world data",
+			Category:    "Encounter",
+			Action: func(c *cli.Context) error {
+				return actions.NewTicket()
+			},
+		},
 		//////////////////////////////////////
 
 	}
