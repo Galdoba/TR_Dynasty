@@ -43,8 +43,8 @@ type Ticket struct {
 	employer          string
 	employee          string
 	service           service
-	preSupport        string
-	postSupport       string
+	preSupport        []string
+	postSupport       []string
 	compensation      string
 	repatriation      string
 	ticketAdjustments int
@@ -171,11 +171,10 @@ func (t *Ticket) creationStep3c() {
 	r := dice.Roll2D()
 	rollValue := r + dm
 	fmt.Printf("Result is %v\nThe mercenary administrator can spend Ticket Adjustments to raise or lower the result by +/– 1 per Ticket Adjustment.\n", rollValue)
-	c, _ := user.Confirm("Adjust Exposure?")
-	if c {
+	if userConfirmed("Adjust Exposure?") {
 		valid := false
 		for !valid {
-			fmt.Println("Enter New Value")
+			fmt.Println("Enter New Value:")
 			userValue, err := user.InputInt()
 			if err != nil {
 				fmt.Println("Error: " + err.Error())
@@ -305,31 +304,29 @@ func (t *Ticket) creationStep3e() {
 	t.service.targetDescriptor = desc
 	status(t)
 }
+
 func (t *Ticket) creationStep3f() {
-	switch dice.Roll1D() {
+	rollResult := dice.Roll1D()
+	switch rollResult {
 	case 1:
 		t.service.risk = "Too Easy – This is well beneath the unit’s level of training; it is unlikely they will even break a sweat."
-		t.service.payGrade += -2
 	case 2:
 		t.service.risk = "Easy – This ticket will not cost the unit much in the way of resources or stress."
-		t.service.payGrade += -1
 	case 3:
 		t.service.risk = "Average – This is what the unit is trained for, and should serve as a good reminder what ticket work should be."
-		t.service.payGrade += -0
 	case 4:
 		t.service.risk = "Worthy Test – This is a fantastic place to test the unit’s skills, even some of the obscure ones. They might suffer some wounds or even casualties."
-		t.service.payGrade += 1
 	case 5:
 		t.service.risk = "Difficult – This ticket will be a tough one for the whole unit, and the members will need to be diligent in their training or they might not make it back home."
-		t.service.payGrade += 2
 	case 6:
 		t.service.risk = "Arduous – This mission is a nightmare. If anyone makes it back in one piece, they will have been pushed to the very limit."
-		t.service.payGrade += 3
 	}
+	t.service.payGrade += (rollResult - 3)
+	///////////////////////////////////////
 	if t.ticketAdjustments > 0 {
-		reveal, _ := user.Confirm("Reveal Mission Risk? (cost 1 Adjustment point)")
-		if reveal {
+		if userConfirmed("Reveal Mission Risk? (cost 1 Adjustment point)") {
 			t.service.risk += " [REVEALED]"
+			t.ticketAdjustments--
 		}
 	}
 	status(t)
@@ -337,7 +334,93 @@ func (t *Ticket) creationStep3f() {
 
 func (t *Ticket) creationStep4() {
 	status(t)
+	fmt.Printf("//PRE-TICKET SUPPORT:\n")
+	if t.service.mission == mType_TechnologicalTest {
+		t.applyPreTicketSupport(2)
+		t.service.payGrade = t.service.payGrade + 3
+	}
+	fmt.Printf("The mercenary Administrator can refuse from Pre-Ticket Support (will increase Pay Grade by 1)\n")
+	if userConfirmed("Waive Pre-Ticket support?") {
+		t.service.payGrade++
+		status(t)
+		return
+	}
+	tablesRolled := []bool{false, false, false} //funds = 0, Services = 1, Equipment = 2
+	options := []string{"Roll Broker 9+ to select single support type", "spend x Adjustment point for each support type (maximum 3)"}
+	selected, _ := user.ChooseOne("Select negotiations type:", options)
 
+	switch selected {
+	case 0:
+		fmt.Println("Roll Broker (ANY) 9+ check. Result: ")
+		rollResult, _ := user.InputInt()
+		if rollResult < 9 {
+			return
+		}
+		fmt.Println("Select Support Type:")
+		r, _ := user.ChooseOne("Select negotiations type:", []string{"Advance Funds", "Services", "Equpment"})
+		t.applyPreTicketSupport(r)
+	case 1:
+		uInp := userInputIntBounded(fmt.Sprintf("Select how many Ticket Adjustment Points to spend (0-%v):\n ", utils.Min(3, t.ticketAdjustments)), 0, utils.Min(3, t.ticketAdjustments))
+		for i := 0; i < uInp; i++ {
+			r := dice.Roll1D() % 3
+			if tablesRolled[r] {
+				i--
+				continue
+			}
+			tablesRolled[r] = true
+			t.applyPreTicketSupport(r)
+		}
+	}
+
+}
+
+func (t *Ticket) applyPreTicketSupport(r int) {
+	switch r {
+	case 0:
+		t.service.payGrade--
+		status(t)
+		printSupportAdvanceFunds()
+		t.preSupport = append(t.preSupport, supportAdvanceFundsTable(dice.Roll1D()))
+	case 1:
+		t.service.payGrade--
+		status(t)
+		printSupportServices()
+		t.preSupport = append(t.preSupport, supportServicesTable(dice.Roll1D()))
+	case 2:
+		t.service.payGrade = t.service.payGrade - 3
+		status(t)
+		printSupportEquipment()
+		t.preSupport = append(t.preSupport, supportEquipmentTable(dice.Roll1D()))
+	}
+}
+
+func userInputIntBounded(descr string, min, max int) int {
+	fmt.Println(descr)
+	for {
+		uInp, err := user.InputInt()
+		if err != nil {
+			fmt.Println("Error: " + err.Error())
+			continue
+		}
+		if uInp < min || uInp > max {
+			fmt.Printf("Error: cannot assign value %v (only values between %v and %v are valid)\n", uInp, min, max)
+			continue
+		}
+		return uInp
+	}
+}
+
+func userConfirmed(question string) bool {
+	err := errors.New("Initial")
+	answer := false
+	for err != nil {
+		answer, err = user.Confirm(question)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err.Error())
+			continue
+		}
+	}
+	return answer
 }
 
 func difference(a, b int) int {
@@ -838,20 +921,41 @@ func rollPatronDM() int {
 func status(t *Ticket) {
 	utils.ClearScreen()
 	fmt.Println(t)
-	fmt.Printf("Ticket Adjustment Points: %v\n", t.ticketAdjustments)
-	fmt.Printf("Patron Negotiation Bonus: %v\n", t.patronDM)
-	fmt.Printf("Employer Details: %v\n", t.employer)
-	fmt.Printf("Employee Details: %v\n", t.employee)
-	fmt.Println("----------------")
-	fmt.Printf("Generic Service Type: %v\n", t.service.genericServiceType)
-	fmt.Printf("Mission Type: %v\n", t.service.mission)
-	fmt.Printf("Mission Paygrade: %v (%v)\n", t.service.payGrade, paygrade2Credits(t.service.payGrade))
-	fmt.Printf("Mission Service Lenght: %v \n", t.service.lenghtOfService)
-	fmt.Printf("Mission Exposure: %v \n", t.service.exposure)
-	fmt.Printf("Mission Target: %v \n", t.service.targetType)
+	fmt.Printf("Ticket Adjustment Points : %v\n", t.ticketAdjustments)
+	fmt.Printf("Patron Negotiation Bonus : %v\n", t.patronDM)
+	fmt.Printf("Employer Details         : %v\n", t.employer)
+	fmt.Printf("Employee Details         : %v\n", t.employee)
+	fmt.Println("-------------------------")
+	fmt.Printf("Mission Service Type     : %v\n", t.service.genericServiceType)
+	fmt.Printf("Mission Type             : %v\n", t.service.mission)
+	fmt.Printf("Mission Paygrade         : %v (%v)\n", t.service.payGrade, paygrade2Credits(t.service.payGrade))
+	fmt.Printf("Mission Service Lenght   : %v \n", t.service.lenghtOfService)
+	fmt.Printf("Mission Exposure         : %v \n", t.service.exposure)
+	fmt.Printf("Mission Target           : %v \n", t.service.targetType)
 	fmt.Printf("Mission Target Descriptor: %v \n", t.service.targetDescriptor)
-	fmt.Printf("Mission Risk: %v \n", t.service.risk)
-	fmt.Println("----------------")
+	fmt.Printf("Mission Risk             : %v \n", t.service.risk)
+	fmt.Println("-------------------------")
+	if len(t.preSupport) > 0 {
+		for i, val := range t.preSupport {
+			switch i {
+			case 0:
+				fmt.Printf("Pre-Ticket Support: %v\n", val)
+			default:
+				fmt.Printf("                    %v\n", val)
+			}
+		}
+	}
+	if len(t.postSupport) > 0 {
+		for i, val := range t.postSupport {
+			switch i {
+			case 0:
+				fmt.Printf("Post-Ticket Support: %v\n", val)
+			default:
+				fmt.Printf("                     %v\n", val)
+			}
+		}
+	}
+
 }
 
 func employerDetails() string {
@@ -1166,4 +1270,100 @@ func printOffensiveTargetTypes() {
 	fmt.Println("5   Ship             +2 Increment")
 	fmt.Println("6   Group            +2 Increment")
 	fmt.Println("-------------------------------------------")
+}
+
+func printPreTicketSupportTypes() {
+	fmt.Println("-----------------------------------------------")
+	fmt.Println("#     Support Table Used   Pay Grade Adjustment")
+	fmt.Println("1-2   Advance Funds        -1 Increment")
+	fmt.Println("3-4   Services             -1 Increment")
+	fmt.Println("5-6   Equpment             -3 Increment")
+	fmt.Println("-----------------------------------------------")
+}
+
+func printSupportAdvanceFunds() {
+	fmt.Println("-------------------------")
+	fmt.Println("#   Advance Funds Offered")
+	fmt.Println("1   5,000 Cr")
+	fmt.Println("2   10,000 Cr")
+	fmt.Println("3   20,000 Cr")
+	fmt.Println("4   30,000 Cr")
+	fmt.Println("5   40,000 Cr")
+	fmt.Println("6   50,000 Cr")
+	fmt.Println("-------------------------")
+}
+
+func printSupportServices() {
+	fmt.Println("--------------------")
+	fmt.Println("#   Services Offered")
+	fmt.Println("1   Transportation")
+	fmt.Println("2   Transportation")
+	fmt.Println("3   Eqipment Repairs")
+	fmt.Println("4   Rearmement")
+	fmt.Println("5   Arms Traiding")
+	fmt.Println("6   Medical Process")
+	fmt.Println("--------------------")
+}
+
+func printSupportEquipment() {
+	fmt.Println("---------------------")
+	fmt.Println("#   Equipment Offered")
+	fmt.Println("1   Basics")
+	fmt.Println("2   Armour")
+	fmt.Println("3   Weapons")
+	fmt.Println("4   Heavy Weapon")
+	fmt.Println("5   Transport")
+	fmt.Println("6   Specialised Gear")
+	fmt.Println("---------------------")
+}
+
+func supportAdvanceFundsTable(i int) string {
+	arr := []string{
+		"5,000 Cr",
+		"10,000 Cr",
+		"20,000 Cr",
+		"30,000 Cr",
+		"40,000 Cr",
+		"50,000 Cr",
+	}
+	switch i {
+	default:
+		return "Error"
+	case 1, 2, 3, 4, 5, 6:
+		return "Advanced Funds (" + arr[i-1] + ")"
+	}
+}
+
+func supportServicesTable(i int) string {
+	arr := []string{
+		"Transportation",
+		"Transportation",
+		"Eqipment Repairs",
+		"Rearmement",
+		"Arms Traiding",
+		"Medical Process",
+	}
+	switch i {
+	default:
+		return "Error"
+	case 1, 2, 3, 4, 5, 6:
+		return "Service (" + arr[i-1] + ")"
+	}
+}
+
+func supportEquipmentTable(i int) string {
+	arr := []string{
+		"Basics",
+		"Armour",
+		"Weapons",
+		"Heavy Weapon",
+		"Transport",
+		"Specialised Gear",
+	}
+	switch i {
+	default:
+		return "Error"
+	case 1, 2, 3, 4, 5, 6:
+		return "Equpment (" + arr[i-1] + ")"
+	}
 }
