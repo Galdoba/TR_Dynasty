@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
@@ -60,26 +61,29 @@ type service struct {
 	targetType         string
 	targetDescriptor   string
 	risk               string
+	specialBonus       string
 }
 
 func NewTicket() error {
 	t := &Ticket{}
 	t.patronDM = rollPatronDM()
 	fmt.Printf("Patron DM is %v\n", t.patronDM)
-	err := errors.New("Initial")
 	status(t)
 	t.administrationPhase()
 	t.creationPhase()
-	return err
+	return nil
 }
 
 func (t *Ticket) creationPhase() {
 	t.creationStep1() //WORKING OUT THE EMPLOYER DETAILS
 	t.creationStep2() //INCLUDING THE EMPLOYEE DETAILS
 	t.creationStep3() //SERVICE REQUIRED
-	t.creationStep4() //PRE-TICKET SUPPORT tyy
-	t.service.payGrade = t.service.payGrade + (t.ticketAdjustments / 2)
+	t.creationStep4() //PRE-TICKET SUPPORT
+	t.creationStep5() //POST-TICKET SUPPORT
+	t.creationStep6() //COMPENSATION PACKAGE
+
 	status(t)
+	fmt.Println(defineMission(t))
 	os.Exit(1)
 }
 
@@ -348,7 +352,6 @@ func (t *Ticket) creationStep4() {
 	tablesRolled := []bool{false, false, false} //funds = 0, Services = 1, Equipment = 2
 	options := []string{"Roll Broker 9+ to select single support type", "spend x Adjustment point for each support type (maximum 3)"}
 	selected, _ := user.ChooseOne("Select negotiations type:", options)
-
 	switch selected {
 	case 0:
 		fmt.Println("Roll Broker (ANY) 9+ check. Result: ")
@@ -371,11 +374,76 @@ func (t *Ticket) creationStep4() {
 			t.applyPreTicketSupport(r)
 		}
 	}
+}
 
+func (t *Ticket) creationStep5() {
+	status(t)
+	fmt.Printf("//POST-TICKET SUPPORT:\n")
+	fmt.Printf("The mercenary Administrator can refuse from Post-Ticket Support (will increase Pay Grade by 1)\n")
+	if userConfirmed("Waive Post-Ticket support?") {
+		t.service.payGrade++
+		status(t)
+		return
+	}
+	tablesRolled := []bool{false, false, false, false, false, false} //Rest - 0, Repair - 1, Medical Care - 2, Evacuation - 3, Councel - 4, Repeated Agreement - 5
+	uInp := userInputIntBounded(fmt.Sprintf("Select how many Ticket Adjustment Points to spend (0-%v):\n ", utils.Min(6, t.ticketAdjustments)), 0, utils.Min(6, t.ticketAdjustments))
+	for i := 0; i < uInp; i++ {
+		r := dice.Roll1D(-1)
+		if tablesRolled[r] {
+			i--
+			continue
+		}
+		tablesRolled[r] = true
+		t.applyPostTicketSupport(r)
+		status(t)
+	}
+}
+
+func (t *Ticket) creationStep6() {
+	status(t)
+	fmt.Printf("//COMPENSATION PACKAGE:\n")
+	fmt.Printf("Initial Compensation Package is determined as %v (%v)\n", t.service.payGrade, paygrade2Credits(t.service.payGrade))
+	fmt.Printf("The mercenary Administrator can choose to augment the Pay Grade by spending Ticket Adjustments, at ration 2 per Pay Grade\n")
+	if userConfirmed("Augment Pay Grade?") {
+		tap := t.ticketAdjustments / 2
+		options := []string{}
+		for i := 0; i <= tap; i++ {
+			options = append(options, "add +"+strconv.Itoa(i)+" Increment")
+		}
+		ch, _ := user.ChooseOne("Choose increment:", options)
+		t.service.payGrade += ch
+		t.ticketAdjustments -= ch * 2
+		status(t)
+	}
+	if t.service.payGrade >= 8 && t.ticketAdjustments > 0 {
+		fmt.Printf("Mission qualifies for potential bonus in its Compensation Package.\n")
+		fmt.Printf("Administrator can choose to apply for one of the Special Compensation Bonus (cost 1 Ticket Adjustment Point AND -1 Increment on Pay Grade)\n")
+		printSpecialCompensationBonus()
+		if userConfirmed("Apply for Bonus?") {
+			r := dice.Roll1D(-1)
+			scb := []string{"Compensation Bonus", "Equpment Package", "Free Mediacal Care", "Combat Implant Package", "Ship Shares", "Debt Payment", "Prime Ticket"}
+			t.service.specialBonus = scb[r]
+			status(t)
+		}
+	}
+}
+
+func printSpecialCompensationBonus() {
+	fmt.Println("--------------------------")
+	fmt.Println("#   Compensation Bonus")
+	fmt.Println("1   Equpment Package")
+	fmt.Println("2   Free Mediacal Care")
+	fmt.Println("3   Combat Implant Package")
+	fmt.Println("4   Ship Shares")
+	fmt.Println("5   Debt Payment")
+	fmt.Println("6   Prime Ticket")
+	fmt.Println("--------------------------")
 }
 
 func (t *Ticket) applyPreTicketSupport(r int) {
 	switch r {
+	default:
+		panic(1213)
 	case 0:
 		t.service.payGrade--
 		status(t)
@@ -391,6 +459,29 @@ func (t *Ticket) applyPreTicketSupport(r int) {
 		status(t)
 		printSupportEquipment()
 		t.preSupport = append(t.preSupport, supportEquipmentTable(dice.Roll1D()))
+	}
+}
+
+func (t *Ticket) applyPostTicketSupport(r int) {
+	switch r {
+	default:
+		panic(5465)
+	case 0:
+		t.postSupport = append(t.postSupport, "Rest and Relaxation")
+	case 1:
+		t.postSupport = append(t.postSupport, "Repair and Rearm")
+		t.service.payGrade -= 2
+	case 2:
+		t.postSupport = append(t.postSupport, "Medical Care")
+		t.service.payGrade -= 1
+	case 3:
+		t.postSupport = append(t.postSupport, "Expedited Evacuation")
+	case 4:
+		t.postSupport = append(t.postSupport, "Legal Counsel")
+		t.service.payGrade -= 1
+	case 5:
+		t.postSupport = append(t.postSupport, "Repeated Ticket Agreement")
+		t.service.payGrade -= 2
 	}
 }
 
@@ -955,7 +1046,9 @@ func status(t *Ticket) {
 			}
 		}
 	}
-
+	if t.service.specialBonus != "" {
+		fmt.Printf("Special Bonus: %v\n", t.service.specialBonus)
+	}
 }
 
 func employerDetails() string {
