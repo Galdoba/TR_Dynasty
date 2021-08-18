@@ -1,5 +1,9 @@
 package ehex
 
+import (
+	"strings"
+)
+
 const (
 	UNKNOWN   = "unknown"
 	SPECIAL   = "special"
@@ -20,13 +24,16 @@ func New() *ehex {
 func (eh *ehex) Set(data interface{}) *ehex {
 	eh.comment = ""
 	eh.code = ""
+	eh.value = -1
 	switch data.(type) {
 	default:
 		eh.code = "?"
 		eh.comment = UNKNOWN
 	case string:
-		if hashCode(data.(string)) != -1 {
-			eh.code = data.(string)
+		tryCode := data.(string)
+		tryCode = strings.ToUpper(tryCode)
+		if hashCode(tryCode) != -1 {
+			eh.code = tryCode
 		}
 	case int:
 		eh.code = hashValue(data.(int))
