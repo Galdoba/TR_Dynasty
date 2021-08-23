@@ -2,6 +2,8 @@ package background
 
 import (
 	"testing"
+
+	"github.com/Galdoba/TR_Dynasty/pkg/core/skill"
 )
 
 func testInput() []*background {
@@ -23,31 +25,31 @@ func TestBackgroundSkills(t *testing.T) {
 			switch tc {
 			default:
 			case "Ag":
-				expectedInList = append(expectedInList, "Animals 0")
+				expectedInList = append(expectedInList, skill.ByCode(skill.Animals).Name())
 			case "As":
-				expectedInList = append(expectedInList, "Athlithics 0")
+				expectedInList = append(expectedInList, skill.ByCode(skill.Athletics).Name())
 			case "De":
-				expectedInList = append(expectedInList, "Survival 0")
-			case "Oc":
-				expectedInList = append(expectedInList, "Seafarer 0")
+				expectedInList = append(expectedInList, skill.ByCode(skill.Survival).Name())
+			case "Fl":
+				expectedInList = append(expectedInList, skill.ByCode(skill.Seafarer).Name())
 			case "Ht":
-				expectedInList = append(expectedInList, "Electronic 0")
+				expectedInList = append(expectedInList, skill.ByCode(skill.Electronics).Name())
 			case "Hi":
-				expectedInList = append(expectedInList, "Streetwise 0")
+				expectedInList = append(expectedInList, skill.ByCode(skill.Streetwise).Name())
 			case "Ic":
-				expectedInList = append(expectedInList, "Vacc Suit 0")
+				expectedInList = append(expectedInList, skill.ByCode(skill.VaccSuit).Name())
 			case "In":
-				expectedInList = append(expectedInList, "Broker 0")
+				expectedInList = append(expectedInList, skill.ByCode(skill.Profession).Name())
 			case "Lt":
-				expectedInList = append(expectedInList, "Survival 0")
+				expectedInList = append(expectedInList, skill.ByCode(skill.Survival).Name())
 			case "Po":
-				expectedInList = append(expectedInList, "Animals 0")
+				expectedInList = append(expectedInList, skill.ByCode(skill.Animals).Name())
 			case "Ri":
-				expectedInList = append(expectedInList, "Carouse 0")
+				expectedInList = append(expectedInList, skill.ByCode(skill.Carouse).Name())
 			case "Wa":
-				expectedInList = append(expectedInList, "Seafarer 0")
+				expectedInList = append(expectedInList, skill.ByCode(skill.Seafarer).Name())
 			case "Va":
-				expectedInList = append(expectedInList, "Vacc Suit 0")
+				expectedInList = append(expectedInList, skill.ByCode(skill.VaccSuit).Name())
 			}
 		}
 		if !match(bgSkills, expectedInList) {

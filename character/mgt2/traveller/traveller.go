@@ -4,15 +4,16 @@ import (
 	"errors"
 
 	"github.com/Galdoba/TR_Dynasty/pkg/core/ehex"
+	"github.com/Galdoba/TR_Dynasty/pkg/core/skill"
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 )
 
 type traveller struct {
-	dice  *dice.Dicepool //дайспул для бросков кубиков
-	name  string
-	race  string //структ с данными по рассе
-	chars map[string]ehex.DataRetriver
-	//skills map[string]Skill
+	dice      *dice.Dicepool //дайспул для бросков кубиков
+	name      string
+	race      string //структ с данными по рассе
+	chars     map[string]ehex.DataRetriver
+	skills    map[int]skill.Skill
 	education education
 	careers   []career
 }
@@ -40,6 +41,7 @@ func NewCharacter() (*traveller, error) {
 	chr := &traveller{}
 	chr.dice = dice.New()
 	chr.chars = make(map[string]ehex.DataRetriver)
+	chr.skills = make(map[int]skill.Skill)
 	if err.Error() == "Initial" {
 		return chr, nil
 	}

@@ -1,7 +1,10 @@
 package traveller
 
 import (
+	"fmt"
 	"testing"
+
+	"github.com/Galdoba/TR_Dynasty/pkg/core/skill"
 )
 
 func TestNewCharacter(t *testing.T) {
@@ -16,6 +19,15 @@ func TestNewCharacter(t *testing.T) {
 			t.Errorf("SetChar: have'%v' = '%v', expect %v = %v\n", val, chr.chars[val].Value(), val, i)
 		}
 	}
+	chr.Train(skill.Admin)
+	chr.Train(skill.Admin)
+	chr.Train(skill.Admin)
+	chr.Train(skill.Animals)
+	chr.Train(skill.Animals)
+	chr.Train(skill.Animals)
+	chr.BasicTraining(skill.Electronics)
+	chr.EnsureSkill(skill.Animals_Handling, 1)
+	fmt.Println(chr.skills)
 
 }
 
