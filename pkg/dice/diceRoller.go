@@ -85,6 +85,15 @@ func (dp *Dicepool) RollFromList(sl []string) string {
 	return sl[dp.rand.Intn(dp.edges)]
 }
 
+//RollFromList - возвращает случайный элемент слайса на основе последовательности дайспула
+func (dp *Dicepool) RollFromListInt(sl []int) int {
+	dp.result = nil
+	dp.dice, dp.edges = 1, len(sl)
+	dp.modPerDie = 0
+	dp.modTotal = 0
+	return sl[dp.rand.Intn(dp.edges)]
+}
+
 func decodeDiceCode(code string) (int, int) {
 	code = strings.ToUpper(code)
 	data := strings.Split(code, "D")

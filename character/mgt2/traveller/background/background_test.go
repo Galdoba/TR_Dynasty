@@ -15,8 +15,8 @@ func testInput() []*background {
 
 func TestBackgroundSkills(t *testing.T) {
 	for i, bg := range testInput() {
-		bgSkills := bg.BasicSkills()
-		expectedInList := []string{}
+		bgSkills := bg.basicSkills()
+		expectedInList := []int{}
 		//fmt.Printf("Input %v: World %v with codes %v have these skills: %v\n", i, bg.worldName, bg.worldTC, bgSkills)
 		for _, tc := range validBGCodes() {
 			if !sliceContains(bg.worldTC, tc) {
@@ -25,32 +25,33 @@ func TestBackgroundSkills(t *testing.T) {
 			switch tc {
 			default:
 			case "Ag":
-				expectedInList = append(expectedInList, skill.ByCode(skill.Animals).Name())
+				expectedInList = append(expectedInList, skill.Animals)
 			case "As":
-				expectedInList = append(expectedInList, skill.ByCode(skill.Athletics).Name())
+				expectedInList = append(expectedInList, skill.Athletics)
 			case "De":
-				expectedInList = append(expectedInList, skill.ByCode(skill.Survival).Name())
+				expectedInList = append(expectedInList, skill.Survival)
 			case "Fl":
-				expectedInList = append(expectedInList, skill.ByCode(skill.Seafarer).Name())
+				expectedInList = append(expectedInList, skill.Seafarer)
 			case "Ht":
-				expectedInList = append(expectedInList, skill.ByCode(skill.Electronics).Name())
+				expectedInList = append(expectedInList, skill.Electronics)
 			case "Hi":
-				expectedInList = append(expectedInList, skill.ByCode(skill.Streetwise).Name())
+				expectedInList = append(expectedInList, skill.Streetwise)
 			case "Ic":
-				expectedInList = append(expectedInList, skill.ByCode(skill.VaccSuit).Name())
+				expectedInList = append(expectedInList, skill.VaccSuit)
 			case "In":
-				expectedInList = append(expectedInList, skill.ByCode(skill.Profession).Name())
+				expectedInList = append(expectedInList, skill.Profession)
 			case "Lt":
-				expectedInList = append(expectedInList, skill.ByCode(skill.Survival).Name())
+				expectedInList = append(expectedInList, skill.Survival)
 			case "Po":
-				expectedInList = append(expectedInList, skill.ByCode(skill.Animals).Name())
+				expectedInList = append(expectedInList, skill.Animals)
 			case "Ri":
-				expectedInList = append(expectedInList, skill.ByCode(skill.Carouse).Name())
+				expectedInList = append(expectedInList, skill.Carouse)
 			case "Wa":
-				expectedInList = append(expectedInList, skill.ByCode(skill.Seafarer).Name())
+				expectedInList = append(expectedInList, skill.Seafarer)
 			case "Va":
-				expectedInList = append(expectedInList, skill.ByCode(skill.VaccSuit).Name())
+				expectedInList = append(expectedInList, skill.VaccSuit)
 			}
+
 		}
 		if !match(bgSkills, expectedInList) {
 			t.Errorf("\nInput %v: World %v with codes %v have skills: \n%v,\nbut expect \n%v\n", i, bg.worldName, bg.worldTC, bgSkills, expectedInList)
@@ -85,7 +86,7 @@ func sliceContains(sl []string, s string) bool {
 	return false
 }
 
-func match(sl1, sl2 []string) bool {
+func match(sl1, sl2 []int) bool {
 	if len(sl1) != len(sl2) {
 		return false
 	}
