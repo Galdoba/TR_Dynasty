@@ -97,7 +97,6 @@ const (
 	INTUIT_Curiosity
 	INTUIT_Insight
 	INTUIT_Luck
-	KNOWLEDGE_Animals
 	KNOWLEDGE_Rider
 	KNOWLEDGE_Teamster
 	KNOWLEDGE_Trainer
@@ -170,6 +169,7 @@ type Skill struct {
 	code       int
 	alias      string
 	rating     int
+	maxRating  int
 	knowledges []int
 	isDefault  bool
 	category   string
@@ -179,6 +179,7 @@ type Skill struct {
 func NewSkill(code int) *Skill {
 	sk := Skill{}
 	sk.code = code
+	sk.maxRating = 15
 	switch code {
 	default:
 		sk.err = fmt.Errorf("can not create skill: Code '%v' is unknown", code)
@@ -420,12 +421,3 @@ func (s *Skill) Train() error {
 }
 
 ////////////////////////////////////////////////////
-
-//Knowledge - a body of information based on a field of science or
-//experience.
-type Knowledge struct {
-	code            int
-	alias           string
-	rating          int
-	affileatedSkill int
-}

@@ -1,7 +1,6 @@
 package assets
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -11,16 +10,11 @@ func TestSkills(t *testing.T) {
 		if sk.err != nil {
 			t.Errorf("creation error: %v", sk.err.Error())
 		} else {
-			fmt.Printf("	creation pass:	Code '%v' is valid and goes to skill '%v'\n", i, sk.alias)
-			fmt.Printf("	Test sk.String() = %v, %v\n", sk.String(), sk)
-
-			for j := 0; j < 17; j++ {
+			for j := 0; j < 15; j++ {
 				if err := sk.Train(); err != nil {
-					fmt.Printf("	Train %v failed:	%v\n", j, err.Error())
+					t.Errorf("	Train %v failed:	%v\n", j, err.Error())
 				}
 			}
-			fmt.Printf("	Test sk.Train(): name after Train '%v'|%v\n", sk.String(), sk)
 		}
-		fmt.Println("")
 	}
 }
