@@ -2,6 +2,7 @@ package assets
 
 import (
 	"fmt"
+	"strconv"
 )
 
 //Skills are the primary means by which characters do things in Traveller.
@@ -244,7 +245,7 @@ func NewSkill(code int) *Skill {
 		sk.alias = "High-G"
 		sk.category = "Broad"
 	case SKILL_HostileEnviron:
-		sk.alias = "HostileEnviron"
+		sk.alias = "Hostile Environ"
 		sk.category = "Broad"
 	case SKILL_JOT:
 		sk.alias = "Jack-Of-All-Trades"
@@ -260,7 +261,7 @@ func NewSkill(code int) *Skill {
 		sk.alias = "Liaison"
 		sk.category = "Broad"
 	case SKILL_NavalArchitect:
-		sk.alias = "NavalArchitect"
+		sk.alias = "Naval Architect"
 		sk.category = "Broad"
 	case SKILL_Seafarer:
 		sk.alias = "Seafarer"
@@ -291,11 +292,11 @@ func NewSkill(code int) *Skill {
 		sk.alias = "Trader"
 		sk.category = "Broad"
 	case SKILL_VaccSuit:
-		sk.alias = "VaccSuit"
+		sk.alias = "Vacc Suit"
 		sk.category = "Broad"
 		sk.isDefault = true
 	case SKILL_ZeroG:
-		sk.alias = "ZeroG"
+		sk.alias = "Zero-G"
 	case SKILL_Astrogator:
 		sk.alias = "Astrogator"
 		sk.category = "Starship"
@@ -406,7 +407,7 @@ func (s *Skill) Category() string {
 }
 
 func (s *Skill) String() string {
-	return fmt.Sprint("%v-%v", s.alias, s.rating)
+	return s.alias + "-" + strconv.Itoa(s.rating)
 }
 
 func (s *Skill) Train() error {
