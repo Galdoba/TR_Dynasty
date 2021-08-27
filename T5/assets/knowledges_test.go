@@ -10,7 +10,11 @@ func TestKnowledge(t *testing.T) {
 		if kn.err != nil {
 			t.Errorf("creation error: %v", kn.err.Error())
 		} else {
-
+			for j := 0; j < 6; j++ {
+				if err := kn.Train(); err != nil {
+					t.Errorf("training error: %v", err.Error())
+				}
+			}
 		}
 	}
 }

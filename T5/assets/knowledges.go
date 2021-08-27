@@ -199,11 +199,10 @@ func NewKnowledge(code int, optionalData ...string) *Knowledge {
 }
 
 func (kn *Knowledge) Train() error {
-	if kn.rating < kn.maxRating {
-		kn.rating++
-	}
-	if kn.rating > kn.maxRating {
+	if kn.rating >= kn.maxRating {
+		kn.rating = kn.maxRating
 		return fmt.Errorf("knowledge '%v' cannot be trained: maximum level reached", kn.alias)
 	}
+	kn.rating++
 	return nil
 }
