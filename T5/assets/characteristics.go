@@ -40,18 +40,18 @@ type Characteristic struct {
 	code         int
 	alias        string // not needed. TODO: get alias via code
 	charDice     int    //сколько кубов ролится для создания х-ки
-	err          error
+	Err          error
 }
 
 func NewCharacteristic(code int, diceQty int) *Characteristic {
 	c := Characteristic{}
 	c.code = code
 	c.charDice = diceQty
-	c.positionCode, c.err = positionCodeOf(code)
+	c.positionCode, c.Err = positionCodeOf(code)
 	if c.charDice < 1 {
-		c.err = fmt.Errorf("characteristic dice can not be less than 1")
+		c.Err = fmt.Errorf("characteristic dice can not be less than 1")
 	}
-	if c.err != nil {
+	if c.Err != nil {
 		return &c
 	}
 	for i := 0; i < diceQty; i++ {
@@ -188,6 +188,9 @@ func (c *Characteristic) UseAs(charCode int) (int, error) {
 	if c2.positionCode != c.positionCode {
 		return 0, fmt.Errorf("%v cannot be substituded with %v", c.Name(), c2.Name())
 	}
+	if c2.code == c.code {
+		return 0, fmt.Errorf("cannot substitude same code %v", c.code)
+	}
 	switch {
 	case c.positionCode == C2 && c2.positionCode == C2:
 		return halfValueRoundUp(c.value), nil
@@ -199,7 +202,26 @@ func (c *Characteristic) UseAs(charCode int) (int, error) {
 		return 4, nil
 	case c.code == Training && c2.code == Education:
 		return halfValueRoundUp(c.value), nil
-
+	case c.code == Training && c2.code == Instinct:
+		return 4, nil
+	case c.code == Instinct && c2.code == Education:
+		return 4, nil
+	case c.code == Instinct && c2.code == Training:
+		return 4, nil
+	case c.code == Charisma && c2.code == Social:
+		return c.value, nil
+	case c.code == Caste && c2.code == Social:
+		return 4, nil
+	case c.code == Social && c2.code == Charisma:
+		return halfValueRoundUp(c.value), nil
+	case c.code == Caste && c2.code == Charisma:
+		return 4, nil
+	case c.code == Social && c2.code == Caste:
+		return 4, nil
+	case c.code == Charisma && c2.code == Caste:
+		return 4, nil
+	default:
+		return 0, fmt.Errorf("combitation missed: %v/%v", c.Name(), c2.Name())
 	}
 }
 
