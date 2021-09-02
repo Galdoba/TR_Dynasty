@@ -8,3 +8,8 @@ func TestTraveller(t *testing.T) {
 		t.Errorf("creation Error: %v", trv.err.Error())
 	}
 }
+
+func TestTravellerCard(t *testing.T) {
+	trv := NewTravellerT5()
+	trv.PrintCard()
+}
