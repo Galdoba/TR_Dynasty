@@ -228,3 +228,22 @@ func (c *Characteristic) UseAs(charCode int) (int, error) {
 func halfValueRoundUp(val int) int {
 	return val/2 + val%2
 }
+
+func ListCharacteristics() []int {
+	return []int{
+		Strength,
+		Dexterity,
+		Agility,
+		Grace,
+		Endurance,
+		Stamina,
+		Vigor,
+		Intelligence,
+		Education,
+		Training,
+		Instinct,
+		Social,
+		Charisma,
+		Caste,
+	}
+}
