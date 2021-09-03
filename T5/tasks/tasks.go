@@ -28,10 +28,17 @@ type TaskAsset interface {
 	Code() int
 }
 
-func Create() *Task {
+func Create(f ...func(*Task)) *Task {
 	t := Task{}
 	t.resolution = "Unresolved"
+
 	return &t
+}
+
+func (t *Task) ApplyInstrucuctions(funcList ...func(vals ...interface{}) *Task) {
+	for i, _ := range funcList {
+		//TODO: найти способ скармливать кучу разных функций в поле и вызывать их исполнение
+	}
 }
 
 type Mod struct {
