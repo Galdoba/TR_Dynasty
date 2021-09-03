@@ -13,7 +13,7 @@ func TestTraveller(t *testing.T) {
 }
 
 func TestTravellerCard(t *testing.T) {
-	cc := newCard(NewTravellerT5())
+	cc := NewCard(NewTravellerT5())
 	fmt.Println("===TEST CARD============")
 	cc.PrintCard()
 	fmt.Println("========================")

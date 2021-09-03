@@ -399,8 +399,16 @@ func NewSkill(code int) *Skill {
 	return &sk
 }
 
-func (s *Skill) Rating() int {
+func (s *Skill) Name() string {
+	return s.alias
+}
+
+func (s *Skill) Value() int {
 	return s.rating
+}
+
+func (s *Skill) Code() int {
+	return s.code
 }
 
 func (s *Skill) Category() string {
@@ -418,6 +426,75 @@ func (s *Skill) Train() error {
 		return fmt.Errorf("skill '%v' cannot be trained: maximum level reached", s.alias)
 	}
 	return nil
+}
+
+func ListSkills() []int {
+	return []int{
+		SKILL_Admin,
+		SKILL_Advocate,
+		SKILL_Animals,
+		SKILL_Athlete,
+		SKILL_Broker,
+		SKILL_Bureaucrat,
+		SKILL_Comms,
+		SKILL_Computer,
+		SKILL_Counsellor,
+		SKILL_Designer,
+		SKILL_Diplomat,
+		SKILL_Driver,
+		SKILL_Explosives,
+		SKILL_FleetTactics,
+		SKILL_Flyer,
+		SKILL_Forensics,
+		SKILL_Gambler,
+		SKILL_HighG,
+		SKILL_HostileEnviron,
+		SKILL_JOT,
+		SKILL_Language,
+		SKILL_Leader,
+		SKILL_Liaison,
+		SKILL_NavalArchitect,
+		SKILL_Seafarer,
+		SKILL_Stealth,
+		SKILL_Strategy,
+		SKILL_Streetwise,
+		SKILL_Survey,
+		SKILL_Survival,
+		SKILL_Tactics,
+		SKILL_Teacher,
+		SKILL_Trader,
+		SKILL_VaccSuit,
+		SKILL_ZeroG,
+		SKILL_Astrogator,
+		SHIP_Engineer,
+		SHIP_Gunner,
+		SHIP_Medic,
+		SHIP_Pilot,
+		SHIP_Sensors,
+		SHIP_Steward,
+		TRADE_Biologics,
+		TRADE_Craftsman,
+		TRADE_Electronics,
+		TRADE_Fluidics,
+		TRADE_Gravitics,
+		TRADE_Magnetics,
+		TRADE_Mechanic,
+		TRADE_Photonics,
+		TRADE_Polymers,
+		TRADE_Programmer,
+		ART_Actor,
+		ART_Artist,
+		ART_Author,
+		ART_Chef,
+		ART_Dancer,
+		ART_Musician,
+		SOLDER_Fighter,
+		SOLDER_ForwardObserver,
+		SOLDER_HeavyWeapons,
+		SOLDER_Navigator,
+		SOLDER_Recon,
+		SOLDER_Sapper,
+	}
 }
 
 ////////////////////////////////////////////////////

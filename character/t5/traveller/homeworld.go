@@ -1,8 +1,6 @@
 package traveller
 
 import (
-	"fmt"
-
 	"github.com/Galdoba/TR_Dynasty/T5/assets"
 	"github.com/Galdoba/TR_Dynasty/otu"
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
@@ -13,7 +11,6 @@ func (trv *TravellerT5) GenerateHomeworld() {
 	switch trv.randomHomeWorld {
 	case true:
 		roll := dice.RollD66()
-		fmt.Println(roll)
 		trv.homeworld = setHW(roll)
 	case false:
 		homeworldData, _ := otu.GetDataOn("Regina")
@@ -25,7 +22,7 @@ func (trv *TravellerT5) GenerateHomeworld() {
 
 func setHW(code string) *wrld.World {
 	worldName := callWorld(code)
-	homeworldData, err := otu.GetDataOn(worldName)
+	homeworldData, err := otu.GetDataOnTest(worldName)
 	if err != nil {
 		panic(code + " invalid")
 	}
@@ -47,7 +44,7 @@ func callWorld(code string) string {
 	hwNames["21"] = "Magash"
 	hwNames["22"] = "Hefry"
 	hwNames["23"] = "Jenghe"
-	hwNames["24"] = "Earth"
+	hwNames["24"] = "Terra"
 	hwNames["25"] = "Lakou"
 	hwNames["26"] = "Sperle"
 	hwNames["31"] = "Knorbes"
@@ -79,112 +76,81 @@ func callWorld(code string) string {
 
 func (trv *TravellerT5) getBackgroundSkills() {
 	for _, tc := range trv.homeworld.TradeClassificationsSl() {
+		skill := 0
 		switch tc {
-		case "Ab":
-
+		default:
+			continue
 		case "Ag":
-			trv.skills[assets.SKILL_Animals] = *assets.NewSkill(assets.SKILL_Animals)
-		case "An":
-
+			skill = assets.SKILL_Animals
 		case "As":
-			//trv.GetSkill//Asteroid Zero-G
-			trv.skills[assets.SKILL_ZeroG] = *assets.NewSkill(assets.SKILL_ZeroG)
-		case "Ba":
-
+			skill = assets.SKILL_ZeroG
 		case "Co":
-			//trv.GetSkill//Cold Hostile Env
-			trv.skills[assets.SKILL_HostileEnviron] = *assets.NewSkill(assets.SKILL_HostileEnviron)
+			skill = assets.SKILL_HostileEnviron
 		case "Cp":
-			//trv.GetSkill//Subsector Capital Admin
-			trv.skills[assets.SKILL_Admin] = *assets.NewSkill(assets.SKILL_Admin)
+			skill = assets.SKILL_Admin
 		case "Cs":
-			//trv.GetSkill//Sector Capital Bureaucrat
-			trv.skills[assets.SKILL_Bureaucrat] = *assets.NewSkill(assets.SKILL_Bureaucrat)
+			skill = assets.SKILL_Bureaucrat
 		case "Cx":
-			//trv.GetSkill//Capital Language
-			trv.skills[assets.SKILL_Language] = *assets.NewSkill(assets.SKILL_Language)
+			skill = assets.SKILL_Language
 		case "Da":
-			//trv.GetSkill//Dangerous Fighter
-			trv.skills[assets.SOLDER_Fighter] = *assets.NewSkill(assets.SOLDER_Fighter)
+			skill = assets.SOLDER_Fighter
 		case "De":
-			//trv.GetSkill//Desert Survival
-			trv.skills[assets.SKILL_Survival] = *assets.NewSkill(assets.SKILL_Survival)
-		case "Di":
-			//trv.GetSkill//Die Back (no skill)
+			skill = assets.SKILL_Survival
 		case "Ds":
-			//trv.GetSkill//Deep Space Vacc Suit +Zero-G
-			trv.skills[assets.SKILL_VaccSuit] = *assets.NewSkill(assets.SKILL_VaccSuit)
-			trv.skills[assets.SKILL_ZeroG] = *assets.NewSkill(assets.SKILL_ZeroG)
+			skill = assets.SKILL_VaccSuit
+			skill = assets.SKILL_ZeroG
 		case "Fa":
-			//trv.GetSkill//Farming Animals
-			trv.skills[assets.SKILL_Animals] = *assets.NewSkill(assets.SKILL_Animals)
+			skill = assets.SKILL_Animals
 		case "Fl":
-			//trv.GetSkill//Fluid Hostile Env
-			trv.skills[assets.SKILL_HostileEnviron] = *assets.NewSkill(assets.SKILL_HostileEnviron)
-		case "Fo":
-			//trv.GetSkill//Forbidden (no skill)
+			skill = assets.SKILL_HostileEnviron
 		case "Fr":
-			//trv.GetSkill//Frozen Hostile Env
-			trv.skills[assets.SKILL_HostileEnviron] = *assets.NewSkill(assets.SKILL_HostileEnviron)
+			skill = assets.SKILL_HostileEnviron
 		case "Ga":
-			//trv.GetSkill//Garden World Trader
-			trv.skills[assets.SKILL_Trader] = *assets.NewSkill(assets.SKILL_Trader)
+			skill = assets.SKILL_Trader
 		case "He":
-			//trv.GetSkill//Hellworld Hostile Env
-			trv.skills[assets.SKILL_HostileEnviron] = *assets.NewSkill(assets.SKILL_HostileEnviron)
+			skill = assets.SKILL_HostileEnviron
 		case "Hi":
-			//trv.GetSkill//High Population Streetwise
-			trv.skills[assets.SKILL_Streetwise] = *assets.NewSkill(assets.SKILL_Streetwise)
+			skill = assets.SKILL_Streetwise
 		case "Ho":
-			//trv.GetSkill//Hot Hostile Env
-			trv.skills[assets.SKILL_HostileEnviron] = *assets.NewSkill(assets.SKILL_HostileEnviron)
+			skill = assets.SKILL_HostileEnviron
 		case "Ic":
-			//trv.GetSkill//Ice-Capped Vacc Suit
-			trv.skills[assets.SKILL_VaccSuit] = *assets.NewSkill(assets.SKILL_VaccSuit)
+			skill = assets.SKILL_VaccSuit
 		case "In":
-			//trv.GetSkill//Industrial One Trade
-		case "Lk":
-			//trv.GetSkill//Locked (no skill)
+			trade := dice.New().RollFromListInt([]int{assets.TRADE_Biologics, assets.TRADE_Craftsman, assets.TRADE_Electronics, assets.TRADE_Fluidics, assets.TRADE_Gravitics, assets.TRADE_Magnetics, assets.TRADE_Mechanic, assets.TRADE_Photonics, assets.TRADE_Polymers, assets.TRADE_Programmer})
+			skill = trade
 		case "Lo":
-			//trv.GetSkill//Low Population Flyer
+			skill = assets.SKILL_Flyer
 		case "Mi":
-			//trv.GetSkill//Mining Survey
-		case "Mr":
-			//trv.GetSkill//Military Rule (no skill)
+			skill = assets.SKILL_Survey
 		case "Na":
-			//trv.GetSkill//Non-agricultural Survey
+			skill = assets.SKILL_Survey
 		case "Ni":
-			//trv.GetSkill//Non-industrial Driver
+			skill = assets.SKILL_Driver
 		case "Oc":
-			//trv.GetSkill//Ocean World Hi-G
+			skill = assets.SKILL_HighG
 		case "Pa":
-			//trv.GetSkill//Pre-Agricultural Trader
-		case "Ph":
-			//trv.GetSkill//Pre-High Population (no skill)
+			skill = assets.SKILL_Trader
 		case "Pi":
-			//trv.GetSkill//Pre-Industrial JOT
+			skill = assets.SKILL_JOT
 		case "Po":
-			//trv.GetSkill//Poor Steward
+			skill = assets.SHIP_Steward
 		case "Pr":
-			//trv.GetSkill//Pre-Rich Craftsman
-		case "Px":
-			//trv.GetSkill//Prison Exile Camp (no skill)
-		case "Pz":
-			//trv.GetSkill//Puzzling (no skill)
-		case "Re":
-			//trv.GetSkill//Reserve (no skill)
+			skill = assets.TRADE_Craftsman
 		case "Ri":
-			//trv.GetSkill//Rich One Art
+			art := dice.New().RollFromListInt([]int{assets.ART_Actor, assets.ART_Artist, assets.ART_Author, assets.ART_Chef, assets.ART_Dancer, assets.ART_Musician})
+			skill = art
 		case "Tr":
-			//trv.GetSkill//Tropic Survival
+			skill = assets.SKILL_Survival
 		case "Tu":
-			//trv.GetSkill//Tundra Survival
+			skill = assets.SKILL_Survival
 		case "Tz":
-			//trv.GetSkill//Twilight Zone Driver
+			skill = assets.SKILL_Driver
 		case "Va":
-			//trv.GetSkill//Vacuum Vacc Suit
+			skill = assets.SKILL_VaccSuit
 		case "Wa":
-			//trv.GetSkill//Water World Seafarer
+			skill = assets.SKILL_Seafarer
 		}
+		trv.skills[skill] = assets.NewSkill(skill)
+		trv.skills[skill].Train()
 	}
 }

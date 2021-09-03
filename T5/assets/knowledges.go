@@ -198,6 +198,18 @@ func NewKnowledge(code int, optionalData ...string) *Knowledge {
 	return &kn
 }
 
+func (kn *Knowledge) Name() string {
+	return kn.alias
+}
+
+func (kn *Knowledge) Value() int {
+	return kn.rating
+}
+
+func (kn *Knowledge) Code() int {
+	return kn.code
+}
+
 func (kn *Knowledge) Train() error {
 	if kn.rating >= kn.maxRating {
 		kn.rating = kn.maxRating

@@ -6,15 +6,16 @@ import (
 	"github.com/Galdoba/TR_Dynasty/T5/assets"
 	"github.com/Galdoba/TR_Dynasty/T5/ehex"
 	"github.com/Galdoba/TR_Dynasty/pkg/core/calendar"
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 	"github.com/Galdoba/TR_Dynasty/wrld"
 )
 
 type TravellerT5 struct {
 	notHuman        bool
 	randomHomeWorld bool
-	characteristic  map[int]assets.Characteristic
-	skills          map[int]assets.Skill
-	knowledges      map[int]assets.Knowledge
+	characteristic  map[int]*assets.Characteristic
+	skills          map[int]*assets.Skill
+	knowledges      map[int]*assets.Knowledge
 	homeworld       *wrld.World
 	birthdate       *calendar.ImperialDate
 	currentDate     *calendar.ImperialDate
@@ -25,14 +26,15 @@ func NewTravellerT5() *TravellerT5 {
 	trv := TravellerT5{}
 	trv.currentDate = calendar.NewImperialDate(calendar.GameStartDay)
 	trv.randomHomeWorld = true
-	trv.characteristic = make(map[int]assets.Characteristic)
-	trv.skills = make(map[int]assets.Skill)
-	trv.knowledges = make(map[int]assets.Knowledge)
+	trv.characteristic = make(map[int]*assets.Characteristic)
+	trv.skills = make(map[int]*assets.Skill)
+	trv.knowledges = make(map[int]*assets.Knowledge)
+	trv.birthdate = calendar.NewImperialDate(dice.New().RollNext("1d365").Sum(), 1105)
 	//trv.err = fmt.Errorf("generation of traveller not implemented")
 	trv.GenerateCharactiristics()
 	trv.GenerateHomeworld()
-
-	fmt.Println(trv)
+	trv.AddAge(18)
+	//fmt.Println(trv)
 	return &trv
 }
 
@@ -52,7 +54,7 @@ func (trv *TravellerT5) GenerateCharactiristics() {
 			assets.Sanity,
 		}
 		for _, val := range charList {
-			trv.characteristic[val] = *assets.NewCharacteristic(val, 2)
+			trv.characteristic[val] = assets.NewCharacteristic(val, 2)
 			if trv.characteristic[val].Err != nil {
 				trv.err = trv.characteristic[val].Err
 			}
@@ -113,7 +115,7 @@ type charcterCard struct {
 	curDate   string
 }
 
-func newCard(trv *TravellerT5) *charcterCard {
+func NewCard(trv *TravellerT5) *charcterCard {
 	cc := charcterCard{}
 	cc.data = trv
 	cc.name = "Eneri Dirshar"
@@ -121,7 +123,8 @@ func newCard(trv *TravellerT5) *charcterCard {
 	cc.gp = trv.GeneticProfile()
 	cc.homeworld = trv.homeworld.Name() + " (" + trv.homeworld.Hex() + " " + trv.homeworld.Sector() + ")"
 	cc.curDate = trv.currentDate.String()
-	cc.skills = trv.homeworld.TradeCodes()
+	cc.birthdate = trv.birthdate.String()
+	cc.age = calendar.DateDifferenceYears(trv.birthdate, trv.currentDate)
 	for _, val := range trv.skills {
 		cc.skills = append(cc.skills, val.String())
 	}
@@ -131,9 +134,13 @@ func newCard(trv *TravellerT5) *charcterCard {
 func (cc charcterCard) PrintCard() {
 	fmt.Printf("%v %v. Genetic %v\n", cc.name, cc.upp, cc.gp)
 	fmt.Printf("Homeworld: %v\n", cc.homeworld)
-	fmt.Printf("SKILS %v\n", cc.skills)
+	fmt.Printf("Skills: %v\n", cc.skills)
 	fmt.Printf("CAREER\n")
 	fmt.Printf("Age %v. Born %v\n", cc.age, cc.birthdate)
 	fmt.Printf("REWARDS\n")
 	fmt.Printf("Current Date: %v\n", cc.curDate)
+}
+
+func (trv *TravellerT5) AddAge(age int) {
+	trv.birthdate.MoveDateByYears(age * -1)
 }

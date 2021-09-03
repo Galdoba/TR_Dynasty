@@ -162,6 +162,15 @@ func GetDataOn(key string) (SecondSurveyReportT5SS, error) {
 	return responce, err
 }
 
+func GetDataOnTest(key string) (SecondSurveyReportT5SS, error) {
+	err := errors.New("")
+	responce, err := searchByNameSimple(key)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	return responce, err
+}
+
 func searchByName(key string) (SecondSurveyReportT5SS, error) {
 	err := errors.New("No Data Found")
 	keyUP := strings.ToUpper(key)
@@ -215,6 +224,22 @@ func searchByName(key string) (SecondSurveyReportT5SS, error) {
 		return selectFromFound(search[3])
 	}
 	err = errors.New("No Data Found")
+	return SecondSurveyReportT5SS{}, err
+}
+
+func searchByNameSimple(key string) (SecondSurveyReportT5SS, error) {
+	keyUP := strings.ToUpper(key)
+	//search := make(map[int][]SecondSurveyReportT5SS)
+	for _, line := range RawData() {
+		lineUP := strings.ToUpper(line)
+		if strings.Contains(lineUP, keyUP) {
+			ssr := SecondSurveyReportT5SS{line}
+			if ssr.Name() == key {
+				return ssr, nil
+			}
+		}
+	}
+	err := errors.New("No Data Found")
 	return SecondSurveyReportT5SS{}, err
 }
 

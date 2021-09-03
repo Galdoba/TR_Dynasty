@@ -121,3 +121,7 @@ func ProjectDate(date *ImperialDate, period int) *ImperialDate {
 	newDate := NewImperialDate(date.day+period, date.year)
 	return newDate
 }
+
+func DateDifferenceYears(start, end *ImperialDate) int {
+	return end.year - start.year
+}

@@ -94,6 +94,10 @@ func (c *Characteristic) Value() int {
 	return c.value
 }
 
+func (c *Characteristic) Code() int {
+	return c.code
+}
+
 func (c *Characteristic) PositionCode() int {
 	return c.positionCode
 }
