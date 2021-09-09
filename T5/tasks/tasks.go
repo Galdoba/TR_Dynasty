@@ -7,6 +7,17 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/T5/assets"
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
+	"github.com/Galdoba/utils"
+)
+
+const (
+	TASK_COMMENT_Cooperative = "Cooperative"
+	TASK_COMMENT_Uncertain   = "Uncertain"
+	TASK_COMMENT_Opposed     = "Opposed"
+	TASK_COMMENT_Hasty       = "Hasty"
+	TASK_COMMENT_ExtraHasty  = "Extra Hasty"
+	TASK_COMMENT_Cautious    = "Cautious"
+	TASK_COMMENT_ThisIsHard  = "This is Hard"
 )
 
 type Task struct {
@@ -14,7 +25,7 @@ type Task struct {
 	skill          TaskAsset
 	characteristic TaskAsset
 	mods           []TaskAsset
-	duration       string
+	duration       int
 	difficulty     int
 	purpose        string
 	comments       []string
@@ -28,17 +39,52 @@ type TaskAsset interface {
 	Code() int
 }
 
-func Create(f ...func(*Task)) *Task {
+func Create() *Task {
 	t := Task{}
 	t.resolution = "Unresolved"
-
 	return &t
 }
 
-func (t *Task) ApplyInstrucuctions(funcList ...func(vals ...interface{}) *Task) {
-	for i, _ := range funcList {
-		//TODO: найти способ скармливать кучу разных функций в поле и вызывать их исполнение
+func (t *Task) SetupEnviroment(purpose string, dif int, timeframe int, comments ...string) error {
+	if ContainsAll(comments, TASK_COMMENT_Hasty, TASK_COMMENT_Cautious) {
+		return fmt.Errorf("test can not be Hasty and Cautious at the same time")
 	}
+	if ContainsAll(comments, TASK_COMMENT_ExtraHasty, TASK_COMMENT_Cautious) {
+		return fmt.Errorf("test can not be Extra Hasty and Cautious at the same time")
+	}
+	///
+	t.purpose = purpose
+	t.difficulty = dif
+	t.duration = timeframe
+	for _, val := range comments {
+		t.comments = append(t.comments, val)
+		if val == TASK_COMMENT_Hasty {
+			t.difficulty++
+		}
+		if val == TASK_COMMENT_ExtraHasty {
+			t.difficulty += 2
+		}
+		if val == TASK_COMMENT_Cautious {
+			t.difficulty--
+		}
+	}
+	return nil
+}
+
+func (t *Task) SetupAssets(asset ...TaskAsset) error {
+	for _, val := range asset {
+		t.AddAsset(val)
+	}
+	return nil
+}
+
+func ContainsAll(sl []string, elements ...string) bool {
+	for _, val := range elements {
+		if !utils.ListContains(sl, val) {
+			return false
+		}
+	}
+	return true
 }
 
 type Mod struct {
@@ -149,7 +195,6 @@ func (t *Task) Resolve() string {
 }
 
 func (t *Task) Outcome() string {
-
 	res := ""
 	result := t.dice.Result()
 	tn := t.TargetNumber()
@@ -157,21 +202,32 @@ func (t *Task) Outcome() string {
 	for _, v := range result {
 		sum += v
 	}
-
 	res = fmt.Sprint("Rolled ", result, " = ", sum, " against ", tn, "\n")
+	switch sum >= tn {
+	case true:
+		res += "Task Failed\n"
+	case false:
+		res += "Task Successful\n"
+	}
+	if t.spectacular != "" {
+		res += t.spectacular + "\n"
+	}
 	return res
 }
 
 func (t *Task) TaskPhrase() string {
 	ph := "===TASK PHRASE==================================================================\n"
 	ph += "To " + t.purpose
-	if t.duration != "" {
-		ph += "[" + t.duration + "]"
+	if t.duration != -1 {
+		ph += "[ + t.duration + ]"
 	}
 	ph += "\n" + t.difficultyStr() + " <= "
 	ph += t.listAssets() + " " + t.listAssetsValues() + "\n"
-	for c := len(t.comments); c > 0; c-- {
-		ph += t.comments[c] + "\n"
+	c := len(t.comments)
+	if c > 1 {
+		for i := c; i > 0; c-- {
+			ph += t.comments[c] + "\n"
+		}
 	}
 	ph += "================================================================================\n"
 	return ph
@@ -229,3 +285,32 @@ func (t *Task) difficultyStr() string {
 
 	}
 }
+
+type InstructionProcess interface {
+	SetDifficulty(int) *Task
+}
+
+type instrucionS struct {
+	code int
+}
+
+/*
+tm := task.NewTaskMaker()
+task := task.Create(
+	tm.SetDifficulty(3),
+	tm.SetPurpose("Apply to university"),
+)
+
+newTask := task.NewTask()
+newTask = task.Construct(
+	newTask.SetDifficulty(3),
+	newTask.SetPurpose("Apply to university"),
+)
+
+newTask := task.Task{
+	Difficulty: 3
+	Purpose: "Apply to university"
+}
+
+
+*/
