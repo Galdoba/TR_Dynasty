@@ -251,3 +251,11 @@ func ListCharacteristics() []int {
 		Caste,
 	}
 }
+
+func (c *Characteristic) ChangeBy(i int) {
+	c.value = c.value + i
+}
+
+func (c *Characteristic) SetValue(i int) {
+	c.value = i
+}

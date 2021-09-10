@@ -21,14 +21,13 @@ func TestTasks(t *testing.T) {
 	ts.AddAsset(testMod)
 	ts.AddAsset(testSkill)
 
-	//ts.SetDifficulty(-1)
 	ts.SetPurpose("apply to university")
 	fmt.Print(ts.TaskPhrase())
 	ts.Resolve()
 	fmt.Println(ts.Outcome())
 
 	ts2 := Create()
-	ts2.SetupEnviroment("test setupfunctions", 2, 2, TASK_COMMENT_Cautious)
+	ts2.SetupEnviroment("test setup Functions", 2, 2, TASK_COMMENT_Hasty)
 	tChar := assets.NewCharacteristic(assets.Charisma, 5)
 	tSkil := assets.NewSkill(assets.SKILL_Broker)
 	tMods := NewMod("War", 2)

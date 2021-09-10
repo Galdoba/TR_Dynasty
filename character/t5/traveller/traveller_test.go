@@ -1,7 +1,6 @@
 package traveller
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -13,8 +12,8 @@ func TestTraveller(t *testing.T) {
 }
 
 func TestTravellerCard(t *testing.T) {
-	cc := NewCard(NewTravellerT5())
-	fmt.Println("===TEST CARD============")
-	cc.PrintCard()
-	fmt.Println("========================")
+	//cc := NewCard(NewTravellerT5())
+	// fmt.Println("===TEST CARD============")
+	// cc.PrintCard()
+	// fmt.Println("========================")
 }

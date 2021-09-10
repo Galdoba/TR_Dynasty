@@ -11,13 +11,25 @@ import (
 )
 
 const (
-	TASK_COMMENT_Cooperative = "Cooperative"
-	TASK_COMMENT_Uncertain   = "Uncertain"
-	TASK_COMMENT_Opposed     = "Opposed"
-	TASK_COMMENT_Hasty       = "Hasty"
-	TASK_COMMENT_ExtraHasty  = "Extra Hasty"
-	TASK_COMMENT_Cautious    = "Cautious"
-	TASK_COMMENT_ThisIsHard  = "This is Hard"
+	TASK_COMMENT_Cooperative      = "Cooperative"
+	TASK_COMMENT_Uncertain        = "Uncertain"
+	TASK_COMMENT_Opposed          = "Opposed"
+	TASK_COMMENT_Hasty            = "Hasty"
+	TASK_COMMENT_ExtraHasty       = "Extra Hasty"
+	TASK_COMMENT_Cautious         = "Cautious"
+	TASK_COMMENT_ThisIsHard       = "This is Hard"
+	TASK_DURATION_Unimportant     = 0
+	TASK_DURATION_Unimportant_str = ""
+	TASK_DURATION_Minutes         = 1
+	TASK_DURATION_Minutes_str     = "About 10 minutes"
+	TASK_DURATION_Hour            = 2
+	TASK_DURATION_Hour_str        = "An Hour"
+	TASK_DURATION_Day             = 3
+	TASK_DURATION_Day_str         = "All Day"
+	TASK_DURATION_Week            = 4
+	TASK_DURATION_Week_str        = "A Week"
+	TASK_DURATION_Month           = 5
+	TASK_DURATION_Month_str       = "A Month"
 )
 
 type Task struct {
@@ -31,6 +43,7 @@ type Task struct {
 	comments       []string
 	resolution     string
 	spectacular    string
+	completed      bool
 }
 
 type TaskAsset interface {
@@ -176,6 +189,7 @@ func (t *Task) Resolve() string {
 	}
 	if sum <= tn {
 		t.resolution = "Successful"
+		t.completed = true
 	} else {
 		t.resolution = "Failed"
 	}
@@ -194,6 +208,10 @@ func (t *Task) Resolve() string {
 	return t.resolution
 }
 
+func (t *Task) Completed() bool {
+	return t.completed
+}
+
 func (t *Task) Outcome() string {
 	res := ""
 	result := t.dice.Result()
@@ -203,6 +221,9 @@ func (t *Task) Outcome() string {
 		sum += v
 	}
 	res = fmt.Sprint("Rolled ", result, " = ", sum, " against ", tn, "\n")
+	if t.duration != 0 {
+		res += fmt.Sprintf("Task took about %v\n", determineDuration(t.duration, t.comments...))
+	}
 	switch sum >= tn {
 	case true:
 		res += "Task Failed\n"
@@ -212,14 +233,21 @@ func (t *Task) Outcome() string {
 	if t.spectacular != "" {
 		res += t.spectacular + "\n"
 	}
+	res = strings.TrimSuffix(res, "\n")
 	return res
 }
 
 func (t *Task) TaskPhrase() string {
 	ph := "===TASK PHRASE==================================================================\n"
 	ph += "To " + t.purpose
-	if t.duration != -1 {
-		ph += "[ + t.duration + ]"
+	if t.duration != 0 {
+		tmap := make(map[int]string)
+		tmap[TASK_DURATION_Minutes] = TASK_DURATION_Minutes_str
+		tmap[TASK_DURATION_Hour] = TASK_DURATION_Hour_str
+		tmap[TASK_DURATION_Day] = TASK_DURATION_Day_str
+		tmap[TASK_DURATION_Week] = TASK_DURATION_Week_str
+		tmap[TASK_DURATION_Month] = TASK_DURATION_Month_str
+		ph += " [ " + tmap[t.duration] + " ]"
 	}
 	ph += "\n" + t.difficultyStr() + " <= "
 	ph += t.listAssets() + " " + t.listAssetsValues() + "\n"
@@ -229,7 +257,7 @@ func (t *Task) TaskPhrase() string {
 			ph += t.comments[c] + "\n"
 		}
 	}
-	ph += "================================================================================\n"
+	ph += "================================================================================"
 	return ph
 }
 
@@ -292,6 +320,40 @@ type InstructionProcess interface {
 
 type instrucionS struct {
 	code int
+}
+
+func determineDuration(dFactor int, comments ...string) string {
+	time := 0
+	result := ""
+	switch dFactor {
+	case 1:
+		time = 10 + dice.Flux()
+		result = "minutes"
+	case 2:
+		time = 60 + dice.Flux()*10
+		result = "minutes"
+	case 3:
+		time = 10 + dice.Flux()
+		result = "hours"
+	case 4:
+		time = 6 + dice.Flux()
+		result = "days"
+	case 5:
+		time = 6 + dice.Flux()
+		result = "weeks"
+	}
+	for _, val := range comments {
+		if val == TASK_COMMENT_Cautious {
+			time = time * 2
+		}
+		if val == TASK_COMMENT_Hasty {
+			time = time / 2
+		}
+		if val == TASK_COMMENT_ExtraHasty {
+			time = time / 4
+		}
+	}
+	return fmt.Sprintf("%d %v", time, result)
 }
 
 /*

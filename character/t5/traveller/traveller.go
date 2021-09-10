@@ -13,12 +13,15 @@ import (
 type TravellerT5 struct {
 	notHuman        bool
 	randomHomeWorld bool
+	shoutEvents     bool
 	characteristic  map[int]*assets.Characteristic
 	skills          map[int]*assets.Skill
 	knowledges      map[int]*assets.Knowledge
 	homeworld       *wrld.World
+	education       *education
 	birthdate       *calendar.ImperialDate
 	currentDate     *calendar.ImperialDate
+	lifeEvents      []string
 	err             error
 }
 
@@ -26,6 +29,7 @@ func NewTravellerT5() *TravellerT5 {
 	trv := TravellerT5{}
 	trv.currentDate = calendar.NewImperialDate(calendar.GameStartDay)
 	trv.randomHomeWorld = true
+	trv.shoutEvents = true
 	trv.characteristic = make(map[int]*assets.Characteristic)
 	trv.skills = make(map[int]*assets.Skill)
 	trv.knowledges = make(map[int]*assets.Knowledge)
@@ -86,6 +90,13 @@ func (trv *TravellerT5) GeneticProfile() string {
 	return gp
 }
 
+func (trv *TravellerT5) AddEvent(event string) {
+	trv.lifeEvents = append(trv.lifeEvents, event)
+	if trv.shoutEvents {
+		fmt.Println(event)
+	}
+}
+
 type CardPrinter interface {
 	PrintCard()
 }
@@ -107,6 +118,7 @@ type charcterCard struct {
 	upp       string
 	gp        string
 	homeworld string
+
 	skills    []string
 	career    []string
 	age       int
