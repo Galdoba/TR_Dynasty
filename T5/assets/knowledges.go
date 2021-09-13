@@ -1,6 +1,9 @@
 package assets
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 //Knowledge - a body of information based on a field of science or
 //experience.
@@ -211,10 +214,31 @@ func (kn *Knowledge) Code() int {
 }
 
 func (kn *Knowledge) Train() error {
-	if kn.rating >= kn.maxRating {
-		kn.rating = kn.maxRating
+	kn.rating++
+	if kn.rating > 6 {
+		kn.rating = 6
 		return fmt.Errorf("knowledge '%v' cannot be trained: maximum level reached", kn.alias)
 	}
-	kn.rating++
 	return nil
 }
+
+func (kn *Knowledge) Error() string {
+	if kn.err == nil {
+		return "Valid"
+	}
+	return kn.err.Error()
+}
+
+func (kn *Knowledge) String() string {
+	return kn.alias + "-" + strconv.Itoa(kn.rating)
+}
+
+/*
+s.rating++
+	if s.rating > 15 {
+		s.rating = 15
+		return fmt.Errorf("skill '%v' cannot be trained: maximum level reached", s.alias)
+	}
+	return nil
+
+*/

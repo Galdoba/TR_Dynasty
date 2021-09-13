@@ -5,6 +5,7 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/T5/assets"
 	"github.com/Galdoba/TR_Dynasty/T5/ehex"
+	"github.com/Galdoba/TR_Dynasty/T5/tasks"
 	"github.com/Galdoba/TR_Dynasty/pkg/core/calendar"
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 	"github.com/Galdoba/TR_Dynasty/wrld"
@@ -97,6 +98,41 @@ func (trv *TravellerT5) AddEvent(event string) {
 	}
 }
 
+func (trv *TravellerT5) AddTaskEvent(t *tasks.Task) {
+	trv.lifeEvents = append(trv.lifeEvents, t.TaskPhrase())
+	if trv.shoutEvents {
+		fmt.Println(t.TaskPhrase())
+	}
+	trv.lifeEvents = append(trv.lifeEvents, t.Outcome())
+	if trv.shoutEvents {
+		fmt.Println(t.Outcome())
+	}
+}
+
+func (trv *TravellerT5) UseWaifer(reason string) bool {
+	waifer := tasks.Create()
+	waifer.SetupAssets(trv.characteristic[assets.Social], tasks.NewMod("Waifer used", trv.education.wafersUsed))
+	waifer.SetupEnviroment(reason, 2, 0)
+	waifer.Resolve()
+	trv.AddEvent(waifer.TaskPhrase())
+	trv.AddEvent(waifer.Outcome())
+	trv.education.wafersUsed++
+	return waifer.Completed()
+}
+
+func (trv *TravellerT5) NewAsset(code int) {
+	newSkill := assets.NewSkill(code)
+	if newSkill.Error() == "Valid" {
+		trv.skills[code] = newSkill
+		return
+	}
+	newKnowledge := assets.NewKnowledge(code)
+	if newKnowledge.Error() == "Valid" {
+		trv.knowledges[code] = newKnowledge
+		return
+	}
+}
+
 type CardPrinter interface {
 	PrintCard()
 }
@@ -138,6 +174,9 @@ func NewCard(trv *TravellerT5) *charcterCard {
 	cc.birthdate = trv.birthdate.String()
 	cc.age = calendar.DateDifferenceYears(trv.birthdate, trv.currentDate)
 	for _, val := range trv.skills {
+		cc.skills = append(cc.skills, val.String())
+	}
+	for _, val := range trv.knowledges {
 		cc.skills = append(cc.skills, val.String())
 	}
 	return &cc

@@ -157,10 +157,10 @@ const (
 	KNOWLEDGE_Specialized
 )
 
-//Assets - Skills, Knowledges, Talents, Characteristics, and Modifiers used in a task.
-type Assets struct {
-	Skills map[int]Skill
-}
+// //Assets - Skills, Knowledges, Talents, Characteristics, and Modifiers used in a task.
+// type Assets struct {
+// 	Skills map[int]Skill
+// }
 
 /////////////////////////////////////
 
@@ -426,6 +426,13 @@ func (s *Skill) Train() error {
 		return fmt.Errorf("skill '%v' cannot be trained: maximum level reached", s.alias)
 	}
 	return nil
+}
+
+func (s *Skill) Error() string {
+	if s.err == nil {
+		return "Valid"
+	}
+	return s.err.Error()
 }
 
 func ListSkills() []int {

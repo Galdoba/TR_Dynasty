@@ -187,13 +187,13 @@ func (t *Task) Resolve() string {
 	for _, v := range result {
 		sum += v
 	}
-	if sum <= tn {
+	switch sum <= tn {
+	case true:
 		t.resolution = "Successful"
 		t.completed = true
-	} else {
+	case false:
 		t.resolution = "Failed"
 	}
-
 	if ones >= 3 {
 		t.spectacular = "Spectacular Success"
 	}
@@ -224,7 +224,7 @@ func (t *Task) Outcome() string {
 	if t.duration != 0 {
 		res += fmt.Sprintf("Task took about %v\n", determineDuration(t.duration, t.comments...))
 	}
-	switch sum >= tn {
+	switch sum > tn {
 	case true:
 		res += "Task Failed\n"
 	case false:
