@@ -6,33 +6,6 @@ import (
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 )
 
-const (
-	C1 = iota
-	C2
-	C3
-	C4
-	C5
-	C6
-	CS
-	CP
-	Strength
-	Dexterity
-	Agility
-	Grace
-	Endurance
-	Stamina
-	Vigor
-	Intelligence
-	Education
-	Training
-	Instinct
-	Social
-	Charisma
-	Caste
-	Sanity
-	Psionics
-)
-
 type Characteristic struct {
 	value        int
 	genetics     int

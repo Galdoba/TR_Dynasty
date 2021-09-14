@@ -279,3 +279,20 @@ func listColledgeMajors() []int {
 		assets.KNOWLEDGE_Aquanautics,
 	}
 }
+
+type EducationInstitution struct {
+	major int
+	minor int
+	years int
+}
+
+type taskRequisite struct {
+	charCode    int
+	baseValue   int
+	directionUp bool
+}
+
+func educationTask(s string) taskRequisite {
+	tr := taskRequisite{}
+
+}

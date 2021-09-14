@@ -24,3 +24,25 @@ func TestEducation(t *testing.T) {
 	cc := NewCard(trv)
 	cc.PrintCard()
 }
+
+/*
+Education Process:
+Meet Prequsites (T5Charater) bool
+Apply Check
+Pass/Fail Check - yearly
+Benefit - yearly
+Graduate
+
+Institution Struct:
+majors []string
+pre requisite check
+pass check
+//benefits
+
+years int
+
+
+
+
+
+*/
