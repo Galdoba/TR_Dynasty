@@ -294,5 +294,5 @@ type taskRequisite struct {
 
 func educationTask(s string) taskRequisite {
 	tr := taskRequisite{}
-
+	return tr
 }
