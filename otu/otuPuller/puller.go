@@ -53,7 +53,7 @@ func PullOtuData() {
 							log.Fatal(err)
 						}
 						defer data.Body.Close()
-						if resp.StatusCode == http.StatusOK {
+						if data.StatusCode == http.StatusOK {
 							worldBytes, err := ioutil.ReadAll(data.Body)
 							if err != nil {
 								log.Fatal(err)
@@ -72,15 +72,15 @@ func PullOtuData() {
 				}
 			}
 			//log.Info(bodyString)
-			fmt.Println(worldString)
+			//fmt.Println(worldString)
 
-			l, err := f.WriteString(bodyString)
-			if err != nil {
-				fmt.Println(err)
-				f.Close()
-				return
-			}
-			fmt.Println(l, "bytes written successfully")
+			// l, err := f.WriteString(bodyString)
+			// if err != nil {
+			// 	fmt.Println(err)
+			// 	f.Close()
+			// 	return
+			// }
+			// fmt.Println(l, "bytes written successfully")
 
 		}
 		fmt.Println("Pulled", i, "sectors of", totalSectors)
