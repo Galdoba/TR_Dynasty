@@ -54,11 +54,12 @@ func PullOtuData() {
 						}
 						defer data.Body.Close()
 						if resp.StatusCode == http.StatusOK {
-							worldBytes, err := ioutil.ReadAll(resp.Body)
+							worldBytes, err := ioutil.ReadAll(data.Body)
 							if err != nil {
 								log.Fatal(err)
 							}
 							worldString = string(worldBytes)
+							fmt.Println(worldString)
 							l, err := f.WriteString(worldString)
 							if err != nil {
 								fmt.Println(err)
