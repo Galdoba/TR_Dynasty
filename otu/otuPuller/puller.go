@@ -26,7 +26,7 @@ func PullOtuData() {
 	}
 	var worldLink string
 	allSectors()
-	totalSectors := len(allSectors())
+	totalSectors := len(allSectors2())
 	for i, val := range allSectors2() {
 		if i == 3 {
 			os.Exit(3)
@@ -46,6 +46,7 @@ func PullOtuData() {
 			lines := strings.Split(bodyString, "\n")
 			for _, line := range lines {
 				for _, hex := range allHexes() {
+					fmt.Println(line)
 					if strings.Contains(line, hex+" ") {
 						worldLink = val + "/" + hex
 						data, err := client.Get(worldLink)
