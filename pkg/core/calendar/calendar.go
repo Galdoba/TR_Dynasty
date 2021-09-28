@@ -3,6 +3,7 @@ package calendar
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -41,6 +42,13 @@ func NewImperialDate(data ...int) *ImperialDate {
 	d.year = year
 	d.validate()
 	return &d
+}
+
+func NewImperialDateStr(s string) *ImperialDate {
+	data := strings.Split(s, "-")
+	day, _ := strconv.Atoi(data[0])
+	year, _ := strconv.Atoi(data[1])
+	return NewImperialDate(day + year*365)
 }
 
 func (d *ImperialDate) validate() {

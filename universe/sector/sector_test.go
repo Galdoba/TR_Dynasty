@@ -1,0 +1,5 @@
+package sector
+
+func TestSector() {
+
+}
