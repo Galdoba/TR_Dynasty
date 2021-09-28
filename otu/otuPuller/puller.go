@@ -1,4 +1,4 @@
-package puller
+package main
 
 import (
 	"fmt"
@@ -9,6 +9,10 @@ import (
 	"strconv"
 	"strings"
 )
+
+func main() {
+	PullOtuData()
+}
 
 //PullOtuData -
 func PullOtuData() {
