@@ -9,7 +9,10 @@ import (
 )
 
 func readData() []string {
-	lines := utils.LinesFromTXT("c:\\Users\\pemaltynov\\go\\src\\github.com\\Galdoba\\TR_Dynasty\\otu\\otuPuller\\data.txt")
+	//lines := utils.LinesFromTXT("c:\\Users\\pemaltynov\\go\\src\\github.com\\Galdoba\\TR_Dynasty\\otu\\otuPuller\\data.txt")
+
+	lines := utils.LinesFromTXT("d:\\golang\\src\\github.com\\Galdoba\\TR_Dynasty\\otu\\otuPuller\\data.txt")
+
 	return lines
 }
 
@@ -40,9 +43,9 @@ type parcedData struct {
 	SubsectorName        string //S
 	SectorAbbreviation   string //S
 	AllegianceName       string //S
-	OrbitCode            string //W
-	Star                 string //W
-	err                  error
+	//OrbitCode            string //W
+	//Star                 string //W
+	err error
 }
 
 func ParceWorldData(worlddata string) *parcedData {
@@ -80,6 +83,7 @@ func ParceWorldData(worlddata string) *parcedData {
 	//////////
 	worlddata = strings.TrimPrefix(worlddata, "{''Worlds'':[{''")
 	worlddata = strings.TrimSuffix(worlddata, "}]}")
+	worlddata = strings.Replace(worlddata, ",'',''", ",''", -1)
 	data := strings.Split(worlddata, ",''")
 	for d, field := range data {
 		fData := strings.Split(field, "'':''")
@@ -148,7 +152,206 @@ func ParceWorldData(worlddata string) *parcedData {
 	if pd.Nobility == "?" {
 		pd.Nobility = "Nobl?"
 	}
+	if pd.SectorAbbreviation == "?" {
+		pd.SectorAbbreviation = "****"
+	}
+	if pd.Name == "?" {
+		pd.Name = ""
+	}
+
 	return &pd
+}
+
+func (pd *parcedData) String() string {
+	return fmt.Sprint(
+		pd.Name, "|",
+		pd.Hex, "|",
+		pd.UWP, "|",
+		pd.PBG, "|",
+		pd.Zone, "|",
+		pd.Bases, "|",
+		pd.Allegiance, "|",
+		pd.Stellar, "|",
+		pd.SS, "|",
+		pd.Ix, "|",
+		pd.CalculatedImportance, "|",
+		pd.Ex, "|",
+		pd.Cx, "|",
+		pd.Nobility, "|",
+		pd.Worlds, "|",
+		pd.ResourceUnits, "|",
+		pd.Subsector, "|",
+		pd.Quadrant, "|",
+		pd.WorldX, "|",
+		pd.WorldY, "|",
+		pd.Remarks, "|",
+		pd.LegacyBaseCode, "|",
+		pd.Sector, "|",
+		pd.SubsectorName, "|",
+		pd.SectorAbbreviation, "|",
+		pd.AllegianceName, "|",
+	)
+}
+
+func (pd *parcedData) StringF() string {
+	str := ""
+	Name := pd.Name
+	for len(Name) < 28 {
+		Name += " "
+	}
+	str += "|"
+	str += Name
+	Hex := pd.Hex
+	for len(Hex) < 4 {
+		Hex += " "
+	}
+	str += "|"
+	str += Hex
+	UWP := pd.UWP
+	for len(UWP) < 9 {
+		UWP += " "
+	}
+	str += "|"
+	str += UWP
+	PBG := pd.PBG
+	for len(PBG) < 3 {
+		PBG += " "
+	}
+	str += "|"
+	str += PBG
+	Zone := pd.Zone
+	for len(Zone) < 1 {
+		Zone += " "
+	}
+	str += "|"
+	str += Zone
+	Bases := pd.Bases
+	for len(Bases) < 2 {
+		Bases += " "
+	}
+	str += "|"
+	str += Bases
+	Allegiance := pd.Allegiance
+	for len(Allegiance) < 4 {
+		Allegiance += " "
+	}
+	str += "|"
+	str += Allegiance
+	Stellar := pd.Stellar
+	for len(Stellar) < 29 {
+		Stellar += " "
+	}
+	str += "|"
+	str += Stellar
+	SS := pd.SS
+	for len(SS) < 1 {
+		SS += " "
+	}
+	str += "|"
+	str += SS
+	Ix := pd.Ix
+	for len(Ix) < 11 {
+		Ix += " "
+	}
+	str += "|"
+	str += Ix
+	CalculatedImportance := strconv.Itoa(pd.CalculatedImportance)
+	for len(CalculatedImportance) < 2 {
+		CalculatedImportance += " "
+	}
+	str += "|"
+	str += CalculatedImportance
+	Ex := pd.Ex
+	for len(Ex) < 7 {
+		Ex += " "
+	}
+	str += "|"
+	str += Ex
+	Cx := pd.Cx
+	for len(Cx) < 6 {
+		Cx += " "
+	}
+	str += "|"
+	str += Cx
+	Nobility := pd.Nobility
+	for len(Nobility) < 5 {
+		Nobility += " "
+	}
+	str += "|"
+	str += Nobility
+	Worlds := strconv.Itoa(pd.Worlds)
+	for len(Worlds) < 2 {
+		Worlds += " "
+	}
+	str += "|"
+	str += Worlds
+	ResourceUnits := strconv.Itoa(pd.ResourceUnits)
+	for len(ResourceUnits) < 5 {
+		ResourceUnits += " "
+	}
+	str += "|"
+	str += ResourceUnits
+	Subsector := strconv.Itoa(pd.Subsector)
+	for len(Subsector) < 2 {
+		Subsector += " "
+	}
+	str += "|"
+	str += Subsector
+	Quadrant := strconv.Itoa(pd.Quadrant)
+	for len(Quadrant) < 1 {
+		Quadrant += " "
+	}
+	str += "|"
+	str += Quadrant
+	WorldX := strconv.Itoa(pd.WorldX)
+	for len(WorldX) < 5 {
+		WorldX += " "
+	}
+	str += "|"
+	str += WorldX
+	WorldY := strconv.Itoa(pd.WorldY)
+	for len(WorldY) < 5 {
+		WorldY += " "
+	}
+	str += "|"
+	str += WorldY
+	Remarks := pd.Remarks
+	for len(Remarks) < 44 {
+		Remarks += " "
+	}
+	str += "|"
+	str += Remarks
+	LegacyBaseCode := pd.LegacyBaseCode
+	for len(LegacyBaseCode) < 2 {
+		LegacyBaseCode += " "
+	}
+	str += "|"
+	str += LegacyBaseCode
+	Sector := pd.Sector
+	for len(Sector) < 33 {
+		Sector += " "
+	}
+	str += "|"
+	str += Sector
+	SubsectorName := pd.SubsectorName
+	for len(SubsectorName) < 24 {
+		SubsectorName += " "
+	}
+	str += "|"
+	str += SubsectorName
+	SectorAbbreviation := pd.SectorAbbreviation
+	for len(SectorAbbreviation) < 4 {
+		SectorAbbreviation += " "
+	}
+	str += "|"
+	str += SectorAbbreviation
+	AllegianceName := pd.AllegianceName
+	for len(AllegianceName) < 93 {
+		AllegianceName += " "
+	}
+	str += "|"
+	str += AllegianceName
+	return str
 }
 
 func (pd *parcedData) assignIntData(field string) {
