@@ -2,7 +2,6 @@ package dataparcer
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 	"testing"
@@ -15,10 +14,10 @@ func TestParcer(t *testing.T) {
 	blankSystems := 0
 	systemsSurveed := 0
 	//dataMap := make(map[int]int)
-	f, err := os.Create("formattedData.txt")
-	if err != nil {
-		fmt.Println(err)
-	}
+	// f, err := os.Create("formattedData.txt")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 	for i, line := range lines {
 		systemsSurveed++
 		// if line == "{''Worlds'':[]}" {
@@ -135,11 +134,11 @@ func TestParcer(t *testing.T) {
 			problemLines++
 		}
 		//dataMap = updateDataTemplate(pd, dataMap)
-		_, errW := f.WriteString(pd.StringF() + "\n")
-		if errW != nil {
-			fmt.Println(err)
-			f.Close()
-		}
+		// _, errW := f.WriteString(pd.StringF() + "\n")
+		// if errW != nil {
+		// 	fmt.Println(err)
+		// 	f.Close()
+		// }
 		fmt.Print("Parsed ", systemsSurveed, "/", len(lines), "\r")
 	}
 	fmt.Println("")

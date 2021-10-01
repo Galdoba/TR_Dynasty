@@ -11,7 +11,7 @@ import (
 func readData() []string {
 	//lines := utils.LinesFromTXT("c:\\Users\\pemaltynov\\go\\src\\github.com\\Galdoba\\TR_Dynasty\\otu\\otuPuller\\data.txt")
 
-	lines := utils.LinesFromTXT("d:\\golang\\src\\github.com\\Galdoba\\TR_Dynasty\\otu\\otuPuller\\data.txt")
+	lines := utils.LinesFromTXT("c:\\Users\\Public\\TrvData\\data.txt")
 
 	return lines
 }

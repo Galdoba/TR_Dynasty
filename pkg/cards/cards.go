@@ -1,5 +1,12 @@
 package cards
 
+import (
+	"math/rand"
+	"time"
+
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
+)
+
 const (
 	//French
 	JOKER        = iota //Джокер
@@ -47,4 +54,18 @@ func NewDeck() *Deck {
 
 func NewCard(suit, rank int) Card {
 	return Card{suit, rank}
+}
+
+func (d *Deck) Shuffle() {
+	r := dice.New().RollNext("1d50").Sum()
+	rand.Seed(time.Now().UnixNano())
+	for i := 0; i < r; i++ {
+		rand.Shuffle(len(d.cards), func(i, j int) { d.cards[i], d.cards[j] = d.cards[j], d.cards[i] })
+	}
+}
+
+func (d *Deck) DrawCard() *Card {
+	card := d.cards[0]
+	d.cards = d.cards[1:]
+	return &card
 }
