@@ -151,5 +151,15 @@ func hoursToTimeStr(hours float64) string {
 		//hh++
 		mm += 60
 	}
-	return strconv.Itoa(dd) + " days " + strconv.Itoa(hh) + " hours " + strconv.Itoa(mm) + " minutes"
+	timeStr := ""
+	if dd > 0 {
+		timeStr += fmt.Sprintf("%v days", dd)
+	}
+	timeStr += strconv.Itoa(hh) + " hours " + strconv.Itoa(mm) + " minutes"
+	return timeStr
 }
+
+/*
+Transit Time: 0d 1h 17m
+
+*/
