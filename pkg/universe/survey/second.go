@@ -59,7 +59,8 @@ func Parse(input string) *SecondSurveyData {
 	ssd.Allegiance = data[5]
 	ssd.Stellar = data[5]
 	ru, errRu := strconv.Atoi(data[5])
-	ssd.errors = append(ssd.errors, ru)
+	ssd.errors = append(ssd.errors, errRu)
+	ssd.RU = ru
 
 	return &ssd
 }
