@@ -52,3 +52,43 @@ func UWPvalid(uwp string) bool {
 	////////////
 	return true
 }
+
+func Fix(uwp string) string {
+	switch uwp {
+	case "X233000-X":
+		return "X233000-0"
+	case "X420000-X":
+		return "X420000-0"
+	case "X400000-X":
+		return "X400000-0"
+	case "X100000-X":
+		return "X100000-0"
+	case "X7A6000-X":
+		return "X7A6000-0"
+	case "X424000-X":
+		return "X424000-0"
+	case "X411000-X":
+		return "X411000-0"
+	case "X110000-X":
+		return "X110000-0"
+	case "X000000-X":
+		return "X000000-0"
+	case "X439000-X":
+		return "X439000-0"
+	case "X000XXX-X":
+		return "X000000-0"
+	case "B453889-X":
+		return "B453889-0"
+	case "X200000-X":
+		return "X200000-0"
+	case "X484XXX-X":
+		return "X484000-0"
+	case "C857360-N":
+		return "C857360-L"
+	case "A6VV997-D":
+		return "A655997-D"
+	case "XXXXXXX-X":
+		return "???????-?"
+	}
+	return uwp
+}

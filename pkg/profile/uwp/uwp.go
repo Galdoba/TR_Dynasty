@@ -1124,10 +1124,15 @@ func matchTradeClassificationRequirements(uwp, reqLine string) bool {
 
 type UWP struct {
 	data map[string]ehex.DataRetriver
+	dice *dice.Dicepool
 }
 
 func (u *UWP) String() string {
 	return u.Starport().String() + u.Size().String() + u.Atmo().String() + u.Hydr().String() + u.Pops().String() + u.Govr().String() + u.Laws().String() + "-" + u.TL().String()
+}
+
+func (u *UWP) SetDice(d *dice.Dicepool) {
+	u.dice = d
 }
 
 //New -
@@ -1182,47 +1187,108 @@ func FromString(s string) (*UWP, error) {
 	u.data[constant.PrGovr] = ehex.New(s[5])
 	u.data[constant.PrLaws] = ehex.New(s[6])
 	u.data[constant.PrTL] = ehex.New(s[8])
-	if !validateUWP(&u) {
+	if !(&u).Valid() {
 		return nil, fmt.Errorf("'%v' is invaid UWP", s)
 	}
 	return &u, nil
 }
 
-func validateUWP(u *UWP) bool {
-	switch u.data[constant.PrStarport].String() {
-	default:
+func (u *UWP) Valid() bool {
+	if !starportValid(u.data[constant.PrSize].String()) {
 		return false
-	case "A", "B", "C", "D", "E", "X", "F", "G", "H", "Y":
 	}
-	switch u.data[constant.PrSize].String() {
-	default:
+	if !sizeValid(u.data[constant.PrSize].String()) {
 		return false
-	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "S", "R":
 	}
-	switch u.data[constant.PrAtmo].String() {
-	default:
+	if !atmoValid(u.data[constant.PrAtmo].String()) {
 		return false
-	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F":
 	}
-	switch u.data[constant.PrHydr].String() {
-	default:
+	if !hydrValid(u.data[constant.PrHydr].String()) {
 		return false
-	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A":
 	}
-	switch u.data[constant.PrPops].String() {
-	default:
+	if !popsValid(u.data[constant.PrPops].String()) {
 		return false
-	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F":
 	}
-	switch u.data[constant.PrGovr].String() {
-	default:
+	if !govrValid(u.data[constant.PrGovr].String()) {
 		return false
-	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F":
 	}
-	switch u.data[constant.PrLaws].String() {
+	if !lawsValid(u.data[constant.PrLaws].String()) {
+		return false
+	}
+	if !tLValid(u.data[constant.PrTL].String()) {
+		return false
+	}
+	return true
+}
+
+func starportValid(sp string) bool {
+	switch sp {
 	default:
 		return false
-	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "J":
+	case "A", "B", "C", "D", "E", "X", "Y", "F", "G", "H", "?":
+	}
+	return true
+}
+
+func sizeValid(size string) bool {
+	switch size {
+	default:
+		return false
+	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "S", "R", "?":
+	}
+	return true
+}
+
+func atmoValid(size string) bool {
+	switch size {
+	default:
+		return false
+	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "?":
+	}
+	return true
+}
+
+func hydrValid(size string) bool {
+	switch size {
+	default:
+		return false
+	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "?":
+	}
+	return true
+}
+
+func popsValid(size string) bool {
+	switch size {
+	default:
+		return false
+	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "?":
+	}
+	return true
+}
+
+func govrValid(size string) bool {
+	switch size {
+	default:
+		return false
+	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "U", "W", "X", "?":
+	}
+	return true
+}
+
+func lawsValid(size string) bool {
+	switch size {
+	default:
+		return false
+	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "S", "?":
+	}
+	return true
+}
+
+func tLValid(size string) bool {
+	switch size {
+	default:
+		return false
+	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "?":
 	}
 	return true
 }
@@ -1261,4 +1327,30 @@ func (u *UWP) Laws() ehex.DataRetriver {
 
 func (u *UWP) TL() ehex.DataRetriver {
 	return u.data[constant.PrTL]
+}
+
+func (u *UWP) Fix() {
+	if u.dice == nil {
+		u.dice = dice.New()
+	}
+	if !starportValid(u.data[constant.PrStarport].String()) || u.data[constant.PrStarport].String() == "?" {
+		u.data[constant.PrStarport] = ehex.New(rollStarport(u.dice))
+	}
+}
+
+func rollStarport(d *dice.Dicepool) string {
+	switch d.RollNext("2d6").Sum() {
+	case 2, 3, 4:
+		return "A"
+	case 5, 6:
+		return "B"
+	case 7, 8:
+		return "C"
+	case 9:
+		return "D"
+	case 10, 11:
+		return "E"
+	default:
+		return "X"
+	}
 }

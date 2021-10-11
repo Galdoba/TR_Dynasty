@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Galdoba/TR_Dynasty/pkg/universe/survey/calculations"
 	"github.com/Galdoba/utils"
 )
 
@@ -41,10 +40,10 @@ func TestParcing(t *testing.T) {
 		// }
 	}
 	fmt.Println("\n----------------------------------------")
-	for k, v := range dataMap {
-		if !calculations.UWPvalid(k) {
-			fmt.Println(k, ":", v)
-		}
+	for k, v := range errMap {
+		//if !calculations.UWPvalid(k) {
+		fmt.Println(k, ":", v)
+		//}
 	}
 	fmt.Println("\n----------------------------------------")
 

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Galdoba/TR_Dynasty/pkg/universe/starsystem"
+	"github.com/Galdoba/TR_Dynasty/pkg/universe/survey/calculations"
 )
 
 type SecondSurveyData struct {
@@ -87,6 +88,9 @@ func (ssd *SecondSurveyData) verify() {
 	}
 	if ssd.Stellar == "" {
 		ssd.Stellar = starsystem.RollStellar(ssd.NameByConvention())
+	}
+	if !calculations.UWPvalid(ssd.MW_UWP) {
+		ssd.MW_UWP = calculations.Fix(ssd.MW_UWP)
 	}
 	if ssd.MW_Importance == "{+?}" {
 		ssd.MW_Importance = importanceToString(ssd.MW_ImportanceInt)

@@ -53,6 +53,10 @@ func (eh *ehex) Set(data interface{}) *ehex {
 	return eh
 }
 
+func (eh *ehex) Encode(meaning string) {
+	eh.comment = meaning
+}
+
 ///////INTERFACE
 type Ehex interface {
 	Value() int
