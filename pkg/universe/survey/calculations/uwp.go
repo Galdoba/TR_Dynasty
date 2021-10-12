@@ -37,7 +37,7 @@ func UWPvalid(uwp string) bool {
 	return true
 }
 
-func Fix(uwp string, seed string) string {
+func FixUWP(uwp string, seed string) string {
 	d := dice.New().SetSeed(seed)
 	switch uwp {
 	case "X233000-X":

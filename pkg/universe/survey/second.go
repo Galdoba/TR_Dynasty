@@ -90,18 +90,17 @@ func (ssd *SecondSurveyData) verify() {
 		ssd.Stellar = starsystem.RollStellar(ssd.NameByConvention())
 	}
 	if !calculations.UWPvalid(ssd.MW_UWP) {
-		//old := ssd.MW_UWP
-		ssd.MW_UWP = calculations.Fix(ssd.MW_UWP, ssd.NameByConvention())
-		//new := ssd.MW_UWP
-		//if old != new {
-		//	fmt.Printf("%v changed to %v with seed: %v\n", old, new, ssd.NameByConvention())
-		//}
+		ssd.MW_UWP = calculations.FixUWP(ssd.MW_UWP, ssd.NameByConvention())
+	}
+	if !calculations.PBGvalid(ssd.PBG, ssd.MW_UWP) {
+		old := ssd.PBG
+		ssd.PBG = calculations.FixPBG(ssd.PBG, ssd.MW_UWP, ssd.NameByConvention())
+		new := ssd.PBG
+		fmt.Printf("%v corrected to %v - %v\n", old, new, ssd.NameByConvention())
 	}
 	if ssd.MW_Importance == "{+?}" {
 		ssd.MW_Importance = importanceToString(ssd.MW_ImportanceInt)
 	}
-	//uwp, err := uwp.FromString(ssd.MW_UWP)
-	//ssd.errors = append(ssd.errors, err)
 	switch {
 	default:
 		return
@@ -111,8 +110,10 @@ func (ssd *SecondSurveyData) verify() {
 		ssd.errors = append(ssd.errors, fmt.Errorf("Stellar data missing"))
 	case ssd.Hex == "":
 		ssd.errors = append(ssd.errors, fmt.Errorf("Hex data missing"))
+	case !calculations.PBGvalid(ssd.PBG, ssd.MW_UWP):
+		ssd.errors = append(ssd.errors, fmt.Errorf("PBG data not valid"))
 	case ssd.MW_Importance == "{+?}":
-		//fmt.Println(ssd) - TODO: пересчитать Importance - некоторые планеты имеют 6
+
 		ssd.errors = append(ssd.errors, fmt.Errorf("Importance data does not present correctly (fixable)"))
 	//case !strings.Contains(ssd.MW_UWP, "?") && ssd.MW_ImportanceInt != calculations.Importance(uwp.Starport().String(), uwp.TL().String(), uwp.Pops().String(), ssd.Bases, ssd.MW_Remarks):
 	//	ssd.errors = append(ssd.errors, fmt.Errorf("Importance data does not match predicted"))
@@ -124,6 +125,7 @@ func (ssd *SecondSurveyData) verify() {
 		ssd.errors = append(ssd.errors, fmt.Errorf("Cultural data Not calculated"))
 	case importanceToInt(ssd.MW_Importance) != ssd.MW_ImportanceInt:
 		ssd.errors = append(ssd.errors, fmt.Errorf("Importance data does not match"))
+
 	}
 }
 
