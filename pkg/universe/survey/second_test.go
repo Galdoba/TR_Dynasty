@@ -10,12 +10,12 @@ import (
 func TestParcing(t *testing.T) {
 
 	lines := utils.LinesFromTXT("c:\\Users\\Public\\TrvData\\formattedData.txt")
-	lenLines := len(lines) - 2
+	//lenLines := len(lines) - 2
 	errFound := 0
 	errMap := make(map[string]int)
 	dataMap := make(map[string]int)
 	for i, input := range lines {
-		fmt.Printf("checking world data: %v/%v (errors found: %v)\r", i-1, lenLines, errFound)
+		//fmt.Printf("checking world data: %v/%v (errors found: %v)\r", i-1, lenLines, errFound)
 		if i < 2 {
 			continue
 		}

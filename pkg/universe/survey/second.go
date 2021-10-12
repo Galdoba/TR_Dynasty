@@ -90,7 +90,12 @@ func (ssd *SecondSurveyData) verify() {
 		ssd.Stellar = starsystem.RollStellar(ssd.NameByConvention())
 	}
 	if !calculations.UWPvalid(ssd.MW_UWP) {
-		ssd.MW_UWP = calculations.Fix(ssd.MW_UWP)
+		//old := ssd.MW_UWP
+		ssd.MW_UWP = calculations.Fix(ssd.MW_UWP, ssd.NameByConvention())
+		//new := ssd.MW_UWP
+		//if old != new {
+		//	fmt.Printf("%v changed to %v with seed: %v\n", old, new, ssd.NameByConvention())
+		//}
 	}
 	if ssd.MW_Importance == "{+?}" {
 		ssd.MW_Importance = importanceToString(ssd.MW_ImportanceInt)
@@ -135,7 +140,7 @@ func (ssd *SecondSurveyData) NameByConvention() string {
 		y = y * -1
 		pY = "C"
 	}
-	return fmt.Sprintf("%v %v/%v%v-%v%v |", ssd.Sector, ssd.Hex, pX, x, pY, y)
+	return fmt.Sprintf("%v %v/%v%v-%v%v", ssd.Sector, ssd.Hex, pX, x, pY, y)
 }
 
 func importanceToInt(str string) int {
