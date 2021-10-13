@@ -18,9 +18,8 @@ func extrapolateInput() []dataSet {
 				for _, bs := range []string{"KV", "KW", "W", "NS", "R"} {
 					for _, rem := range []string{"Ba Lo Ni", "Ag Ni", "Ag Ni Ri", "Hi In Na Po"} {
 						data = []string{}
-						data = append(data, stprt)
-						data = append(data, tl)
-						data = append(data, pops)
+						uwp := stprt + "SAH" + pops + "GL-" + tl
+						data = append(data, uwp)
 						data = append(data, bs)
 						data = append(data, rem)
 						allData = append(allData, dataSet{data})
@@ -35,7 +34,7 @@ func extrapolateInput() []dataSet {
 func TestImportance(t *testing.T) {
 	impMap := make(map[int]int)
 	for _, test := range extrapolateInput() {
-		im := Importance(test.data[0], test.data[1], test.data[2], test.data[3], test.data[4])
+		im := Importance(test.data[0], test.data[1], test.data[2])
 		fmt.Println(test)
 		impMap[im]++
 	}

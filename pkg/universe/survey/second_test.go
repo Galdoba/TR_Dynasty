@@ -10,18 +10,18 @@ import (
 func TestParcing(t *testing.T) {
 
 	lines := utils.LinesFromTXT("c:\\Users\\Public\\TrvData\\formattedData.txt")
-	//lenLines := len(lines) - 2
+	lenLines := len(lines) - 2
 	errFound := 0
 	errMap := make(map[string]int)
 	dataMap := make(map[string]int)
 	for i, input := range lines {
-		//fmt.Printf("checking world data: %v/%v (errors found: %v)\r", i-1, lenLines, errFound)
+		fmt.Printf("checking world data: %v/%v (errors found: %v)\r", i-1, lenLines, errFound)
 		if i < 2 {
 			continue
 		}
 
 		ssd := Parse(input)
-		dataMap[ssd.MW_UWP]++
+		dataMap[input]++
 		if !ssd.containsErrors() {
 			continue
 		}
@@ -40,11 +40,13 @@ func TestParcing(t *testing.T) {
 		// }
 	}
 	fmt.Println("\n----------------------------------------")
+
 	for k, v := range errMap {
-		//if !calculations.UWPvalid(k) {
-		fmt.Println(k, ":", v)
-		//}
+		if v > 1 {
+			fmt.Println(k, ":", v)
+		}
 	}
+
 	fmt.Println("\n----------------------------------------")
 
 }

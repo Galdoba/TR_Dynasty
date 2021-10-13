@@ -6,7 +6,11 @@ import (
 	"github.com/Galdoba/TR_Dynasty/pkg/core/ehex"
 )
 
-func Importance(starport, tl, pops, bases, remarks string) int {
+func Importance(uwp, bases, remarks string) int {
+	hex := strings.Split(uwp, "")
+	starport := hex[0]
+	tl := hex[8]
+	pops := hex[4]
 	b := 0
 	if strings.Contains(bases, "W") {
 		b++

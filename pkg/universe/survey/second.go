@@ -64,8 +64,8 @@ func Parse(input string) *SecondSurveyData {
 	worlds, errWorlds := strconv.Atoi(data[15])
 	ssd.errors = append(ssd.errors, errWorlds)
 	ssd.Worlds = worlds
-	ssd.Allegiance = data[5]
-	ssd.Stellar = data[5]
+	ssd.Allegiance = data[7]
+	ssd.Stellar = data[8]
 	ru, errRu := strconv.Atoi(data[16])
 	ssd.errors = append(ssd.errors, errRu)
 	ssd.RU = ru
@@ -93,13 +93,13 @@ func (ssd *SecondSurveyData) verify() {
 		ssd.MW_UWP = calculations.FixUWP(ssd.MW_UWP, ssd.NameByConvention())
 	}
 	if !calculations.PBGvalid(ssd.PBG, ssd.MW_UWP) {
-		old := ssd.PBG
 		ssd.PBG = calculations.FixPBG(ssd.PBG, ssd.MW_UWP, ssd.NameByConvention())
-		new := ssd.PBG
-		fmt.Printf("%v corrected to %v - %v\n", old, new, ssd.NameByConvention())
 	}
 	if ssd.MW_Importance == "{+?}" {
 		ssd.MW_Importance = importanceToString(ssd.MW_ImportanceInt)
+	}
+	if !calculations.ExValid(ssd.MW_Economic) {
+		ssd.MW_Economic = calculations.FixEconomicExtention(ssd.MW_Economic, ssd.MW_UWP, ssd.PBG, ssd.NameByConvention(), ssd.MW_ImportanceInt)
 	}
 	switch {
 	default:
@@ -113,18 +113,19 @@ func (ssd *SecondSurveyData) verify() {
 	case !calculations.PBGvalid(ssd.PBG, ssd.MW_UWP):
 		ssd.errors = append(ssd.errors, fmt.Errorf("PBG data not valid"))
 	case ssd.MW_Importance == "{+?}":
-
 		ssd.errors = append(ssd.errors, fmt.Errorf("Importance data does not present correctly (fixable)"))
-	//case !strings.Contains(ssd.MW_UWP, "?") && ssd.MW_ImportanceInt != calculations.Importance(uwp.Starport().String(), uwp.TL().String(), uwp.Pops().String(), ssd.Bases, ssd.MW_Remarks):
-	//	ssd.errors = append(ssd.errors, fmt.Errorf("Importance data does not match predicted"))
 	case ssd.MW_Economic == "(???+?)":
 		ssd.errors = append(ssd.errors, fmt.Errorf("Economic Not calculated"))
+	case !calculations.ExValid(ssd.MW_Economic):
+		ssd.errors = append(ssd.errors, fmt.Errorf("Economic Not Valid"))
 	case ssd.MW_Economic == "":
 		ssd.errors = append(ssd.errors, fmt.Errorf("Economic data missing"))
 	case ssd.MW_Cultural == "[????]":
 		ssd.errors = append(ssd.errors, fmt.Errorf("Cultural data Not calculated"))
 	case importanceToInt(ssd.MW_Importance) != ssd.MW_ImportanceInt:
 		ssd.errors = append(ssd.errors, fmt.Errorf("Importance data does not match"))
+		//case calculations.Importance(ssd.MW_UWP, ssd.Bases, ssd.MW_Remarks) != ssd.MW_ImportanceInt:
+		//	ssd.errors = append(ssd.errors, fmt.Errorf("Calculated Importance data does not match one from File"))
 
 	}
 }
