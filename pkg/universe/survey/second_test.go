@@ -2,6 +2,7 @@ package survey
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/Galdoba/utils"
@@ -16,11 +17,16 @@ func TestParcing(t *testing.T) {
 	dataMap := make(map[string]int)
 	for i, input := range lines {
 		//fmt.Printf("checking world data: %v/%v (errors found: %v)\r", i-1, lenLines, errFound)
+
 		if i < 2 {
 			continue
 		}
 
 		ssd := Parse(input)
+		if strings.Contains(ssd.MW_Remarks, "Cy ") {
+			fmt.Println(i, ssd)
+		}
+
 		dataMap[input]++
 		if !ssd.containsErrors() {
 			continue

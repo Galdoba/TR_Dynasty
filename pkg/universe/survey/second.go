@@ -114,7 +114,9 @@ func (ssd *SecondSurveyData) verify() {
 	}
 	if !calculations.CxValid(ssd.MW_Cultural, ssd.MW_UWP) {
 		ssd.MW_Cultural = calculations.Cultural(ssd.MW_UWP, ssd.NameByConvention(), ssd.MW_ImportanceInt)
-
+	}
+	if !calculations.WorldsValid(ssd.Worlds, ssd.PBG) {
+		ssd.Worlds = calculations.FixWorlds(ssd.PBG, ssd.NameByConvention())
 	}
 	// culturalInvalid := []string{"[????]", "", "----", "[]"}
 	// for _, val := range culturalInvalid {
@@ -161,6 +163,8 @@ func (ssd *SecondSurveyData) verify() {
 		ssd.errors = append(ssd.errors, fmt.Errorf("Projected Ru does not match actual"))
 	case !calculations.CxValid(ssd.MW_Cultural, ssd.MW_UWP):
 		ssd.errors = append(ssd.errors, fmt.Errorf("Culture data invalid"))
+	case !calculations.WorldsValid(ssd.Worlds, ssd.PBG):
+		ssd.errors = append(ssd.errors, fmt.Errorf("world number incorrect (have %v)", ssd.Worlds))
 		//case calculations.Importance(ssd.MW_UWP, ssd.Bases, ssd.MW_Remarks) != ssd.MW_ImportanceInt:
 		//	ssd.errors = append(ssd.errors, fmt.Errorf("Calculated Importance data does not match one from File"))
 
