@@ -165,6 +165,9 @@ func (ssd *SecondSurveyData) verify() {
 		ssd.errors = append(ssd.errors, fmt.Errorf("Culture data invalid"))
 	case !calculations.WorldsValid(ssd.Worlds, ssd.PBG):
 		ssd.errors = append(ssd.errors, fmt.Errorf("world number incorrect (have %v)", ssd.Worlds))
+	case ssd.MW_Nobility == "Nobl?" || ssd.MW_Nobility == "":
+		ssd.errors = append(ssd.errors, fmt.Errorf("Nobility unefined"))
+		//Nobl?
 		//case calculations.Importance(ssd.MW_UWP, ssd.Bases, ssd.MW_Remarks) != ssd.MW_ImportanceInt:
 		//	ssd.errors = append(ssd.errors, fmt.Errorf("Calculated Importance data does not match one from File"))
 

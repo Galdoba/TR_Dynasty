@@ -2,7 +2,6 @@ package survey
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/Galdoba/utils"
@@ -23,9 +22,6 @@ func TestParcing(t *testing.T) {
 		}
 
 		ssd := Parse(input)
-		if strings.Contains(ssd.MW_Remarks, "Cy ") {
-			fmt.Println(i, ssd)
-		}
 
 		dataMap[input]++
 		if !ssd.containsErrors() {
