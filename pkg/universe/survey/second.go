@@ -118,21 +118,9 @@ func (ssd *SecondSurveyData) verify() {
 	if !calculations.WorldsValid(ssd.Worlds, ssd.PBG) {
 		ssd.Worlds = calculations.FixWorlds(ssd.PBG, ssd.NameByConvention())
 	}
-	// culturalInvalid := []string{"[????]", "", "----", "[]"}
-	// for _, val := range culturalInvalid {
-	// 	if !calculations.CxValid(ssd.MW_Cultural, ssd.MW_UWP) {
-	// 		ssd.MW_Cultural = calculations.Cultural(ssd.MW_UWP, ssd.NameByConvention(), ssd.MW_ImportanceInt)
-	// 		continue
-	// 	}
-	// 	if ssd.MW_Cultural == val {
-	// 		ssd.MW_Cultural = calculations.Cultural(ssd.MW_UWP, ssd.NameByConvention(), ssd.MW_ImportanceInt)
-	// 		fmt.Println("Recalculated", val, "to", ssd.MW_Cultural, "for", ssd.NameByConvention())
-	// 	}
-	// }
-	// if ssd.MW_Cultural == "[????]" || ssd.MW_Cultural == "" || ssd.MW_Cultural == "----" || ssd.MW_Cultural == "[]" {
-	// 	ssd.MW_Cultural = calculations.Cultural(ssd.MW_UWP, ssd.NameByConvention(), ssd.MW_ImportanceInt)
-	// }
-
+	if len(calculations.NobilityErrors(ssd.MW_Nobility, strings.Fields(ssd.MW_Remarks), ssd.MW_ImportanceInt)) != 0 {
+		ssd.MW_Nobility = calculations.FixNobility(strings.Fields(ssd.MW_Remarks), ssd.MW_ImportanceInt)
+	}
 	if !calculations.CxValid(ssd.MW_Cultural, ssd.MW_UWP) {
 		fmt.Println("invalid culture data:", ssd.MW_Cultural)
 	}
@@ -165,11 +153,8 @@ func (ssd *SecondSurveyData) verify() {
 		ssd.errors = append(ssd.errors, fmt.Errorf("Culture data invalid"))
 	case !calculations.WorldsValid(ssd.Worlds, ssd.PBG):
 		ssd.errors = append(ssd.errors, fmt.Errorf("world number incorrect (have %v)", ssd.Worlds))
-	case ssd.MW_Nobility == "Nobl?" || ssd.MW_Nobility == "":
-		ssd.errors = append(ssd.errors, fmt.Errorf("Nobility unefined"))
-		//Nobl?
-		//case calculations.Importance(ssd.MW_UWP, ssd.Bases, ssd.MW_Remarks) != ssd.MW_ImportanceInt:
-		//	ssd.errors = append(ssd.errors, fmt.Errorf("Calculated Importance data does not match one from File"))
+	case len(calculations.NobilityErrors(ssd.MW_Nobility, strings.Fields(ssd.MW_Remarks), ssd.MW_ImportanceInt)) != 0:
+		ssd.errors = append(ssd.errors, calculations.NobilityErrors(ssd.MW_Nobility, strings.Fields(ssd.MW_Remarks), ssd.MW_ImportanceInt)...)
 
 	}
 }
@@ -204,19 +189,19 @@ func importanceToInt(str string) int {
 		return -2
 	case "{ -1 }":
 		return -1
-	case "{ 0 }":
+	case "{ +0 }":
 		return 0
-	case "{ 1 }":
+	case "{ +1 }":
 		return 1
-	case "{ 2 }":
+	case "{ +2 }":
 		return 2
-	case "{ 3 }":
+	case "{ +3 }":
 		return 3
-	case "{ 4 }":
+	case "{ +4 }":
 		return 4
-	case "{ 5 }":
+	case "{ +5 }":
 		return 5
-	case "{ 6 }":
+	case "{ +6 }":
 		return 6
 	}
 }
@@ -236,18 +221,63 @@ func importanceToString(i int) string {
 	case -1:
 		return "{ -1 }"
 	case 0:
-		return "{ 0 }"
+		return "{ +0 }"
 	case 1:
-		return "{ 1 }"
+		return "{ +1 }"
 	case 2:
-		return "{ 2 }"
+		return "{ +2 }"
 	case 3:
-		return "{ 3 }"
+		return "{ +3 }"
 	case 4:
-		return "{ 4 }"
+		return "{ +4 }"
 	case 5:
-		return "{ 5 }"
+		return "{ +5 }"
 	case 6:
-		return "{ 6 }"
+		return "{ +6 }"
 	}
+}
+
+func (ssd *SecondSurveyData) String() string {
+	rep := ssd.Hex + "   "
+	rep += ssd.MW_Name + "   "
+	rep += ssd.MW_UWP + "   "
+	rep += ssd.MW_Remarks + "   "
+	rep += ssd.MW_Importance + "   "
+	rep += ssd.MW_Economic + "   "
+	rep += ssd.MW_Cultural + "   "
+	rep += ssd.MW_Nobility + "   "
+	rep += ssd.Bases + "   "
+	rep += ssd.TravelZone + "   "
+	rep += ssd.PBG + "   "
+	rep += strconv.Itoa(ssd.Worlds) + "   "
+	rep += ssd.Allegiance + "   "
+	rep += ssd.Stellar
+	return rep
+}
+
+func ListOf(ssds []*SecondSurveyData) []string {
+	sample := ssds[0].String()
+	fields := strings.Split(sample, "   ")
+	colMap := make(map[int]int)
+	for f, _ := range fields {
+		for _, ssd := range ssds {
+			testFields := strings.Split(ssd.String(), "   ")
+			if colMap[f] < len(testFields[f]) {
+				colMap[f] = len(testFields[f])
+			}
+		}
+	}
+	table := []string{}
+	for _, ssd := range ssds {
+		newFields := strings.Split(ssd.String(), "   ")
+		line := ""
+		for n, fld := range newFields {
+			for len(fld) < colMap[n] {
+				fld += " "
+			}
+			line += fld + " "
+		}
+		table = append(table, line)
+	}
+	return table
 }

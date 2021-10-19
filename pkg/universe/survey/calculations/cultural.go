@@ -66,26 +66,20 @@ func CxValid(cx, uwp string) bool {
 	return true
 }
 
-func reRollHeterogenity(d *dice.Dicepool, pop ehex.DataRetriver) int {
-	h := pop.Value() + d.FluxNext()
-	if h < 1 {
-		h = 1
-	}
-	return h
-}
+// func reRollHeterogenity(d *dice.Dicepool, pop ehex.DataRetriver) int {
+// 	h := pop.Value() + d.FluxNext()
+// 	if h < 1 {
+// 		h = 1
+// 	}
+// 	return h
+// }
 
 func hetValid(h int) bool {
-	if h > 20 {
-		return false
-	}
-	return true
+	return h <= 20
 }
 
 func accValid(a int) bool {
-	if a > 21 {
-		return false
-	}
-	return true
+	return a <= 21
 }
 
 func reRollAcceptance(d *dice.Dicepool, ix int, pop ehex.DataRetriver) int {
@@ -93,10 +87,7 @@ func reRollAcceptance(d *dice.Dicepool, ix int, pop ehex.DataRetriver) int {
 }
 
 func strValid(st int) bool {
-	if st > 11 {
-		return false
-	}
-	return true
+	return st <= 11
 }
 
 func symValid(sy int) bool {
