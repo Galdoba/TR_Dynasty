@@ -124,6 +124,9 @@ func (ssd *SecondSurveyData) verify() {
 	if !calculations.CxValid(ssd.MW_Cultural, ssd.MW_UWP) {
 		fmt.Println("invalid culture data:", ssd.MW_Cultural)
 	}
+	if calculations.AllegianceFull(ssd.Allegiance) == "UNKNOWN SHORTFORM" {
+		ssd.Allegiance = "XXXX"
+	}
 	switch {
 	default:
 		return
@@ -155,6 +158,8 @@ func (ssd *SecondSurveyData) verify() {
 		ssd.errors = append(ssd.errors, fmt.Errorf("world number incorrect (have %v)", ssd.Worlds))
 	case len(calculations.NobilityErrors(ssd.MW_Nobility, strings.Fields(ssd.MW_Remarks), ssd.MW_ImportanceInt)) != 0:
 		ssd.errors = append(ssd.errors, calculations.NobilityErrors(ssd.MW_Nobility, strings.Fields(ssd.MW_Remarks), ssd.MW_ImportanceInt)...)
+	case calculations.AllegianceFull(ssd.Allegiance) == "UNKNOWN SHORTFORM":
+		ssd.errors = append(ssd.errors, fmt.Errorf("Allegiance unknown"))
 
 	}
 }

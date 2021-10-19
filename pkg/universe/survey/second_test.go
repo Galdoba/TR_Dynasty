@@ -23,11 +23,7 @@ func TestParcing(t *testing.T) {
 	dataMap := make(map[string]int)
 	toTable := []*SecondSurveyData{}
 	for i, input := range lines {
-		if dataMap[input] != 0 {
-			errFound++
-			errMap["Duplicated input"]++
-			continue
-		}
+
 		fmt.Printf("checking world data: %v/%v (errors found: %v) - worlds Written: %v\r", i-1, lenLines, errFound, wwritenn)
 
 		if i < 2 {
@@ -35,8 +31,9 @@ func TestParcing(t *testing.T) {
 		}
 
 		ssd := Parse(input)
-		dataMap[input]++
-		if !ssd.containsErrors() {
+		dataMap[ssd.Allegiance]++
+		block := true
+		if !ssd.containsErrors() && !block {
 			wwritenn++
 			cleaned := strings.ReplaceAll(ssd.String(), "   ", "|")
 			f.WriteString("|" + cleaned + "\n")
@@ -44,7 +41,7 @@ func TestParcing(t *testing.T) {
 		}
 		//errFound++
 		//fmt.Println(ssd)
-
+		//dataMap[ssd.Allegiance]++
 		for _, err := range ssd.errors {
 			if err != nil {
 				//fmt.Println(err.Error())
@@ -60,10 +57,10 @@ func TestParcing(t *testing.T) {
 	}
 	fmt.Println("\n----------------------------------------")
 
-	for k, v := range errMap {
-		if v > 1 {
-			fmt.Println(k, ":", v)
-		}
+	for k, v := range dataMap {
+		//if v > 0 {
+		fmt.Println(k, ":", v)
+		//}
 	}
 
 	fmt.Println("\n----------------------------------------")
