@@ -2,13 +2,20 @@ package survey
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/Galdoba/utils"
 )
 
 func TestParcing(t *testing.T) {
-
+	f, err := os.Create("c:\\Users\\Public\\TrvData\\cleanedData.txt")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	wwritenn := 0
 	lines := utils.LinesFromTXT("c:\\Users\\Public\\TrvData\\formattedData.txt")
 	lenLines := len(lines) - 2
 	errFound := 0
@@ -16,7 +23,12 @@ func TestParcing(t *testing.T) {
 	dataMap := make(map[string]int)
 	toTable := []*SecondSurveyData{}
 	for i, input := range lines {
-		fmt.Printf("checking world data: %v/%v (errors found: %v)\r", i-1, lenLines, errFound)
+		if dataMap[input] != 0 {
+			errFound++
+			errMap["Duplicated input"]++
+			continue
+		}
+		fmt.Printf("checking world data: %v/%v (errors found: %v) - worlds Written: %v\r", i-1, lenLines, errFound, wwritenn)
 
 		if i < 2 {
 			continue
@@ -24,11 +36,10 @@ func TestParcing(t *testing.T) {
 
 		ssd := Parse(input)
 		dataMap[input]++
-		if ssd.Sector == "Trojan Reach" {
-			toTable = append(toTable, ssd)
-		}
-
 		if !ssd.containsErrors() {
+			wwritenn++
+			cleaned := strings.ReplaceAll(ssd.String(), "   ", "|")
+			f.WriteString("|" + cleaned + "\n")
 			continue
 		}
 		//errFound++

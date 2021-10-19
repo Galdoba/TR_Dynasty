@@ -256,6 +256,9 @@ func (ssd *SecondSurveyData) String() string {
 }
 
 func ListOf(ssds []*SecondSurveyData) []string {
+	if len(ssds) < 1 {
+		return nil
+	}
 	sample := ssds[0].String()
 	fields := strings.Split(sample, "   ")
 	colMap := make(map[int]int)
@@ -275,7 +278,7 @@ func ListOf(ssds []*SecondSurveyData) []string {
 			for len(fld) < colMap[n] {
 				fld += " "
 			}
-			line += fld + " "
+			line += fld + "|"
 		}
 		table = append(table, line)
 	}
