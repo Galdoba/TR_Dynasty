@@ -30,6 +30,11 @@ type SecondSurveyData struct {
 	Stellar          string
 	RU               int
 	input            string //temp
+	SubSector        string
+	SubSectorInt     int
+	Quadrant         int
+	BasesOld         string
+	SectorAbb        string
 	errors           []error
 }
 
@@ -69,8 +74,24 @@ func Parse(input string) *SecondSurveyData {
 	ru, errRu := strconv.Atoi(data[16])
 	ssd.errors = append(ssd.errors, errRu)
 	ssd.RU = ru
+	ssd.SubSector = data[9]
+	ssInt, errssInt := strconv.Atoi(data[17])
+	ssd.errors = append(ssd.errors, errssInt)
+	ssd.SubSectorInt = ssInt
+	ssQuad, errQuad := strconv.Atoi(data[18])
+	ssd.errors = append(ssd.errors, errQuad)
+	ssd.Quadrant = ssQuad
+	ssd.BasesOld = data[22]
+	ssd.SectorAbb = data[25]
 	ssd.verify()
 	return &ssd
+}
+
+func (ssd *SecondSurveyData) Compress() string {
+	compressed := "|"
+	compressed += fmt.Sprintf("%v|", ssd.MW_Name)
+	compressed += fmt.Sprintf("%v|", ssd.MW_Name)
+	return compressed
 }
 
 func (ssd *SecondSurveyData) containsErrors() bool {
@@ -131,35 +152,35 @@ func (ssd *SecondSurveyData) verify() {
 	default:
 		return
 	case ssd.MW_Name == "":
-		ssd.errors = append(ssd.errors, fmt.Errorf("Mainworld name missing (fixed)"))
+		ssd.errors = append(ssd.errors, fmt.Errorf("mainworld name missing (fixed)"))
 	case ssd.Stellar == "":
-		ssd.errors = append(ssd.errors, fmt.Errorf("Stellar data missing (f)"))
+		ssd.errors = append(ssd.errors, fmt.Errorf("stellar data missing (f)"))
 	case ssd.Hex == "":
-		ssd.errors = append(ssd.errors, fmt.Errorf("Hex data missing"))
+		ssd.errors = append(ssd.errors, fmt.Errorf("hex data missing"))
 	case !calculations.PBGvalid(ssd.PBG, ssd.MW_UWP):
-		ssd.errors = append(ssd.errors, fmt.Errorf("PBG data not valid"))
+		ssd.errors = append(ssd.errors, fmt.Errorf(" PBG data not valid"))
 	case ssd.MW_Importance == "{+?}":
-		ssd.errors = append(ssd.errors, fmt.Errorf("Importance data does not present correctly (fixable)"))
+		ssd.errors = append(ssd.errors, fmt.Errorf("importance data does not present correctly (fixable)"))
 	case ssd.MW_Economic == "(???+?)":
-		ssd.errors = append(ssd.errors, fmt.Errorf("Economic Not calculated"))
+		ssd.errors = append(ssd.errors, fmt.Errorf("economic Not calculated"))
 	case !calculations.ExValid(ssd.MW_Economic):
-		ssd.errors = append(ssd.errors, fmt.Errorf("Economic Not Valid"))
+		ssd.errors = append(ssd.errors, fmt.Errorf("economic Not Valid"))
 	case ssd.MW_Economic == "":
-		ssd.errors = append(ssd.errors, fmt.Errorf("Economic data missing"))
+		ssd.errors = append(ssd.errors, fmt.Errorf("economic data missing"))
 	case ssd.MW_Cultural == "[????]":
-		ssd.errors = append(ssd.errors, fmt.Errorf("Cultural data Not calculated"))
+		ssd.errors = append(ssd.errors, fmt.Errorf("cultural data Not calculated"))
 	case importanceToInt(ssd.MW_Importance) != ssd.MW_ImportanceInt:
-		ssd.errors = append(ssd.errors, fmt.Errorf("Importance data does not match"))
+		ssd.errors = append(ssd.errors, fmt.Errorf("importance data does not match"))
 	case calculations.RU(ssd.MW_Economic) != ssd.RU:
-		ssd.errors = append(ssd.errors, fmt.Errorf("Projected Ru does not match actual"))
+		ssd.errors = append(ssd.errors, fmt.Errorf("projected Ru does not match actual"))
 	case !calculations.CxValid(ssd.MW_Cultural, ssd.MW_UWP):
-		ssd.errors = append(ssd.errors, fmt.Errorf("Culture data invalid"))
+		ssd.errors = append(ssd.errors, fmt.Errorf("culture data invalid"))
 	case !calculations.WorldsValid(ssd.Worlds, ssd.PBG):
 		ssd.errors = append(ssd.errors, fmt.Errorf("world number incorrect (have %v)", ssd.Worlds))
 	case len(calculations.NobilityErrors(ssd.MW_Nobility, strings.Fields(ssd.MW_Remarks), ssd.MW_ImportanceInt)) != 0:
 		ssd.errors = append(ssd.errors, calculations.NobilityErrors(ssd.MW_Nobility, strings.Fields(ssd.MW_Remarks), ssd.MW_ImportanceInt)...)
 	case calculations.AllegianceFull(ssd.Allegiance) == "UNKNOWN SHORTFORM":
-		ssd.errors = append(ssd.errors, fmt.Errorf("Allegiance unknown"))
+		ssd.errors = append(ssd.errors, fmt.Errorf("allegiance unknown"))
 
 	}
 }
@@ -267,7 +288,7 @@ func ListOf(ssds []*SecondSurveyData) []string {
 	sample := ssds[0].String()
 	fields := strings.Split(sample, "   ")
 	colMap := make(map[int]int)
-	for f, _ := range fields {
+	for f := range fields {
 		for _, ssd := range ssds {
 			testFields := strings.Split(ssd.String(), "   ")
 			if colMap[f] < len(testFields[f]) {

@@ -2,21 +2,19 @@ package survey
 
 import (
 	"fmt"
-	"os"
-	"strings"
 	"testing"
 
 	"github.com/Galdoba/utils"
 )
 
 func TestParcing(t *testing.T) {
-	f, err := os.Create("c:\\Users\\Public\\TrvData\\cleanedData.txt")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	// f, err := os.Create("c:\\Users\\Public\\TrvData\\cleanedData.txt")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
 	wwritenn := 0
-	lines := utils.LinesFromTXT("c:\\Users\\Public\\TrvData\\formattedData.txt")
+	lines := utils.LinesFromTXT("c:\\Users\\Public\\TrvData\\cleanedData.txt")
 	lenLines := len(lines) - 2
 	errFound := 0
 	errMap := make(map[string]int)
@@ -32,12 +30,15 @@ func TestParcing(t *testing.T) {
 
 		ssd := Parse(input)
 		dataMap[ssd.Allegiance]++
-		block := true
-		if !ssd.containsErrors() && !block {
+		//block := true
+		if !ssd.containsErrors() { //&& !block {
 			wwritenn++
-			cleaned := strings.ReplaceAll(ssd.String(), "   ", "|")
-			f.WriteString("|" + cleaned + "\n")
-			continue
+			//cleaned := strings.ReplaceAll(ssd.String(), "   ", "|")
+			//f.WriteString("|" + cleaned + "\n")
+
+			if ssd.Allegiance != "XXXX" {
+				toTable = append(toTable, ssd)
+			}
 		}
 		//errFound++
 		//fmt.Println(ssd)
@@ -57,11 +58,11 @@ func TestParcing(t *testing.T) {
 	}
 	fmt.Println("\n----------------------------------------")
 
-	for k, v := range dataMap {
-		//if v > 0 {
-		fmt.Println(k, ":", v)
-		//}
-	}
+	// for k, v := range dataMap {
+	// 	//if v > 0 {
+	// 	fmt.Println(k, ":", v)
+	// 	//}
+	// }
 
 	fmt.Println("\n----------------------------------------")
 	for _, lns := range ListOf(toTable) {
