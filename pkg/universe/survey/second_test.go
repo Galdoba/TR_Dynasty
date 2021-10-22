@@ -10,8 +10,8 @@ import (
 func TestParcing(t *testing.T) {
 	// f, err := os.Create("c:\\Users\\Public\\TrvData\\cleanedData.txt")
 	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
+	// fmt.Println(err)
+	// return
 	// }
 	wwritenn := 0
 	lines := utils.LinesFromTXT("c:\\Users\\Public\\TrvData\\cleanedData.txt")
@@ -29,12 +29,16 @@ func TestParcing(t *testing.T) {
 		}
 
 		ssd := Parse(input)
-		dataMap[ssd.Allegiance]++
-		//block := true
-		if !ssd.containsErrors() { //&& !block {
+		dataMap[input]++
+		if dataMap[input] > 1 {
+			continue
+		}
+		block := true
+		if !ssd.containsErrors() && !block {
 			wwritenn++
 			//cleaned := strings.ReplaceAll(ssd.String(), "   ", "|")
-			//f.WriteString("|" + cleaned + "\n")
+			//cleaned := ssd.Compress()
+			//f.WriteString(cleaned + "\n")
 
 			if ssd.Allegiance != "XXXX" {
 				toTable = append(toTable, ssd)

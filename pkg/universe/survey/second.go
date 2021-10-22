@@ -35,6 +35,7 @@ type SecondSurveyData struct {
 	Quadrant         int
 	BasesOld         string
 	SectorAbb        string
+	AllegianceExt    string
 	errors           []error
 }
 
@@ -83,6 +84,7 @@ func Parse(input string) *SecondSurveyData {
 	ssd.Quadrant = ssQuad
 	ssd.BasesOld = data[22]
 	ssd.SectorAbb = data[25]
+	ssd.AllegianceExt = data[26]
 	ssd.verify()
 	return &ssd
 }
@@ -90,7 +92,30 @@ func Parse(input string) *SecondSurveyData {
 func (ssd *SecondSurveyData) Compress() string {
 	compressed := "|"
 	compressed += fmt.Sprintf("%v|", ssd.MW_Name)
-	compressed += fmt.Sprintf("%v|", ssd.MW_Name)
+	compressed += fmt.Sprintf("%v|", ssd.Hex)
+	compressed += fmt.Sprintf("%v|", ssd.MW_UWP)
+	compressed += fmt.Sprintf("%v|", ssd.PBG)
+	compressed += fmt.Sprintf("%v|", ssd.TravelZone)
+	compressed += fmt.Sprintf("%v|", ssd.Bases)
+	compressed += fmt.Sprintf("%v|", ssd.Allegiance)
+	compressed += fmt.Sprintf("%v|", ssd.Quadrant)
+	compressed += fmt.Sprintf("%v|", ssd.MW_Importance)
+	compressed += fmt.Sprintf("%v|", ssd.MW_ImportanceInt)
+	compressed += fmt.Sprintf("%v|", ssd.MW_Economic)
+	compressed += fmt.Sprintf("%v|", ssd.MW_Cultural)
+	compressed += fmt.Sprintf("%v|", ssd.MW_Nobility)
+	compressed += fmt.Sprintf("%v|", ssd.Worlds)
+	compressed += fmt.Sprintf("%v|", ssd.RU)
+	compressed += fmt.Sprintf("%v|", ssd.SubSectorInt)
+	compressed += fmt.Sprintf("%v|", ssd.CoordX)
+	compressed += fmt.Sprintf("%v|", ssd.CoordY)
+	compressed += fmt.Sprintf("%v|", ssd.MW_Remarks)
+	compressed += fmt.Sprintf("%v|", ssd.BasesOld)
+	compressed += fmt.Sprintf("%v|", ssd.Sector)
+	compressed += fmt.Sprintf("%v|", ssd.SubSector)
+	compressed += fmt.Sprintf("%v|", ssd.SectorAbb)
+	compressed += fmt.Sprintf("%v|", ssd.AllegianceExt)
+
 	return compressed
 }
 
