@@ -2,19 +2,42 @@ package survey
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/Galdoba/utils"
 )
 
-func TestParcing(t *testing.T) {
-	// f, err := os.Create("c:\\Users\\Public\\TrvData\\cleanedData.txt")
-	// if err != nil {
-	// fmt.Println(err)
-	// return
-	// }
-	wwritenn := 0
+func TestParseClean(t *testing.T) {
+	//return
 	lines := utils.LinesFromTXT("c:\\Users\\Public\\TrvData\\cleanedData.txt")
+	tab := []*SecondSurveyData{}
+	for _, line := range lines {
+		if strings.Contains(line, "Troj") {
+			ssd := Parse(line)
+			for _, err := range ssd.errors {
+				fmt.Println(err)
+			}
+			fmt.Println(line)
+			fmt.Println(ssd)
+			tab = append(tab, ssd)
+		}
+	}
+	for _, val := range ListOf(tab) {
+		fmt.Println(val)
+	}
+}
+
+func TestParcing(t *testing.T) {
+	return
+	f, err := os.Create("c:\\Users\\Public\\TrvData\\cleanedData.txt")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	wwritenn := 0
+	lines := utils.LinesFromTXT("c:\\Users\\Public\\TrvData\\formattedData.txt")
 	lenLines := len(lines) - 2
 	errFound := 0
 	errMap := make(map[string]int)
@@ -34,11 +57,11 @@ func TestParcing(t *testing.T) {
 			continue
 		}
 		block := true
-		if !ssd.containsErrors() && !block {
+		if !ssd.containsErrors() && block {
 			wwritenn++
 			//cleaned := strings.ReplaceAll(ssd.String(), "   ", "|")
-			//cleaned := ssd.Compress()
-			//f.WriteString(cleaned + "\n")
+			cleaned := ssd.Compress()
+			f.WriteString(cleaned + "\n")
 
 			if ssd.Allegiance != "XXXX" {
 				toTable = append(toTable, ssd)
