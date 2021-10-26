@@ -10,11 +10,11 @@ import (
 )
 
 func TestParseClean(t *testing.T) {
-	//return
+	//	return
 	lines := utils.LinesFromTXT("c:\\Users\\Public\\TrvData\\cleanedData.txt")
 	tab := []*SecondSurveyData{}
 	for _, line := range lines {
-		if strings.Contains(line, "Troj") {
+		if strings.Contains(line, "Drinax") {
 			ssd := Parse(line)
 			for _, err := range ssd.errors {
 				fmt.Println(err)
@@ -96,4 +96,14 @@ func TestParcing(t *testing.T) {
 		fmt.Println(lns)
 	}
 
+}
+
+func TestSearch(t *testing.T) {
+	found, err := Search("Earth")
+	for _, v := range found {
+		fmt.Println(v)
+		fmt.Println(v.errors)
+	}
+
+	fmt.Println(err)
 }

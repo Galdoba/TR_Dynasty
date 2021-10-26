@@ -7,6 +7,11 @@ import (
 
 	"github.com/Galdoba/TR_Dynasty/pkg/universe/starsystem"
 	"github.com/Galdoba/TR_Dynasty/pkg/universe/survey/calculations"
+	"github.com/Galdoba/utils"
+)
+
+const (
+	cleanedDataPath = "c:\\Users\\Public\\TrvData\\cleanedData.txt"
 )
 
 type SecondSurveyData struct {
@@ -58,28 +63,42 @@ func Parse(input string) *SecondSurveyData {
 	ssd.SubSector = data[9]
 	ssd.MW_Importance = data[10]
 	impInt, errImp := strconv.Atoi(data[11])
-	ssd.errors = append(ssd.errors, errImp)
+	if errImp != nil {
+		ssd.errors = append(ssd.errors, errImp)
+	}
 	ssd.MW_ImportanceInt = impInt
 	ssd.MW_Economic = data[12]
 	ssd.MW_Cultural = data[13]
 	ssd.MW_Nobility = data[14]
 	worlds, errWorlds := strconv.Atoi(data[15])
-	ssd.errors = append(ssd.errors, errWorlds)
+	if errWorlds != nil {
+		ssd.errors = append(ssd.errors, errWorlds)
+	}
 	ssd.Worlds = worlds
 	ru, errRu := strconv.Atoi(data[16])
-	ssd.errors = append(ssd.errors, errRu)
+	if errRu != nil {
+		ssd.errors = append(ssd.errors, errRu)
+	}
 	ssd.RU = ru
 	ssInt, errssInt := strconv.Atoi(data[17])
-	ssd.errors = append(ssd.errors, errssInt)
+	if errssInt != nil {
+		ssd.errors = append(ssd.errors, errssInt)
+	}
 	ssd.SubSectorInt = ssInt
 	ssQuad, errQuad := strconv.Atoi(data[18])
-	ssd.errors = append(ssd.errors, errQuad)
+	if errQuad != nil {
+		ssd.errors = append(ssd.errors, errQuad)
+	}
 	ssd.Quadrant = ssQuad
 	xCoord, errXcoord := strconv.Atoi(data[19])
-	ssd.errors = append(ssd.errors, errXcoord)
+	if errXcoord != nil {
+		ssd.errors = append(ssd.errors, errXcoord)
+	}
 	ssd.CoordX = xCoord
 	yCoord, errYcoord := strconv.Atoi(data[20])
-	ssd.errors = append(ssd.errors, errYcoord)
+	if errYcoord != nil {
+		ssd.errors = append(ssd.errors, errYcoord)
+	}
 	ssd.CoordY = yCoord
 	ssd.MW_Remarks = data[21]
 	ssd.BasesOld = data[22]
@@ -211,7 +230,6 @@ func (ssd *SecondSurveyData) verify() {
 		ssd.errors = append(ssd.errors, calculations.NobilityErrors(ssd.MW_Nobility, strings.Fields(ssd.MW_Remarks), ssd.MW_ImportanceInt)...)
 	case calculations.AllegianceFull(ssd.Allegiance) == "UNKNOWN SHORTFORM":
 		ssd.errors = append(ssd.errors, fmt.Errorf("allegiance unknown"))
-
 	}
 }
 
@@ -329,7 +347,7 @@ func ListOf(ssds []*SecondSurveyData) []string {
 	table := []string{}
 	for _, ssd := range ssds {
 		newFields := strings.Split(ssd.String(), "   ")
-		line := ""
+		line := "|"
 		for n, fld := range newFields {
 			for len(fld) < colMap[n] {
 				fld += " "
@@ -339,4 +357,17 @@ func ListOf(ssds []*SecondSurveyData) []string {
 		table = append(table, line)
 	}
 	return table
+}
+
+func Search(key string) ([]*SecondSurveyData, error) {
+	err := fmt.Errorf("Search not implemented")
+	var ssdArr []*SecondSurveyData
+	lines := utils.LinesFromTXT(cleanedDataPath)
+	for _, val := range lines {
+		if strings.Contains(val, key) {
+			fmt.Println(":::", val)
+			ssdArr = append(ssdArr, Parse(val))
+		}
+	}
+	return ssdArr, err
 }
