@@ -59,7 +59,7 @@ func main() {
 			Description: "LONG DESCR",
 			Category:    "Combat",
 			Action: func(c *cli.Context) error {
-				return actions.NewTicket()
+				return actions.NewCombat()
 			},
 		},
 		//////////////////////////////////////
