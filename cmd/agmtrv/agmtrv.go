@@ -46,10 +46,20 @@ func main() {
 			Usage:       "Construct random Mercenary Ticket MgT1 S1 p42-62",
 			UsageText:   "Set Space Encounter at world's near space. Demands UWP for data generation",
 			Description: "LONG DESCR",
-			ArgsUsage:   "UWP: string represents world data",
-			Category:    "Encounter",
+			Category:    "Generation",
 			Action: func(c *cli.Context) error {
 				return actions.NewTicket()
+			},
+		},
+		//////////////////////////////////////
+		{
+			Name:        "resolvecombat",
+			Usage:       "Resolve mass combat using Naval Campaign p50-52",
+			UsageText:   "Setup combat and use phase by phase resolution",
+			Description: "LONG DESCR",
+			Category:    "Combat",
+			Action: func(c *cli.Context) error {
+				return actions.NewCombat()
 			},
 		},
 		//////////////////////////////////////
