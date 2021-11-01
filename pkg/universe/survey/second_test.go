@@ -3,7 +3,6 @@ package survey
 import (
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/Galdoba/utils"
@@ -12,21 +11,21 @@ import (
 func TestParseClean(t *testing.T) {
 	//	return
 	lines := utils.LinesFromTXT("c:\\Users\\Public\\TrvData\\cleanedData.txt")
-	tab := []*SecondSurveyData{}
-	for _, line := range lines {
-		if strings.Contains(line, "Drinax") {
-			ssd := Parse(line)
-			for _, err := range ssd.errors {
-				fmt.Println(err)
-			}
-			fmt.Println(line)
-			fmt.Println(ssd)
-			tab = append(tab, ssd)
+	//tab := []*SecondSurveyData{}
+	uwpMap := make(map[string]int)
+	for i, line := range lines {
+		ssd := Parse(line)
+		uwpMap[ssd.MW_UWP]++
+		fmt.Print(len(uwpMap), i, "\r")
+	}
+
+	un := 0
+	for _, v := range uwpMap {
+		if v == 1 {
+			un++
 		}
 	}
-	for _, val := range ListOf(tab) {
-		fmt.Println(val)
-	}
+	fmt.Println("\nDone", un)
 }
 
 func TestParcing(t *testing.T) {
@@ -99,6 +98,7 @@ func TestParcing(t *testing.T) {
 }
 
 func TestSearch(t *testing.T) {
+	return
 	found, err := Search("Earth")
 	for _, v := range found {
 		fmt.Println(v)

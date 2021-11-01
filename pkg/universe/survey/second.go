@@ -312,7 +312,8 @@ func importanceToString(i int) string {
 }
 
 func (ssd *SecondSurveyData) String() string {
-	rep := ssd.Hex + "   "
+	rep := ssd.SectorAbb + "   "
+	rep += ssd.Hex + "   "
 	rep += ssd.MW_Name + "   "
 	rep += ssd.MW_UWP + "   "
 	rep += ssd.MW_Remarks + "   "
@@ -360,14 +361,15 @@ func ListOf(ssds []*SecondSurveyData) []string {
 }
 
 func Search(key string) ([]*SecondSurveyData, error) {
-	err := fmt.Errorf("Search not implemented")
 	var ssdArr []*SecondSurveyData
 	lines := utils.LinesFromTXT(cleanedDataPath)
 	for _, val := range lines {
 		if strings.Contains(val, key) {
-			fmt.Println(":::", val)
 			ssdArr = append(ssdArr, Parse(val))
 		}
 	}
-	return ssdArr, err
+	if len(ssdArr) < 1 {
+		return nil, fmt.Errorf("nothing was found")
+	}
+	return ssdArr, nil
 }
