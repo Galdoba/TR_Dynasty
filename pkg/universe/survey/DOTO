@@ -1,3 +1,57 @@
 1. считать базу по известной информации и сформулировать объект SSD по правилам T5  - done
 2. пройти по всем SSD и распределить тела по орбитам
 3. каждому орбитальному объекту расчитать детали по World Builder.
+
+
+Agricultural: 
+Dedicated to farming and food production. Often, they are divided into vast semi-feudal estates.
+Ag, Мир-Ферма: Мир имеет развитую индустрию производства еды. Часто такой мир ражделен на полу-феодальные поместья.
+
+Asteroids: 
+Usually mining colonies, but can also be orbital factories or colonies. 
+As, Астеройд: Обычно это шахтерская колония но может быть гагантска
+
+Barren: 
+Uncolonised and empty.
+
+Desert: 
+Dry and barely habitable. Fluid Oceans: Worlds where the surface liquid is something other than water, and so are incompatible with Earth-derived life.
+
+Garden: 
+Worlds that are Earth-like.
+
+High Population: 
+A population in the billions. 
+
+High Tech: 
+Among the most technologically advanced in Charted Space.
+
+Ice-Capped: 
+Worlds that have most of their surface liquid frozen in polar ice caps, and are cold and dry.
+
+Industrial: 
+Dominated by factories and cities. 
+
+Low Population: 
+A population of only a few thousand or less.
+
+Low Tech: 
+Pre-industrial and cannot produce advanced goods.
+
+Non-Agricultural: 
+Too dry or barren to support their populations using conventional food production.
+
+Non-Industrial: 
+Too low in population to maintain an extensive industrial base. 
+
+Poor: 
+Lacking resources, viable land or sufficient population to be anything other than marginal colonies.
+
+Rich: 
+Blessed with a stable government and viable biosphere, making them economic powerhouses.
+
+Water World: 
+Almost entirely water-ocean across their surface. 
+
+Vacuum: 
+No atmosphere
