@@ -63,7 +63,16 @@ func main() {
 			},
 		},
 		//////////////////////////////////////
-
+		{
+			Name:        "spaceport",
+			Usage:       "Shows available and generated info on space port",
+			UsageText:   "LONG USAGE TEXT",
+			Description: "LONG DESCR",
+			Category:    "Trade",
+			Action: func(c *cli.Context) error {
+				return actions.NewCombat()
+			},
+		},
 	}
 	args := os.Args
 

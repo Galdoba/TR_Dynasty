@@ -88,6 +88,27 @@ type Starport struct {
 6. Создание отличительной черты для Космопорта 	 (Perma).
 */
 
+/*
+Space Station Characteristics Profile
+[Station Name]
+DOCKING FEE: 1000 Cr
+------------------------------------------------
+BERTHING
+Small Craft:
+Starships:
+Capital Ships:
+
+
+
+
+
+
+*/
+
+func (sp *Starport) String() string {
+	return ""
+}
+
 func From(wrld wrld.World) (Starport, error) {
 	uwpStr := wrld.UWP()
 	sp := Starport{}
