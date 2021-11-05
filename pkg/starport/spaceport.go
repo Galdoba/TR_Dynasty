@@ -15,8 +15,8 @@ type Starport struct {
 	berthing         []int //Smallc Craft/Spaceships/Capital Ships
 	fuel             []int //Unrefined/Refined
 	warehousing      int   //
-	hazmat           int
-	storageCost      int
+	hazmatCost       int   //per week per ton (twise of storage)
+	storageCost      int   //per week per ton
 	repairFacilities []int //Smallc Craft/Spaceships/Capital Ships
 	upgrades         []string
 	waitingTimes     []int //berthing/fuel/warehouse/hazmat/repair
@@ -38,6 +38,8 @@ func Assemble(wd WorldDataDrawer) (*Starport, error) {
 	sp.calculateDockingFee(wd.ImportanceVal())
 	sp.calculateBerthing(wd.ImportanceVal())
 	sp.calculateFuelCost(wd)
+	sp.warehousingCost()
+	sp.calculateShipyard()
 	// sp.berthing = append(sp.berthing, 1000)
 	// sp.berthing = append(sp.berthing, 2000)
 	// sp.berthing = append(sp.berthing, 3999)
@@ -124,6 +126,23 @@ func (sp *Starport) calculateBerthing(imp int) {
 	}
 }
 
+func (sp *Starport) calculateShipyard() {
+	switch sp.class {
+	default:
+		sp.repairFacilities = []int{0, 0, 0}
+	case "E":
+		sp.repairFacilities = []int{1, 0, 0}
+	case "D":
+		sp.repairFacilities = []int{2, 1, 0}
+	case "C":
+		sp.repairFacilities = []int{3, 2, 1}
+	case "B":
+		sp.repairFacilities = []int{3, 3, 2}
+	case "A":
+		sp.repairFacilities = []int{3, 3, 3}
+	}
+}
+
 func (sp *Starport) String() string {
 	text := sp.name
 	text += "\n Starport Class: " + sp.class
@@ -139,7 +158,39 @@ func (sp *Starport) String() string {
 	text += "\n| Starships                 | " + waitingTimeFuel(sp.berthing[1]) + "  |"
 	text += "\n| Capital Ships             | " + waitingTimeFuel(sp.berthing[2]) + "  |"
 	text += "\n+---------------------------+---------------------------------+"
+	text += "\n| WAREHOUSING  : " + sp.storageSTR() + " | WAITING TIME                    |"
+	text += "\n| Small Craft               | " + waitingStorage(sp.berthing[0]) + "  |"
+	text += "\n| Starships                 | " + waitingStorage(sp.berthing[1]) + "  |"
+	text += "\n| Capital Ships             | " + waitingStorage(sp.berthing[2]) + "  |"
+	text += "\n+---------------------------+---------------------------------+"
+	text += "\n| Shipyard                                                    |"
+	text += "\n| Small Craft  : " + shipyardServices(sp.repairFacilities[0]) + "  |"
+	text += "\n| Starships    : " + shipyardServices(sp.repairFacilities[1]) + "  |"
+	text += "\n| Capital Ships: " + shipyardServices(sp.repairFacilities[2]) + "  |"
+	text += "\n+---------------------------+---------------------------------+"
 	return text
+	//Hull, Systems, Refit
+	//Hull, Systems
+	//Hull
+	//N/A
+}
+
+func shipyardServices(i int) string {
+	serv := ""
+	switch i {
+	default:
+		serv = "N/A"
+	case 3:
+		serv = "Hull, Systems, Refit"
+	case 2:
+		serv = "Hull, Systems"
+	case 1:
+		serv = "Hull"
+	}
+	for len(serv) < 43 {
+		serv += " "
+	}
+	return serv
 }
 
 func formatFee(fee int) string {
@@ -150,6 +201,22 @@ func formatFee(fee int) string {
 	return f
 }
 
+func (sp *Starport) warehousingCost() {
+	switch sp.class {
+	case "A":
+		sp.storageCost = 500
+	case "B":
+		sp.storageCost = 400
+	case "C":
+		sp.storageCost = 300
+	case "D":
+		sp.storageCost = 200
+	case "E":
+		sp.storageCost = 100
+	}
+	sp.hazmatCost = sp.storageCost * 2
+}
+
 func (sp *Starport) fuelSTR() string {
 	s := ""
 	switch sp.fuel[1] {
@@ -158,6 +225,15 @@ func (sp *Starport) fuelSTR() string {
 	case -1:
 		s = fmt.Sprintf("%v/NA", sp.fuel[0])
 	}
+
+	for len(s) < 10 {
+		s += " "
+	}
+	return s
+}
+
+func (sp *Starport) storageSTR() string {
+	s := fmt.Sprintf("%v/D-ton", sp.storageCost)
 
 	for len(s) < 10 {
 		s += " "
@@ -226,6 +302,32 @@ func waitingTimeFuel(size int) string {
 		return waitingTimeString(r)
 	case size > 0:
 		r = r - 0
+		return waitingTimeString(r)
+	}
+	return "                              "
+}
+
+func waitingStorage(size int) string {
+	r := dice.Roll1D()
+	size = size / 2
+	switch {
+	case size > 100000:
+		r = r - 3
+		return waitingTimeString(r)
+	case size > 50000:
+		r = r - 2
+		return waitingTimeString(r)
+	case size > 10000:
+		r = r - 2
+		return waitingTimeString(r)
+	case size > 3000:
+		r = r - 1
+		return waitingTimeString(r)
+	case size > 1000:
+		r = r - 0
+		return waitingTimeString(r)
+	case size > 0:
+		r = r + 1
 		return waitingTimeString(r)
 	}
 	return "                              "
