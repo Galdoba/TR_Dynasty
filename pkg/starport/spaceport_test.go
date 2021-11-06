@@ -9,7 +9,7 @@ import (
 )
 
 func TestAsemble(t *testing.T) {
-	worldData, err := otu.GetDataOn("Paal")
+	worldData, err := otu.GetDataOn("Acis")
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -22,18 +22,4 @@ func TestAsemble(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 	fmt.Println(sp)
-
-	worldData2, err := otu.GetDataOn("Tktk")
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-	world2, err := wrld.FromOTUdata(worldData2)
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-	sp2, err := Assemble(&world2)
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-	fmt.Println(sp2)
 }

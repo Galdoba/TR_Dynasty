@@ -211,3 +211,21 @@ func JumpCoordinatesAll() []string {
 	}
 	return jc
 }
+
+//////////////
+
+type Coordinates struct {
+	hex  hexCoords
+	cube cubeCoords
+}
+
+func NewCoordinates(x, y int) Coordinates {
+	coords := Coordinates{}
+	coords.hex = setHexCoords(x, y)
+	coords.cube = evenQToCube(coords.hex)
+	return coords
+}
+
+func Distance(c1, c2 Coordinates) int {
+	return cubeDistance(c1.cube, c2.cube)
+}
