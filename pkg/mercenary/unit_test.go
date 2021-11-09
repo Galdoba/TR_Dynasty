@@ -18,5 +18,6 @@ func TestForce(t *testing.T) {
 		t.Errorf("error: %v", err.Error())
 	}
 	fmt.Println(f)
+	fmt.Println(f)
 
 }
