@@ -20,3 +20,9 @@ func TestForce(t *testing.T) {
 	fmt.Println(f)
 
 }
+
+/*
+git config --global url."https://api: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@github.com/".insteadOf "https://github.com/"
+
+git config --global url."https://api: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@github.com/".insteadOf "https://github.com/"
+*/
