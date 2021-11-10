@@ -74,7 +74,7 @@ func NewForce(name string) (*Force, error) {
 	f.ForceEquipment = append(f.ForceEquipment, EQIPMENT_Minimal) //
 	f.ForceEquipment = append(f.ForceEquipment, EQIPMENT_Minimal) //
 	//f.ForceEquipment[f.primaryCBAS()] = EQIPMENT_Standard         //setForceEqupment()
-	f.Mobility = MOBILITY_Infantry
+	f.Mobility = setForceMobility()
 	f.setupCBAS()
 	//err := fmt.Errorf("Not implemented")
 	return &f, nil
@@ -240,6 +240,19 @@ func setForceEquipment() string {
 	chosen := "None"
 	for err != nil {
 		if chosen, err = user.ChooseOneStr("Select Force Type:", []string{"Minimal", "Sparce", "Basic", "Standard", "Generous", "Lavish", "Execive"}); err == nil {
+			return chosen
+		}
+		fmt.Println(err.Error())
+	}
+	return chosen
+}
+
+func setForceMobility() string {
+	err := fmt.Errorf("Initial")
+	chosen := "None"
+	for err != nil {
+		if chosen, err = user.ChooseOneStr("Select Force Type:", []string{MOBILITY_Static, MOBILITY_SemiMobile, MOBILITY_Infantry, MOBILITY_Mechanised,
+			MOBILITY_Mounted, MOBILITY_Motorised, MOBILITY_AirMobile, MOBILITY_GravMobile, MOBILITY_Aerospace}); err == nil {
 			return chosen
 		}
 		fmt.Println(err.Error())
