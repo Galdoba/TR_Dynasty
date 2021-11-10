@@ -64,6 +64,17 @@ func main() {
 		},
 		//////////////////////////////////////
 		{
+			Name:        "resolvecombat2",
+			Usage:       "Resolve mass combat using Mercenary Book 1",
+			UsageText:   "Setup combat and use phase by phase resolution",
+			Description: "LONG DESCR",
+			Category:    "Combat",
+			Action: func(c *cli.Context) error {
+				return actions.NewCombatExtended()
+			},
+		},
+		//////////////////////////////////////
+		{
 			Name:        "spaceport",
 			Usage:       "Shows available and generated info on space port",
 			UsageText:   "LONG USAGE TEXT",
