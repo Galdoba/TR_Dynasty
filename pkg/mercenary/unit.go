@@ -61,11 +61,11 @@ type Force struct {
 	Reputation     int
 }
 
-func NewForce(name string) (*Force, error) {
+func NewForce() (*Force, error) {
 	f := Force{}
+	f.Name = setForceName()
 	f.setupActivePersonel()
 	f.ForceSize = f.forceFormationStr()
-	f.Name = name
 	f.setupForceTL()
 	f.ForceType = setForceType()
 	f.ForceTraining = setForceTraining()
@@ -256,6 +256,16 @@ func setForceMobility() string {
 			return chosen
 		}
 		fmt.Println(err.Error())
+	}
+	return chosen
+}
+
+func setForceName() string {
+	err := fmt.Errorf("Input Force Name:")
+	chosen := "None"
+	for err != nil {
+		fmt.Println(err.Error())
+		chosen, err = user.InputStr()
 	}
 	return chosen
 }

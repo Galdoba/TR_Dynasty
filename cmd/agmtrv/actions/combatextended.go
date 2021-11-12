@@ -7,8 +7,11 @@ import (
 )
 
 func NewCombatExtended() error {
-	trvForce, err := mercenary.NewForce("Test")
+	trvForce, errT := mercenary.NewForce()
+	enemyForce, errE := mercenary.NewForce()
 	fmt.Println(trvForce.CapabilityRecord())
-	fmt.Println(err)
+	fmt.Println(enemyForce.CapabilityRecord())
+	fmt.Println(errT)
+	fmt.Println(errE)
 	return nil
 }
