@@ -1,8 +1,10 @@
 package cei
 
-type task struct {
-	diff  int
-	descr string
+type Event struct {
+	descr       string
+	eventType   string
+	eventTests  []int
+	eventMorale []int
 }
 
 func Task(descr string, diff int) {}
