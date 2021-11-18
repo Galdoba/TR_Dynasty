@@ -37,6 +37,8 @@ type detachment struct {
 func NewCrew(baseIndex int, divisions ...detachment) (*Crew, error) {
 	err := fmt.Errorf("Not implemented")
 	c := Crew{}
+	c.CrewEfficencyIndex = baseIndex
+	c.Morale = baseIndex
 	c.Division = make(map[string]detachment)
 	for _, dei := range divisions {
 		dei.efficiencyIndex = c.CrewEfficencyIndex
@@ -52,13 +54,24 @@ func (c *Crew) Report() {
 			longestName = "DEI (" + div.dType + ")"
 		}
 	}
-	fmt.Printf("CEI			| %v\n", c.CrewEfficencyIndex)
-	fmt.Printf("CEIM		| %v\n", c.CrewEfficencyIndex)
-
+	fmt.Printf("CEI | %v\n", c.CrewEfficencyIndex)
+	fmt.Printf("CEIM | %v\n", c.CrewEfficencyIndex)
+	for k, v := range c.Division {
+		fmt.Printf("DEI (%v) | %v\n", k, v.efficiencyIndex)
+	}
+	fmt.Printf("MOR | %v\n", c.Morale)
 }
 
 func NewDivision(name string) *detachment {
 	return &detachment{name, -1}
+}
+
+func (c *Crew) SumMods() int {
+	m := 0
+	for _, mod := range c.CEIModifier {
+		m += mod.value
+	}
+	return m
 }
 
 func (c *Crew) ECEI() int {
