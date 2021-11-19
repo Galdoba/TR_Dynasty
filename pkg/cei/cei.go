@@ -2,88 +2,165 @@ package cei
 
 import (
 	"fmt"
+
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 )
 
 const (
-	DIVISION_FLIGHT      = "Flight"
-	DIVISION_GUNNERY     = "Gunnery"
-	DIVISION_ENGINEERING = "Engineering"
-	DIVISION_CREW        = "Crew"
-	DIVISION_COMMAND     = "Command & Administration"
-	DIVISION_OPERATIONS  = "Operations"
-	DIVISION_MISSION     = "Mission"
+	CREW                         = "Crew"
+	DIVISION_FLIGHT              = "Flight"
+	DIVISION_GUNNERY             = "Gunnery"
+	DIVISION_ENGINEERING         = "Engineering"
+	DIVISION_OTHER               = "Other"
+	DIVISION_COMMAND             = "Command"
+	DIVISION_OPERATIONS          = "Operations"
+	DIVISION_MISSION             = "Mission"
+	FATIGUE_Fresh                = 0
+	FATIGUE_Fatigued             = 0
+	FATIGUE_Highly_Fatigued      = 0
+	FATIGUE_Dangerously_Fatigued = 0
+	FATIGUE_Exhausted            = 0
+	FATIGUE_Incapable            = 0
 	//DETACHMENT_GUNNERY     = "Gunnery"
 )
 
 //Crew - определяет способность команды справиться с задачами
-type Crew struct {
+type Team struct {
+	TeamType           string
 	CrewEfficencyIndex int //CEI
-	CEIModifier        []activeModifier
-	Division           map[string]detachment
+	CEIModifier        map[string]int
+	Division           map[string]*Team
 	Morale             int
-	Fatigue            string
+	Fatigue            int
+	Log                []string
 }
 
-type activeModifier struct {
-	descr string
-	value int
+func (c *Team) AddEntry(entry string) {
+	c.Log = append(c.Log, entry)
 }
 
-type detachment struct {
-	dType           string
-	efficiencyIndex int
-}
-
-func NewCrew(baseIndex int, divisions ...detachment) (*Crew, error) {
-	err := fmt.Errorf("Not implemented")
-	c := Crew{}
-	c.CrewEfficencyIndex = baseIndex
-	c.Morale = baseIndex
-	c.Division = make(map[string]detachment)
+func NewTeam(teamtype string, divisions ...string) *Team {
+	c := Team{}
+	c.TeamType = teamtype
+	c.AddEntry(fmt.Sprintf("%v created", c.TeamType))
+	c.CrewEfficencyIndex = -1
+	c.CEIModifier = make(map[string]int)
+	c.Division = make(map[string]*Team)
 	for _, dei := range divisions {
-		dei.efficiencyIndex = c.CrewEfficencyIndex
-		c.Division[dei.dType] = dei
+		div := Team{TeamType: dei}
+		div.CrewEfficencyIndex = -1
+		div.CEIModifier = make(map[string]int)
+		div.Division = make(map[string]*Team)
+		c.Division[dei] = &div
+		c.AddEntry(fmt.Sprintf("%v division added", dei))
 	}
-	return &c, err
+
+	return &c
 }
 
-func (c *Crew) Report() {
+func (c *Team) Assemble() {
+	if c.CrewEfficencyIndex < 0 {
+		c.CrewEfficencyIndex = 7
+		c.Morale = 7
+		c.Fatigue = 0
+		c.AddEntry(fmt.Sprintf("%v assembled", c.TeamType))
+	}
+	for _, detachment := range c.Division {
+		detachment.Assemble()
+	}
+}
+
+func (c *Team) AddModifier(name string, effect int) {
+	c.CEIModifier[name] = effect
+	c.AddEntry(fmt.Sprintf("Modifier Added: '%v' (%v)", name, effect))
+}
+
+func (c *Team) RemoveModifier(name string) {
+	for n, e := range c.CEIModifier {
+		if n == name {
+			delete(c.CEIModifier, name)
+			c.AddEntry(fmt.Sprintf("Modifier Removed: '%v' (%v)", n, e))
+		}
+	}
+}
+
+func (c *Team) Report() {
 	longestName := "CEIM"
 	for _, div := range c.Division {
-		if len(longestName) < len("DEI ("+div.dType+")") {
-			longestName = "DEI (" + div.dType + ")"
+		if len(longestName) < len("DEI ("+div.TeamType+")") {
+			longestName = "DEI (" + div.TeamType + ")"
 		}
 	}
 	fmt.Printf("CEI | %v\n", c.CrewEfficencyIndex)
-	fmt.Printf("CEIM | %v\n", c.CrewEfficencyIndex)
+	fmt.Printf("CEIM | %v\n", c.ECEI())
 	for k, v := range c.Division {
-		fmt.Printf("DEI (%v) | %v\n", k, v.efficiencyIndex)
+		fmt.Printf("DEI %v | %v\n", k, v.ECEI())
 	}
 	fmt.Printf("MOR | %v\n", c.Morale)
 }
 
-func NewDivision(name string) *detachment {
-	return &detachment{name, -1}
-}
-
-func (c *Crew) SumMods() int {
+func (c *Team) SumMods() int {
 	m := 0
 	for _, mod := range c.CEIModifier {
-		m += mod.value
+		m += mod
 	}
 	return m
 }
 
-func (c *Crew) ECEI() int {
+func (c *Team) ECEI() int {
 	r := c.CrewEfficencyIndex
-	for _, mod := range c.CEIModifier {
-		r += mod.value
+	for _, val := range c.CEIModifier {
+		r += val
 	}
 	return r
 }
 
+func (c *Team) CEIMchanges(eventDescr string, leadershipEffect int) {
+	c.AddEntry(fmt.Sprintf("CEIM Changes: %v with leadership check effect %v", eventDescr, leadershipEffect))
+	r := dice.Roll2D() + leadershipEffect
+	c.AddEntry(fmt.Sprintf("Roll 2D: %v", r-leadershipEffect))
+	mChange := 0
+
+	switch r {
+	case 1, 2:
+		mChange = dice.Roll1D()
+		c.Morale = c.Morale - mChange
+		c.AddModifier(eventDescr, -2)
+		c.AddEntry(fmt.Sprintf("MOR - %v, CEIM - 2", mChange))
+	case 3, 4:
+		mChange = dice.RollD3()
+		c.Morale = c.Morale - mChange
+		c.AddModifier(eventDescr, -1)
+		c.AddEntry(fmt.Sprintf("MOR - %v, CEIM - 1", mChange))
+	case 5, 6, 7, 8:
+		c.AddEntry(fmt.Sprintf("No change"))
+	case 9, 10, 11:
+		c.AddEntry(fmt.Sprintf("The %v gains confidence. MOR + 1", c.TeamType))
+	default:
+		if r <= 0 {
+			mChange = dice.Roll1D(3)
+			c.Morale = c.Morale - mChange
+			c.AddModifier(eventDescr, -3)
+			c.AddEntry(fmt.Sprintf("Morale collapses (MOR - %v) and the crew is near mutiny. CEIM - 3", mChange))
+			break
+		}
+		mChange = dice.RollD3()
+		c.AddModifier(eventDescr, 1)
+		c.AddEntry(fmt.Sprintf("Efficiency and morale increse. CEIM + 1, MOR + %v", mChange))
+	}
+	c.AddEntry(fmt.Sprintf("New morale is now MOR = %v", c.Morale))
+	c.moraleStatus()
+}
+
+func (c *Team) moraleStatus() {
+	if c.Morale < 0 {
+		c.Morale = 0
+		c.AddEntry(fmt.Sprintf("%v morale fixed to 0", c.TeamType))
+	}
+}
+
 //TaskDM - возвращает модификатор при тесте выполнения заданий
-func (c *Crew) TaskDM() int {
+func (c *Team) TaskDM() int {
 	switch c.CrewEfficencyIndex {
 	default:
 		return -999

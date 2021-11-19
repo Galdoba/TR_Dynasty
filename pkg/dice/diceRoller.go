@@ -372,6 +372,15 @@ func Roll1D(dm ...int) int {
 	return Roll("1d6").DM(mod).Sum()
 }
 
+//RollD3 -
+func RollD3(dm ...int) int {
+	mod := 0
+	if len(dm) > 0 {
+		mod = dm[0]
+	}
+	return Roll("1d3").DM(mod).Sum()
+}
+
 //Roll2D -
 func Roll2D(dm ...int) int {
 	mod := 0

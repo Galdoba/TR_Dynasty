@@ -6,15 +6,17 @@ import (
 )
 
 func TestCEI(t *testing.T) {
-	crew, err := NewCrew(7,
-		*NewDivision(DIVISION_COMMAND),
-		*NewDivision(DIVISION_FLIGHT),
-		*NewDivision(DIVISION_ENGINEERING),
-		*NewDivision(DIVISION_MISSION),
+	crew := NewTeam("Ship Crew",
+		DIVISION_COMMAND,
+		DIVISION_FLIGHT,
+		DIVISION_ENGINEERING,
+		DIVISION_MISSION,
 	)
-	fmt.Println(crew)
-	if err != nil {
-		t.Errorf(err.Error())
+	crew.Assemble()
+	crew.Report()
+	crew.CEIMchanges("Bad Event", -6)
+	for _, entry := range crew.Log {
+		fmt.Println(entry)
 	}
 	crew.Report()
 	// fmt.Println("Mission: Search planet side location:")
