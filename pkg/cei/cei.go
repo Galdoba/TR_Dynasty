@@ -67,6 +67,14 @@ func (c *Team) RemoveDivision(division string) {
 	c.AddEntry(fmt.Sprintf("Detachment '%v' removed", division))
 }
 
+//CallDivision - вызывает дивизию вместо всей команды
+func (c *Team) CallDivision(division string) *Team {
+	if team, ok := c.Division[division]; ok {
+		return team
+	}
+	return nil
+}
+
 func (c *Team) AddModifier(name string, effect int) {
 	c.CEIModifier[name] = effect
 	c.AddEntry(fmt.Sprintf("Modifier Added: '%v' (%v)", name, effect))
