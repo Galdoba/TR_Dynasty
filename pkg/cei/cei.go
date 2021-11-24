@@ -45,6 +45,7 @@ func NewTeam(teamtype string, baseIndex int) *Team {
 	c.CrewEfficencyIndex = baseIndex
 	c.CEIModifier = make(map[string]int)
 	c.Division = make(map[string]*Team)
+	c.Morale = baseIndex
 	c.AddEntry(fmt.Sprintf("%v created", c.TeamType))
 	return &c
 }
@@ -125,7 +126,6 @@ func (c *Team) ECEI() int {
 // 	r := dice.Roll2D() + leadershipEffect
 // 	c.AddEntry(fmt.Sprintf("Roll 2D: %v", r-leadershipEffect))
 // 	mChange := 0
-
 // 	switch r {
 // 	case 1, 2:
 // 		mChange = dice.Roll1D()
@@ -204,10 +204,54 @@ func (c *Team) TaskDM() int {
 	}
 }
 
-func (t *Team) Resolve() int {
-	return dice.Roll2D() + t.TaskDM()
+func (t *Team) Resolve(descr ...string) int {
+	r := dice.Roll2D()
+	dm := t.TaskDM()
+	if len(descr) > 0 {
+		t.AddEntry(fmt.Sprintf("%v resolved: Roll=%v+(%v)", descr[0], r, dm))
+	}
+	return r + dm
 }
 
 func (t *Team) String() string {
 	return fmt.Sprintf("%v (%v)", t.TeamType, t.ECEI())
+}
+
+func (t *Team) MoraleCheckMinor() {
+	r := t.ECEI() + dice.Roll2D()
+	switch {
+	case r < 8:
+		t.Morale--
+		t.AddEntry("Minor morale check failed: MOR -1")
+		t.moraleStatus()
+	case r >= 8:
+		t.AddEntry("Minor morale check passed")
+	}
+}
+
+func (t *Team) MoraleCheckMajor() {
+	r := t.TaskDM() + dice.Roll2D()
+	switch {
+	case r < 8:
+		m := dice.Roll1D()
+		t.Morale = t.Morale - m
+		t.moraleStatus()
+		t.AddEntry(fmt.Sprintf("Major morale check failed: MOR -%v", m))
+		if m >= 3 {
+			t.AddEntry(fmt.Sprintf("Leadership crisis occurs"))
+			t.AddModifier("Leadership crisis not resolved", -1)
+		}
+	case r >= 8:
+		t.AddEntry("Major morale check passed")
+	}
+}
+
+func (t *Team) PrintLog() {
+	fmt.Println(t, "Log:")
+	for _, line := range t.Log {
+		fmt.Println(line)
+	}
+	for _, d := range t.Division {
+		d.PrintLog()
+	}
 }

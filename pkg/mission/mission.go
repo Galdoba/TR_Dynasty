@@ -34,12 +34,12 @@ type operation struct {
 	outcome         string
 	event           string
 	summary         string
-	activeModifiers []resolutionModifier
+	activeModifiers []*resolutionModifier
 	subOperations   []*operation
 }
 
 type Resolver interface {
-	Resolve() int
+	Resolve(...string) int
 }
 
 type resolutionModifier struct {
@@ -52,12 +52,12 @@ type Modifier interface {
 }
 
 func (rm *resolutionModifier) Modifier() (descr string, val int) {
-	return rm.descr, val
+	return rm.descr, rm.val
 }
 
-func NewModifier(descr string, val int) resolutionModifier {
+func NewModifier(descr string, val int) *resolutionModifier {
 	rm := resolutionModifier{descr, val}
-	return rm
+	return &rm
 }
 
 //NewOperation - TODO: переделать *cei.CEI в интерфейс Resolver
@@ -79,18 +79,26 @@ func (op *operation) SetScale(scale int) {
 	}
 }
 
-func (op *operation) AssignResolver(team Resolver) {
-	op.asignedCrew = team
+func (op *operation) AssignResolver(team Resolver) *operation {
+	switch {
+	case op.asignedCrew == nil:
+		op.asignedCrew = team
+	case op.asignedCrew != nil:
+		return op
+	}
+	//op.asignedCrew = team
 	for _, t1 := range op.subOperations {
 		t1.AssignResolver(team)
 	}
+	return op
 }
 
-func (op *operation) SetModifiers(mods ...Modifier) {
+func (op *operation) SetModifiers(mods ...Modifier) *operation {
 	for _, mod := range mods {
 		descr, val := mod.Modifier()
-		op.activeModifiers = append(op.activeModifiers, resolutionModifier{descr: descr, val: val})
+		op.activeModifiers = append(op.activeModifiers, &resolutionModifier{descr: descr, val: val})
 	}
+	return op
 }
 
 func (op *operation) AbstractResolve() (int, error) {
@@ -100,10 +108,11 @@ func (op *operation) AbstractResolve() (int, error) {
 	ri := 0
 	switch len(op.subOperations) {
 	case 0: //если нижний уровень
-		ri = op.asignedCrew.Resolve()
+		ri = op.asignedCrew.Resolve(op.descr)
 		for _, mod := range op.activeModifiers {
 			_, v := mod.Modifier()
-			op.resolutionIndex += v
+			ri += v
+
 		}
 		op.resolutionIndex = ri
 		op.outcome = resolutionOutcome(op.resolutionIndex)
@@ -119,6 +128,8 @@ func (op *operation) AbstractResolve() (int, error) {
 			segm = i + 1
 		}
 		op.resolutionIndex = op.resolutionIndex / segm
+		op.outcome = resolutionOutcome(op.resolutionIndex)
+		//op.event = resolutionEvent(op.resolutionIndex)
 	}
 	return op.resolutionIndex, nil
 }
@@ -218,11 +229,11 @@ func (op *operation) String() string {
 	prefix := ""
 	switch op.scale {
 	case SCALE_MISSION:
-		prefix = "   "
+		prefix = "    "
 	case SCALE_SEGMENT:
-		prefix = "      "
+		prefix = "        "
 	case SCALE_OPERATION:
-		prefix = "         "
+		prefix = "            "
 	}
 	r := fmt.Sprintf("%v%v: %v", prefix, op.getScale(), op.descr)
 	//if len(op.subOperations) == 0 {
@@ -232,6 +243,24 @@ func (op *operation) String() string {
 		r += "\n" + s.String()
 	}
 	return r
+}
+
+func (op *operation) sumEvents() []string {
+	eventSl := []string{op.event}
+	for _, val := range op.lowerScale() {
+		eventSl = append(eventSl, val.sumEvents()...)
+	}
+	clear := []string{}
+	for _, sl := range eventSl {
+		if sl != "No Event" && sl != "" {
+			clear = append(clear, sl)
+		}
+	}
+	return clear
+}
+
+func (op *operation) lowerScale() []*operation {
+	return op.subOperations
 }
 
 /*
@@ -254,3 +283,31 @@ Summary:
 
 
 */
+
+func Incident() string {
+	r := dice.Roll2D()
+	text := "TODO Incident"
+	switch r {
+	case 2:
+		text = ""
+	}
+	return text
+}
+
+func Opportunity() string {
+	r := dice.Roll2D()
+	text := "TODO Opportunity"
+	switch r {
+	case 2:
+	}
+	return text
+}
+
+func Mishap() string {
+	r := dice.Roll2D()
+	text := "TODO Mishap"
+	switch r {
+	case 2:
+	}
+	return text
+}
