@@ -283,31 +283,3 @@ Summary:
 
 
 */
-
-func Incident() string {
-	r := dice.Roll2D()
-	text := "TODO Incident"
-	switch r {
-	case 2:
-		text = ""
-	}
-	return text
-}
-
-func Opportunity() string {
-	r := dice.Roll2D()
-	text := "TODO Opportunity"
-	switch r {
-	case 2:
-	}
-	return text
-}
-
-func Mishap() string {
-	r := dice.Roll2D()
-	text := "TODO Mishap"
-	switch r {
-	case 2:
-	}
-	return text
-}
