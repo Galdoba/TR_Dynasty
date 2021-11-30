@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Galdoba/TR_Dynasty/pkg/cei"
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
+	"github.com/Galdoba/TR_Dynasty/pkg/ship/cei"
 )
 
 func Test_Mission(t *testing.T) {
