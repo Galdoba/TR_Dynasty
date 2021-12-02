@@ -1,9 +1,13 @@
 package supply
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Galdoba/utils"
+)
 
 const (
-	CATEGORY_MATERIALS_COMMON = iota
+	CATEGORY_COMMON = iota
 	CATEGORY_MATERIALS_RARE
 	CATEGORY_BIOLOGICALS_RARE
 	CATEGORY_MATERIALS_EXOTIC
@@ -38,7 +42,7 @@ type supplyCache struct {
 func NewSupplyCache(tonnage, crew int) *supplyCache {
 	sc := supplyCache{}
 	sc.byType = make(map[int]*material)
-	sc.byType[CATEGORY_MATERIALS_COMMON] = &material{CATEGORY_MATERIALS_COMMON, 0, 0, 0}
+	sc.byType[CATEGORY_COMMON] = &material{CATEGORY_COMMON, 0, 0, 0}
 	sc.byType[CATEGORY_MATERIALS_RARE] = &material{CATEGORY_MATERIALS_RARE, 0, 0, 0}
 	sc.byType[CATEGORY_BIOLOGICALS_RARE] = &material{CATEGORY_BIOLOGICALS_RARE, 0, 0, 0}
 	sc.byType[CATEGORY_MATERIALS_EXOTIC] = &material{CATEGORY_MATERIALS_EXOTIC, 0, 0, 0}
@@ -51,8 +55,8 @@ func NewSupplyCache(tonnage, crew int) *supplyCache {
 
 func str(category int) string {
 	switch category {
-	case CATEGORY_MATERIALS_COMMON:
-		return "Materials (Common)"
+	case CATEGORY_COMMON:
+		return "Supply Units (SU)"
 	case CATEGORY_MATERIALS_RARE:
 		return "Materials (Rare)  "
 	case CATEGORY_BIOLOGICALS_RARE:
@@ -63,26 +67,38 @@ func str(category int) string {
 	return "Unknown"
 }
 
-func (sc *supplyCache) add(category, volume int) {
+//AddSupplies - добавляет в кэш соответсвующий ресурс
+func (sc *supplyCache) AddSupplies(category, volume int) {
 	sc.byType[category].capacity = sc.byType[category].capacity + volume
 }
 
-func (sc *supplyCache) SetConsumptionRate(rate, adminEffect int) {
-	rtFl := float64(rate) * (float64(adminEffect)*0.05 + 1.0)
-	rt := int(rtFl) //надо округлить вверх
-	fmt.Println("New cr = ", rt)
-	sc.consumptionRate = rt
+//SetConsumptionRate - задает уровень расхода припасов
+func (sc *supplyCache) SetConsumptionRate(rate int) {
+	sc.consumptionRate = rate
+}
+
+//SetLogisticsEfect - задает эффект проверки Admin(8) модифицирующей расход SU на 2,5% на период
+func (sc *supplyCache) SetLogisticsEfect(eff int) {
+	sc.logisticsEffect = eff
 }
 
 func roundUp(f float64) float64 {
 	i := int(f)
-	if int(f)-int(i) == 0 {
-
+	if f-float64(i) > 0 {
+		i++
 	}
+	return utils.RoundFloat64(float64(i), 0)
 }
 
+//RemainderText - возвращает слайс с содержимым кэша:
+//rem[0] = текущие SU
+//rem[1] = текущие Rare Materials
+//rem[2] = текущие Rare Biologicals
+//rem[3] = текущие Exotic Materials
+//rem[4] = текущие Общий объем кэша
+//rem[5] = текущие примерный запас на колличество дней при текущем расходе
 func (sc *supplyCache) Remainder() []int {
-	list := []int{CATEGORY_MATERIALS_COMMON, CATEGORY_MATERIALS_RARE, CATEGORY_BIOLOGICALS_RARE, CATEGORY_MATERIALS_EXOTIC}
+	list := []int{CATEGORY_COMMON, CATEGORY_MATERIALS_RARE, CATEGORY_BIOLOGICALS_RARE, CATEGORY_MATERIALS_EXOTIC}
 	remainder := []int{}
 	total := 0
 	for _, val := range list {
@@ -90,31 +106,40 @@ func (sc *supplyCache) Remainder() []int {
 		remainder = append(remainder, sc.byType[val].capacity)
 	}
 	remainder = append(remainder, total)
+	days := remainder[0] / daylyConsumption(sc)
+	remainder = append(remainder, days)
 	return remainder
 }
 
+func suppliesRemained(sc *supplyCache) int {
+	return sc.Remainder()[0]
+}
+
+//RemainderText - возвращает рапорт для игроков и рефери
 func (sc *supplyCache) RemainderText() string {
-	list := []int{CATEGORY_MATERIALS_COMMON, CATEGORY_MATERIALS_RARE, CATEGORY_BIOLOGICALS_RARE, CATEGORY_MATERIALS_EXOTIC}
-	total := 0
-	for _, val := range sc.byType {
-		total += val.capacity
-	}
+	rem := sc.Remainder()
 	r := "===SUPPLY REPORT==================\n"
-	for _, category := range list {
-		switch sc.byType[category].capacity > 0 {
-		case true:
-			r += fmt.Sprintf("  %v: %v Units\n", str(category), sc.byType[category].capacity)
-		}
+	r += fmt.Sprintf("%v : %v/%v\n", str(CATEGORY_COMMON), rem[0], sc.cacheVolume)
+	if rem[1] > 0 {
+		r += fmt.Sprintf("%v: %v\n", str(CATEGORY_MATERIALS_RARE), rem[1])
 	}
-	r += fmt.Sprintf("               Total: %v/%v SU\n", total, sc.cacheVolume)
-	if total > sc.cacheVolume {
-		r += fmt.Sprintf("          Cargo used: %v tons\n", (total-sc.cacheVolume)/100+1)
+	if rem[2] > 0 {
+		r += fmt.Sprintf("%v: %v\n", str(CATEGORY_BIOLOGICALS_RARE), rem[2])
 	}
-	r += "=================================="
+	if rem[3] > 0 {
+		r += fmt.Sprintf("%v: %v\n", str(CATEGORY_MATERIALS_EXOTIC), rem[3])
+	}
+	if rem[4] > sc.cacheVolume {
+		r += fmt.Sprintf("        Cargo used: %v tons\n", (rem[4]-sc.cacheVolume)/100+1)
+	}
+	///////////////////////////////
+	r += "==================================\n"
+	r += fmt.Sprintf("At this level of consumption supplies expected to be last for %d days", rem[5])
+
 	return r
 }
 
-func (sc *supplyCache) ConsumedForDay() int {
+func daylyConsumption(sc *supplyCache) int {
 	perShip := sc.shipTonnage / 100
 	if sc.shipTonnage < 100 {
 		perShip++
@@ -123,43 +148,22 @@ func (sc *supplyCache) ConsumedForDay() int {
 	if sc.activeCrew%3 > 0 {
 		perCrew++
 	}
-	fmt.Println(perShip, perCrew)
 	toConsume := perShip + perCrew
-	toConsume = (toConsume * sc.consumptionRate) / 100
-	switch toConsume <= sc.byType[CATEGORY_MATERIALS_COMMON].capacity {
-	case true:
-		sc.byType[CATEGORY_MATERIALS_COMMON].capacity = sc.byType[CATEGORY_MATERIALS_COMMON].capacity - toConsume
-		return sc.consumptionRate
-	case false:
-		canConsume := sc.byType[CATEGORY_MATERIALS_COMMON].capacity
-		sc.byType[CATEGORY_MATERIALS_COMMON].capacity = 0
-		return canConsume * 100 / toConsume
-	}
-	return 0
+	toConsume = (toConsume * sc.consumptionRate) / 100           //modify by Consumption rate
+	toConsume = (toConsume * (200 - sc.logisticsEffect*5)) / 200 //modify by Logistic Effect
+	return toConsume
 }
 
 func (sc *supplyCache) ConsumeDaily(days int) error {
 	if days < 1 {
 		return fmt.Errorf("days = '%v' (can't be less than 1)", days)
 	}
-	perShip := sc.shipTonnage / 100
-	if sc.shipTonnage < 100 {
-		perShip++
+	toBeConsumed := daylyConsumption(sc) * days
+	if toBeConsumed > suppliesRemained(sc) {
+		return fmt.Errorf("can't consume %v SU (available %v SU)", toBeConsumed, suppliesRemained(sc))
 	}
-	perCrew := (sc.activeCrew) / 3
-	if sc.activeCrew%3 > 0 {
-		perCrew++
-	}
-	toConsume := perShip + perCrew
-	toConsume = (toConsume * sc.consumptionRate) / 100
-	switch (toConsume * days) <= sc.byType[CATEGORY_MATERIALS_COMMON].capacity {
-	case true:
-		sc.byType[CATEGORY_MATERIALS_COMMON].capacity = sc.byType[CATEGORY_MATERIALS_COMMON].capacity - (toConsume * days)
-		return nil
-	case false:
-		return fmt.Errorf("not enough supplies in the cache for %v days", days)
-	}
-	return fmt.Errorf("unspecified error")
+	sc.byType[CATEGORY_COMMON].capacity = sc.byType[CATEGORY_COMMON].capacity - toBeConsumed
+	return nil
 }
 
 /*
