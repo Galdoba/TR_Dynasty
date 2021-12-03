@@ -291,13 +291,31 @@ func DetermineIssues(mods ...int) []int {
 			}
 		}
 	}
+	s:="SU
+	Defect (minor)    : 2d * тоннаж/750
+	Defect (major)    : 2d * тоннаж/150
+	Breakdown (minor) : 5d * тоннаж/750
+	Breakdown (major) : 5d * тоннаж/150
+	Failure (minor)   : 8d * тоннаж/750
+	Failure (major)   : 8d * тоннаж/150
+	1 armor           : 2d * тоннаж/15
+	1 HP              : 2d * 7
+	hours
+	из книги"
+	fmt.Print(s)
 	return res
 }
 
 /*
-75000
-2D*Hour*20 (40 - 240  / 140)
-1d6 Hours * hull/100
-
-
+SU
+Defect (minor)    : 2d * тоннаж/750
+Defect (major)    : 2d * тоннаж/150
+Breakdown (minor) : 5d * тоннаж/750
+Breakdown (major) : 5d * тоннаж/150
+Failure (minor)   : 8d * тоннаж/750
+Failure (major)   : 8d * тоннаж/150
+1 armor           : 2d * тоннаж/15
+1 HP              : 2d * 7
+hours
+из книги
 */
