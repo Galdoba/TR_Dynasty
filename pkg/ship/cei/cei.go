@@ -118,6 +118,12 @@ func (c *Team) ECEI() int {
 	for _, val := range c.CEIModifier {
 		r += val
 	}
+	if r < 0 {
+		return 0
+	}
+	if r > 15 {
+		return 15
+	}
 	return r
 }
 
