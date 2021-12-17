@@ -9,12 +9,11 @@ import (
 )
 
 func Test_Mission(t *testing.T) {
-	crew := cei.NewTeam("Crew", 7)
-	crew.AddDivision(cei.DIVISION_COMMAND)
-	crew.AddDivision(cei.DIVISION_FLIGHT)
-	crew.Division[cei.DIVISION_FLIGHT].CrewEfficencyIndex = 8
-	crew.AddDivision(cei.DIVISION_ENGINEERING)
-	crew.AddDivision(cei.DIVISION_MISSION)
+	crew := cei.NewTeam("Crew", 8)
+	crew.AddDivision(cei.DIVISION_COMMAND, 8)
+	crew.AddDivision(cei.DIVISION_FLIGHT, 8)
+	crew.AddDivision(cei.DIVISION_ENGINEERING, 8)
+	crew.AddDivision(cei.DIVISION_MISSION, 8)
 	crew.Morale = crew.CrewEfficencyIndex + dice.New().RollNext("2d3").Sum()
 
 	reach := NewReach("Hushumaki Transit",

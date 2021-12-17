@@ -2,6 +2,35 @@ package cei
 
 import "github.com/Galdoba/TR_Dynasty/pkg/dice"
 
+const (
+	EVENT_NONE                              = "No Event"
+	EVENT_FatigueStatus_Fresh               = "Fresh"
+	EVENT_FatigueStatus_Fatigued            = "Fatigued"
+	EVENT_FatigueStatus_HighlyFatigued      = "Highly Fatigued"
+	EVENT_FatigueStatus_DangerouslyFatigued = "Dangerously Fatigued"
+	EVENT_FatigueStatus_Exhausted           = "Exhausted"
+	EVENT_FatigueStatus_Incapable           = "Incapable"
+)
+
+func (t *Team) CallEvent(event string) {
+	switch event {
+	default:
+		return
+	case EVENT_FatigueStatus_Fresh:
+		t.AddModifier("Fatigue State", 1)
+	case EVENT_FatigueStatus_Fatigued:
+		t.AddModifier("Fatigue State", 0)
+	case EVENT_FatigueStatus_HighlyFatigued:
+		t.AddModifier("Fatigue State", -1)
+	case EVENT_FatigueStatus_DangerouslyFatigued:
+		t.AddModifier("Fatigue State", -2)
+	case EVENT_FatigueStatus_Exhausted:
+		t.AddModifier("Fatigue State", -3)
+	case EVENT_FatigueStatus_Incapable:
+		t.AddModifier("Fatigue State", -4)
+	}
+}
+
 func (t *Team) Incident() {
 	r := dice.Roll2D()
 	text := "TODO Incident"

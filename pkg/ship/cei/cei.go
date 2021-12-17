@@ -2,6 +2,7 @@ package cei
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/Galdoba/TR_Dynasty/pkg/dice"
 )
@@ -31,12 +32,13 @@ type Team struct {
 	CEIModifier        map[string]int
 	Division           map[string]*Team
 	Morale             int
-	Fatigue            int
+	Fatigue            fatigue
 	Log                []string
+	MissionDay         int
 }
 
 func (c *Team) AddEntry(entry string) {
-	c.Log = append(c.Log, entry)
+	c.Log = append(c.Log, fmt.Sprintf("Day %v: %v", c.MissionDay, entry))
 }
 
 func NewTeam(teamtype string, baseIndex int) *Team {
@@ -46,8 +48,24 @@ func NewTeam(teamtype string, baseIndex int) *Team {
 	c.CEIModifier = make(map[string]int)
 	c.Division = make(map[string]*Team)
 	c.Morale = baseIndex
+	c.Fatigue = fatigue{
+		index:        0,
+		fatigueState: Fresh,
+		status:       EVENT_FatigueStatus_Fresh,
+	}
+
+	c.Fatigue.newInterval(Interval_Initial)
 	c.AddEntry(fmt.Sprintf("%v created", c.TeamType))
 	return &c
+}
+
+func (t *Team) Update() error {
+	fatigueEvent := t.Fatigue.update()
+	if fatigueEvent {
+		t.CallEvent(t.Fatigue.status)
+	}
+	t.MissionDay++
+	return nil
 }
 
 func (t *Team) SetCEI(cei int) {
@@ -58,8 +76,8 @@ func (t *Team) SetMorale(mor int) {
 	t.Morale = mor
 }
 
-func (c *Team) AddDivision(division string) {
-	c.Division[division] = NewTeam(division, c.CrewEfficencyIndex)
+func (c *Team) AddDivision(division string, dei int) {
+	c.Division[division] = NewTeam(division, dei)
 	c.AddEntry(fmt.Sprintf("Detachment '%v' formed", division))
 }
 
@@ -91,18 +109,47 @@ func (c *Team) RemoveModifier(name string) {
 }
 
 func (c *Team) Report() {
+	fmt.Printf("%v SitRep\n", c.TeamType)
+	fmt.Printf("Mission Day        : %v\n", c.MissionDay)
+	fmt.Printf("Crew Fatigue State : %v\n", c.Fatigue.State())
+	fmt.Printf("Crew Fatigue Index : %v\n", c.Fatigue.index)
+	fmt.Printf("Days until next Fatigue Check %v\n", c.Fatigue.daysToCheck)
 	longestName := "CEIM"
 	for _, div := range c.Division {
 		if len(longestName) < len("DEI ("+div.TeamType+")") {
 			longestName = "DEI (" + div.TeamType + ")"
 		}
 	}
-	fmt.Printf("CEI | %v\n", c.CrewEfficencyIndex)
-	fmt.Printf("CEIM | %v\n", c.ECEI())
-	for k, v := range c.Division {
-		fmt.Printf("DEI %v | %v\n", k, v.ECEI())
+
+	fmt.Printf("%v | %v\n", addSpaces("CEI", longestName), c.CrewEfficencyIndex)
+	fmt.Printf("%v | %v\n", addSpaces("CEIM", longestName), c.CEIM())
+	for _, v := range divesionsList() {
+		if c.CallDivision(v) == nil {
+			continue
+		}
+		div := c.CallDivision(v)
+		fmt.Printf("%v | %v\n", addSpaces("DEI ("+v+")", longestName), div.ECEI())
 	}
-	fmt.Printf("MOR | %v\n", c.Morale)
+	fmt.Printf("%v | %v\n", addSpaces("MOR", longestName), c.Morale)
+	modif := []string{}
+	for k, _ := range c.CEIModifier {
+		modif = append(modif, k)
+	}
+	sort.Strings(modif)
+	if len(c.CEIModifier) > 0 {
+		fmt.Printf("Active Modifiers:\n")
+	}
+	for _, m := range modif {
+		fmt.Printf(" %v = %v\n", m, c.CEIModifier[m])
+	}
+	fmt.Printf("---END REPORT-------------------------------------\n")
+}
+
+func addSpaces(str, mask string) string {
+	for len(str) < len(mask) {
+		str += " "
+	}
+	return str
 }
 
 func (c *Team) sumMods() int {
@@ -115,9 +162,7 @@ func (c *Team) sumMods() int {
 
 func (c *Team) ECEI() int {
 	r := c.CrewEfficencyIndex
-	for _, val := range c.CEIModifier {
-		r += val
-	}
+	r += c.CEIM()
 	if r < 0 {
 		return 0
 	}
@@ -125,6 +170,30 @@ func (c *Team) ECEI() int {
 		return 15
 	}
 	return r
+}
+
+func (c *Team) CEIM() int {
+	mod := 0
+	for _, m := range c.CEIModifier {
+		mod += m
+	}
+	return mod
+}
+
+func divesionsList() []string {
+	return []string{
+		DIVISION_FLIGHT,
+		DIVISION_GUNNERY,
+		DIVISION_ENGINEERING,
+		DIVISION_OTHER,
+		DIVISION_COMMAND,
+		DIVISION_OPERATIONS,
+		DIVISION_MISSION,
+	}
+}
+
+func (c *Team) ResolutionDM() int {
+	return c.TaskDM()
 }
 
 // func (c *Team) CEIMchanges(eventDescr string, leadershipEffect int) {
@@ -218,7 +287,7 @@ func (t *Team) Resolve(descr ...string) int {
 	r := dice.Roll2D()
 	dm := t.TaskDM()
 	if len(descr) > 0 {
-		t.AddEntry(fmt.Sprintf("%v resolved: Roll=%v+(%v)", descr[0], r, dm))
+		t.AddEntry(fmt.Sprintf("%v [Roll=%v+(%v)]", descr[0], r, dm))
 	}
 	return r + dm
 }
@@ -271,9 +340,7 @@ func (t *Team) PrintLog() {
 	for _, line := range t.Log {
 		fmt.Println(line)
 	}
-	for _, d := range t.Division {
-		d.PrintLog()
-	}
+
 }
 
 func (t *Team) Check(tn int) int {
