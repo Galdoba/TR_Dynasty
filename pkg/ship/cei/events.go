@@ -24,10 +24,13 @@ func (t *Team) CallEvent(event string) {
 		t.AddModifier("Fatigue State", -1)
 	case EVENT_FatigueStatus_DangerouslyFatigued:
 		t.AddModifier("Fatigue State", -2)
+		t.ChangeMoraleBy(-1)
 	case EVENT_FatigueStatus_Exhausted:
 		t.AddModifier("Fatigue State", -3)
+		t.ChangeMoraleBy(0 - dice.RollD3())
 	case EVENT_FatigueStatus_Incapable:
 		t.AddModifier("Fatigue State", -4)
+		t.ChangeMoraleBy(0 - dice.Roll1D())
 	}
 }
 

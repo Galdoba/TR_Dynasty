@@ -54,7 +54,7 @@ func NewTeam(teamtype string, baseIndex int) *Team {
 		status:       EVENT_FatigueStatus_Fresh,
 	}
 
-	c.Fatigue.newInterval(Interval_Initial)
+	c.CallEvent(c.Fatigue.status)
 	c.AddEntry(fmt.Sprintf("%v created", c.TeamType))
 	return &c
 }
@@ -283,13 +283,13 @@ func (c *Team) TaskDM() int {
 	}
 }
 
-func (t *Team) Resolve(descr ...string) int {
+func (t *Team) Resolve(externalMods ...int) int {
 	r := dice.Roll2D()
 	dm := t.TaskDM()
-	if len(descr) > 0 {
-		t.AddEntry(fmt.Sprintf("%v [Roll=%v+(%v)]", descr[0], r, dm))
-	}
-	return r + dm
+	mods := sumOf(externalMods)
+	sum := r + dm + mods
+	t.AddEntry(fmt.Sprintf("%v [Roll=%v; DM=%v; Extertal Mods=%v]", sum, r, dm, mods))
+	return sum
 }
 
 func (t *Team) String() string {
@@ -302,7 +302,7 @@ func (t *Team) ChangeMoraleBy(i int) {
 	if i < 0 {
 		gl = ""
 	}
-	t.AddEntry(fmt.Sprintf("MOR %v%v\n", gl, i))
+	t.AddEntry(fmt.Sprintf("MOR %v%v", gl, i))
 	t.moraleStatus()
 }
 

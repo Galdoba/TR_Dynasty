@@ -41,25 +41,43 @@ func (ftg *fatigue) update() bool {
 		return false
 	}
 	ftg.index++
-	if dice.Roll2D() >= ftg.index {
+	if dice.Roll2D() < ftg.index {
 		ftg.fatigueState++
 		ftg.index = 0
+		switch ftg.fatigueState {
+		case Fresh:
+			ftg.status = EVENT_FatigueStatus_Fresh
+		case Fatigued:
+			ftg.status = EVENT_FatigueStatus_Fatigued
+		case HighlyFatigued:
+			ftg.status = EVENT_FatigueStatus_HighlyFatigued
+		case DangerouslyFatigued:
+			ftg.status = EVENT_FatigueStatus_DangerouslyFatigued
+		case Exhaused:
+			ftg.status = EVENT_FatigueStatus_Exhausted
+		case Incapable:
+			ftg.status = EVENT_FatigueStatus_Incapable
+		}
+		return true
 	}
-	switch ftg.fatigueState {
-	case Fresh:
-		ftg.status = EVENT_FatigueStatus_Fresh
-	case Fatigued:
-		ftg.status = EVENT_FatigueStatus_Fatigued
-	case HighlyFatigued:
-		ftg.status = EVENT_FatigueStatus_HighlyFatigued
-	case DangerouslyFatigued:
-		ftg.status = EVENT_FatigueStatus_DangerouslyFatigued
-	case Exhaused:
-		ftg.status = EVENT_FatigueStatus_Exhausted
-	case Incapable:
-		ftg.status = EVENT_FatigueStatus_Incapable
+	ftg.newInterval(Interval_Standard)
+	ftg.check()
+	return false
+}
+
+func (ftg *fatigue) check() {
+	if ftg.fatigueState < Fresh {
+		ftg.fatigueState = Fresh
 	}
-	return true
+	if ftg.fatigueState > Incapable {
+		ftg.fatigueState = Incapable
+	}
+	if ftg.index < 0 {
+		ftg.index = 0
+	}
+	if ftg.daysToCheck < 0 {
+		ftg.daysToCheck = 0
+	}
 }
 
 func sumOf(intSl []int) int {

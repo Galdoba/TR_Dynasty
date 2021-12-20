@@ -193,7 +193,7 @@ func rollForPoi(r1, r2 int) string {
 
 type Resolver interface {
 	TaskDM() int
-	Resolve(...string) int
+	Resolve(...int) int
 	AddEntry(string)
 }
 
@@ -218,8 +218,10 @@ func (at *abstractTransit) ExecuteBy(r Resolver) string {
 		}
 	}
 	if r.Resolve() >= at.eventTN {
-		r.AddEntry("EVENT AVOIDED: " + at.event)
+		r.AddEntry("EVENT AVOIDED")
 		at.eventAvoided = true
+	} else {
+		r.AddEntry("EVENT: " + at.event)
 	}
 	if r.Resolve() >= at.poiTN {
 		r.AddEntry("POINT OF INTEREST DETECTED: " + at.poi)
@@ -228,6 +230,17 @@ func (at *abstractTransit) ExecuteBy(r Resolver) string {
 	r.AddEntry(fmt.Sprintf("Transit concluded covering %v parsecs", at.parsecsCovered))
 	at.ready = true
 	return report
+}
+
+func jumpTime() int {
+	r := dice.Roll1D()
+	if r == 1 {
+		return 6
+	}
+	if r == 6 {
+		return 8
+	}
+	return 7
 }
 
 func (at *abstractTransit) String() string {

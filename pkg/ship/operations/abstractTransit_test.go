@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"testing"
-
-	"github.com/Galdoba/TR_Dynasty/pkg/ship/cei"
 )
 
 func TestAdvance(t *testing.T) {
@@ -51,12 +49,12 @@ func emulateRate() []int {
 
 func TestExecution(t *testing.T) {
 	totalParsecs := 0
-	ship := cei.NewTeam("Crew", 7)
+	//ship := cei.NewTeam("Crew", 7)
 	counter := 1
 	for totalParsecs < 120 {
 
 		transit, _ := NewAbstractTransit(FLANK_SPEED, "Test Transit "+strconv.Itoa(counter))
-		transit.ExecuteBy(ship)
+		//transit.ExecuteBy(ship)
 		if !transit.ready {
 			t.Errorf("Transit supposed to be ready")
 		}
