@@ -1,6 +1,10 @@
 package cei
 
-import "github.com/Galdoba/TR_Dynasty/pkg/dice"
+import (
+	"fmt"
+
+	"github.com/Galdoba/TR_Dynasty/pkg/dice"
+)
 
 const (
 	EVENT_NONE                              = "No Event"
@@ -13,8 +17,12 @@ const (
 )
 
 func (t *Team) CallEvent(event string) {
+
 	switch event {
 	default:
+		t.AddEntry(fmt.Sprintf("Day: %v - event called: %v", t.MissionDay, event))
+		return
+	case EVENT_NONE:
 		return
 	case EVENT_FatigueStatus_Fresh:
 		t.AddModifier("Fatigue State", 1)

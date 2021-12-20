@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/Galdoba/TR_Dynasty/pkg/ship/operations"
 )
 
 func TestCEI(t *testing.T) {
@@ -19,17 +21,23 @@ func TestCEI(t *testing.T) {
 
 	fmt.Println("===LOG==============")
 	crew.PrintLog()
-	for i := 0; i < 100; i++ {
+	eventDay := 0
+	eventCode := ""
+	for i := 0; i < 1000; i++ {
 		crew.Update()
 		fmt.Println("test", i)
 		crew.Report()
 		time.Sleep(time.Millisecond * 10)
 		if i%10 == 0 {
-			//at, err := operations.NewAbstractTransit(operations.FLANK_SPEED, "test transit "+strconv.Itoa(i))
-			//if err != nil {
+			task := operations.NewTask("Abstract task", 5)
 
-			//}
-			//at.ExecuteBy(crew)
+			eventCode0, resDays := task.ResolveBy(crew)
+			eventDay = resDays + crew.MissionDay
+			eventCode = eventCode0
+
+		}
+		if crew.MissionDay == eventDay {
+			crew.CallEvent(eventCode)
 		}
 	}
 	crew.PrintLog()
